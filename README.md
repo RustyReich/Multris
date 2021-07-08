@@ -10,7 +10,7 @@ ARROW KEYS - Move
      
 ----- GAME MODES -----
 
-  MULTRIS - All pieces are a randomy size. 
+  MULTRIS - All pieces are a random size. 
             Top Scores are saved.
 NUMERICAL - All pieces are the selected size.
             Top Score are NOT saved.
