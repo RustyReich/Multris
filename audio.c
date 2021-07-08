@@ -1,5 +1,3 @@
-#include <SDL.h>
-
 #include "Structures.h"
 
 SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)

@@ -1,4 +1,3 @@
-#include <SDL.h>
 #include <ctype.h>
 #include <stdbool.h>
 

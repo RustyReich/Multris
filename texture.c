@@ -1,5 +1,3 @@
-#include <SDL.h>
-
 #include "Structures.h"
 #include "technicalDefinitions.h"
 

@@ -1,4 +1,3 @@
-#include <SDL.h>
 #include <time.h>
 #include <stdbool.h>
 

@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <SDL.h>
 #include <stdio.h>
 #include <windows.h>
 
