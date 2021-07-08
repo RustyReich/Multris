@@ -405,7 +405,7 @@ void updateModes(SDL_Texture* texture, unsigned short currentMode, sprite* Sprit
 
 }
 
-//This function is for 
+//This function is for when the title has hit the floor, but a few pieces of it should still continue falling
 bool updateTitle(SDL_Texture* texture, piece* movingPieces, double frame_time, sprite Sprite, 
 	SDL_Renderer* renderer)
 {
