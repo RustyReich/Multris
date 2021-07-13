@@ -462,7 +462,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 
 				//--------------------------------------------------------
 
-				return TITLE_SCREEN;
+				return RESET;
 
 			}
 

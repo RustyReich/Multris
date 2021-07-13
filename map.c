@@ -10,6 +10,7 @@ void drawRectangle(sprite, unsigned short, unsigned short, unsigned short, unsig
 	SDL_Renderer*);
 void print_string(char*, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*, sprite*);
 void drawPiece(piece, unsigned short, unsigned short, sprite, SDL_Renderer*);
+void drawSprite(sprite, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*);
 
 //generate.c
 piece* generateGamePiece(unsigned short size);
@@ -28,9 +29,14 @@ SDL_Texture* createTexture(SDL_Renderer*, unsigned short, unsigned short);
 void drawTexture(SDL_Texture*, unsigned short, unsigned short, SDL_Renderer*);
 SDL_Texture* createPieceTexture(piece, sprite, SDL_Renderer*);
 
+//file.c
+void saveOption(unsigned short line, unsigned short value);
+bool fileExists(char* fileName);
+
 piece* getMovingPieces(piece*);
 bool updateTitle(SDL_Texture*, piece*, double, sprite, SDL_Renderer*);
 void updateModes(SDL_Texture*, unsigned short, sprite*, SDL_Renderer*);
+void updateOptions(SDL_Texture*, unsigned short, sprite*, SDL_Renderer*);
 
 unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* renderer, piece** firstPiece, 
 	SDL_AudioDeviceID* audioDevice, SDL_AudioSpec* wavSpec, unsigned short* returnMode)
@@ -158,13 +164,31 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	if (Texture_Modes == NULL)
 	{
 
-		Texture_Modes = createTexture(renderer, CHAR_DIMENSION * 35, CHAR_DIMENSION * 4 + LETTER_GAP);
+		Texture_Modes = createTexture(renderer, CHAR_DIMENSION * 35, CHAR_DIMENSION * 6 + LETTER_GAP);
 		SDL_SetRenderTarget(renderer, Texture_Modes);
-		print_string("Mode:", 0, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
-		print_string("Multris", 8 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
-		print_string("Numerical", 8 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
+		print_string("Mode:", 0, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string("Multris", 8 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string("Numerical", 8 * CHAR_DIMENSION, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
 			Sprites);
-		print_string(">", 6 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+		print_string("Options", 8 * CHAR_DIMENSION, 4 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
+			Sprites);
+		print_string(">", 6 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		SDL_SetRenderTarget(renderer, NULL);
+
+	}
+	static SDL_Texture* Texture_Options;
+	if (Texture_Options == NULL)
+	{
+
+		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), 2 * (CHAR_DIMENSION + LETTER_GAP));
+		SDL_SetRenderTarget(renderer, Texture_Options);
+		print_string("BLOCK SPRITE:", 0, 0, 1, WHITE, renderer, Sprites);
+		print_string("^", 13 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+		unsigned short color = (rand() % (RED - YELLOW + 1)) + YELLOW;
+		drawSprite(Sprites[BLOCK_CHAR_1], 13 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
+		drawSprite(Sprites[BLOCK_CHAR_2], 15 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
+
 		SDL_SetRenderTarget(renderer, NULL);
 
 	}
@@ -202,7 +226,10 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	drawTexture(Texture_Score, CHAR_DIMENSION * 39, CHAR_DIMENSION * 6 + LETTER_GAP, renderer);
 	drawTexture(Texture_Level, CHAR_DIMENSION * 46, CHAR_DIMENSION * 10, renderer);
 	drawTexture(Texture_Lines, CHAR_DIMENSION * 42, CHAR_DIMENSION * 18, renderer);
-	drawTexture(Texture_Modes, CHAR_DIMENSION * 2, CHAR_DIMENSION * 5 - LETTER_GAP, renderer);
+	drawTexture(Texture_Modes, CHAR_DIMENSION * 2, CHAR_DIMENSION * 5, renderer);
+
+	if (*mode >= OPTIONS)
+		drawTexture(Texture_Options, 134, 103, renderer);
 
 	//-----------------------------------------------------
 
@@ -239,7 +266,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 		if (GetAsyncKeyState(VK_RETURN) && *inputLock == false)
 		{
 
-			//Return the mode
+			//Return the mode 
 			*returnMode = *mode;
 
 			//Free Textures
@@ -255,6 +282,8 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 			Texture_Lines = NULL;
 			SDL_DestroyTexture(Texture_Modes);
 			Texture_Modes = NULL;
+			SDL_DestroyTexture(Texture_Options);
+			Texture_Options = NULL;
 
 			//Free sounds
 			delSound(&Sound_Move);
@@ -273,10 +302,19 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 			free(mode);
 			mode = NULL;
 
-			//Copy Piece into firstPiece
-			*firstPiece = Piece;
-			//Copy over all blocks
-			copyBlocks(Piece, *firstPiece);
+			//Only copy first piece if we are not resetting, meaning not in OPTIONS
+			if (*returnMode < OPTIONS)
+			{
+
+				//Copy Piece into firstPiece
+				*firstPiece = Piece;
+				//Copy over all blocks
+				copyBlocks(Piece, *firstPiece);
+
+			}
+			else
+				delPiece(&Piece);	//Otherwise, delete the piece
+
 			Piece = NULL;
 
 			//free movingPieces
@@ -285,9 +323,30 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 			free(movingPieces);
 			movingPieces = NULL;
 			
-			return PLAY_SCREEN;
+			//Change the block sprite if thats what the player did
+			if (*returnMode == MAX_PIECE_SIZE + 1)
+			{
 
-		}	//Mode 0 = default mode, Mode 1-9 = Numerical mode
+				BLOCK_CHAR = BLOCK_CHAR_1;
+				//Save BLOCK_CHAR to options file
+				if (fileExists("options.cfg"))
+					saveOption(0, 0);
+				return RESET;
+
+			}
+			else if (*returnMode == MAX_PIECE_SIZE + 2)
+			{
+
+				BLOCK_CHAR = BLOCK_CHAR_2;
+				if (fileExists("options.cfg"))
+					saveOption(0, 1);
+				return RESET;
+
+			}
+			else
+				return PLAY_SCREEN;	//If thats not what they did, then theyre trying to play
+
+		}	//Mode 0 = default mode, Mode 1-9 = Numerical mode, Mode 10+ = OPTIONS
 		else if (GetAsyncKeyState(VK_DOWN) && *inputLock == false && mode != NULL)
 		{
 
@@ -299,6 +358,15 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
 
 			}
+			else if (*mode == 1)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode = OPTIONS;
+				updateModes(Texture_Modes, *mode, Sprites, renderer);
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -306,11 +374,19 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 		else if (GetAsyncKeyState(VK_UP) && *inputLock == false && mode != NULL)
 		{
 
-			if (*mode > 0)
+			if (*mode > 0 && *mode <= MAX_PIECE_SIZE)
 			{
 
 				playSound(Sound_Move, audioDevice, wavSpec);
 				*mode = 0;
+				updateModes(Texture_Modes, *mode, Sprites, renderer);
+
+			}
+			else if (*mode >= OPTIONS)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode = 1;
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
 
 			}
@@ -321,12 +397,20 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 		else if (GetAsyncKeyState(VK_LEFT) && *inputLock == false && mode != NULL)
 		{
 
-			if (*mode > 1)
+			if (*mode > 1 && *mode <= MAX_PIECE_SIZE)
 			{
 
 				playSound(Sound_Move, audioDevice, wavSpec);
 				*mode -= 1;
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
+
+			}
+			else if (*mode > OPTIONS)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode -= 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
 
@@ -344,6 +428,14 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
 
 			}
+			else if (*mode == OPTIONS)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode += 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -358,6 +450,35 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 
 }
 
+void updateOptions(SDL_Texture* texture, unsigned short mode, sprite* Sprites, SDL_Renderer* renderer)
+{
+
+	SDL_SetRenderTarget(renderer, texture);
+
+	if (mode == OPTIONS)
+	{
+
+		//Erase "^" by printing it in black
+		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		//Reprint "^"
+		print_string("^", 13 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+	}
+	else if (mode == OPTIONS + 1)
+	{
+
+		//Erase "^" by printing it in black
+		print_string("^", 13 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		//Reprint "^"
+		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+	}
+
+	//Reset RenderTarger
+	SDL_SetRenderTarget(renderer, NULL);
+
+}
+
 void updateModes(SDL_Texture* texture, unsigned short currentMode, sprite* Sprites, SDL_Renderer* renderer)
 {
 
@@ -367,35 +488,48 @@ void updateModes(SDL_Texture* texture, unsigned short currentMode, sprite* Sprit
 	SDL_RenderClear(renderer);
 
 	//Redraw the modes texture, changing it depending on what the current mode is
-	print_string("Mode:", 0, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
-	print_string(">", 6 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+	print_string("Mode:", 0, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+	print_string(">", 6 * CHAR_DIMENSION, 2* (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 	if (currentMode == 0)
 	{
 
-		print_string("Multris", 8 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
-		print_string("Numerical", 8 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, 
+		print_string("Multris", 8 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string("Numerical", 8 * CHAR_DIMENSION, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
+			Sprites);
+		print_string("Options", 8 * CHAR_DIMENSION, 4 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
 			Sprites);
 
 	}
-	else if (currentMode > 0)
+	else if (currentMode > 0 && currentMode <= MAX_PIECE_SIZE)
 	{
 
-		print_string("Multris", 8 * CHAR_DIMENSION, 0, 1, WHITE, renderer, Sprites);
-		print_string("Numerical", 8 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
-		print_string("^", 22 * CHAR_DIMENSION + 2 * LETTER_GAP, 3 * CHAR_DIMENSION, 1, WHITE, renderer, Sprites);
+		print_string("Multris", 8 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+		print_string("Numerical", 8 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string("Options", 8 * CHAR_DIMENSION, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
+			Sprites);
+		print_string("^", 22 * CHAR_DIMENSION + 2 * LETTER_GAP, 4 * CHAR_DIMENSION, 1, WHITE, renderer, Sprites);
 
 		if (currentMode == 1)
-			print_string("  1 2", 20 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+			print_string("  1 2", 20 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 		else if (currentMode < MAX_PIECE_SIZE)
 		{
 
 			char string[6] = { '0' + currentMode - 1, ' ', '0' + currentMode, ' ', '0' + currentMode + 1, '\0' };
-			print_string(string, 20 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+			print_string(string, 20 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 		}
 		else
-			print_string("8 9  ", 20 * CHAR_DIMENSION, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+			print_string("8 9  ", 20 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+	}
+	else if (currentMode >= OPTIONS)
+	{
+
+		print_string("Multris", 8 * CHAR_DIMENSION, 0, 1, WHITE, renderer, Sprites);
+		print_string("Numerical", 8 * CHAR_DIMENSION, 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string("Options", 8 * CHAR_DIMENSION, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
+			Sprites);
 
 	}
 

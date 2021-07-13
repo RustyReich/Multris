@@ -11,6 +11,14 @@ void mainLoop(SDL_Renderer*, sprite*);
 //Comp_Decomp.c
 sprite* loadSprites(size_t*);
 
+//file.c
+bool fileExists(char* fileName);
+void createOptions();
+unsigned short getOption(unsigned short line);
+
+//Global variables
+unsigned short BLOCK_CHAR;
+
 int main(int argc, char* argv[])
 {
 
@@ -21,7 +29,7 @@ int main(int argc, char* argv[])
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Init(SDL_INIT_AUDIO);
 
-	SDL_Window* window = SDL_CreateWindow("Multris v1.0.0 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+	SDL_Window* window = SDL_CreateWindow("Multris v1.0.1 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		CHAR_DIMENSION * HEIGHT_IN_CHARS * ASPECT_RATIO, CHAR_DIMENSION * HEIGHT_IN_CHARS, SDL_WINDOW_OPENGL);
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -34,6 +42,23 @@ int main(int argc, char* argv[])
 	//All game sprites are stored here
 	size_t numOfSprites;
 	sprite* Sprites = loadSprites(&numOfSprites);
+
+	//Initialize global variables
+	BLOCK_CHAR = BLOCK_CHAR_1;
+
+	//Create options file if it doesn't exist
+	if (!fileExists("options.cfg"))
+		createOptions();
+	else
+	{
+
+		//Load the BLOCK_CHAR from options file
+		if (getOption(0) == 0)
+			BLOCK_CHAR = BLOCK_CHAR_1;
+		else if (getOption(0) == 1)
+			BLOCK_CHAR = BLOCK_CHAR_2;
+
+	}
 	
 	while (running)
 	{

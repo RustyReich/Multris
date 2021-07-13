@@ -139,19 +139,19 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 		else     //The firstPiece has been deleted since it is no longer needed
 			game_state = playMode(Sprites, frame_time, renderer, NULL, audioDevice, wavSpec, mode);	//So we just pass NULL its place
 
-		//This implies we just lost the game
-		if (game_state == TITLE_SCREEN)
-		{
+	}
+	else if (game_state == RESET)	//Reset the game to the main menu
+	{
 
-			//So lets reset the background just in case the top score has been updated
-			SDL_SetRenderTarget(renderer, background);
-			SDL_SetRenderDrawColor(renderer,0, 0, 0, 0);
-			SDL_RenderClear(renderer);
-			SDL_DestroyTexture(background);
-			background = NULL;
-			SDL_SetRenderTarget(renderer, NULL);
+		//So lets reset the background just in case the top score has been updated
+		SDL_SetRenderTarget(renderer, background);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+		SDL_RenderClear(renderer);
+		SDL_DestroyTexture(background);
+		background = NULL;
+		SDL_SetRenderTarget(renderer, NULL);
 
-		}
+		game_state = TITLE_SCREEN;
 
 	}
 

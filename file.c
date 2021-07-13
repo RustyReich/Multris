@@ -13,6 +13,68 @@ bool fileExists(char* fileName)
 
 }
 
+void createOptions()
+{
+
+	FILE* optionsFile = NULL;
+	errno_t err;
+
+	//Create options file and fill it with default data
+	err = fopen_s(&optionsFile, "options.cfg", "a");
+	if (optionsFile != NULL)
+	{
+
+		fprintf(optionsFile, "0");
+
+		fclose(optionsFile);
+
+	}
+
+}
+
+void saveOption(unsigned short line, unsigned short value)
+{
+
+	FILE* optionsFile = NULL;
+	errno_t err;
+
+	//Open file for writing
+	err = fopen_s(&optionsFile, "options.cfg", "w");
+	if (optionsFile != NULL)
+	{
+
+		fprintf(optionsFile, "%d", value);
+
+		fclose(optionsFile);
+
+	}
+
+}
+
+unsigned short getOption(unsigned short line)
+{
+
+	FILE* optionsFile = NULL;
+	errno_t err;
+
+	//Open file for reading
+	err = fopen_s(&optionsFile, "options.cfg", "r");
+	if (optionsFile != NULL)
+	{
+
+		//Conver the char into an integer value
+		unsigned short returnValue = getc(optionsFile) - '0';
+
+		fclose(optionsFile);
+
+		return returnValue;
+
+	}
+	else
+		return 0;
+
+}
+
 unsigned int loadTop()
 {
 
@@ -49,6 +111,7 @@ void saveTop(unsigned int score)
 	FILE* topFile = NULL;
 	errno_t err;
 
+	//Create file if it does not exist, open it if it does
 	if (!fileExists("top.md"))
 		err = fopen_s(&topFile, "top.md", "a");
 	else

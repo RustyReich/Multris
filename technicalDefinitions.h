@@ -1,3 +1,6 @@
+//Global variables
+extern unsigned short BLOCK_CHAR;
+
 #define CHAR_DIMENSION		12
 #define ASPECT_RATIO		1
 #define HEIGHT_IN_CHARS		50
@@ -8,14 +11,15 @@
 
 #define LETTER_GAP 2
 
-#define SPACE_CHAR	26
-#define ZERO_CHAR	27
-#define COLON_CHAR	39
-#define WALL_CHAR	37
-#define BLOCK_CHAR	38
-#define RIGHT_CHAR	40
-#define LEFT_CHAR	41
-#define UP_CHAR		42
+#define SPACE_CHAR		26
+#define ZERO_CHAR		27
+#define COLON_CHAR		39
+#define WALL_CHAR		37
+#define BLOCK_CHAR_1	38
+#define RIGHT_CHAR		40
+#define LEFT_CHAR		41
+#define UP_CHAR			42
+#define BLOCK_CHAR_2	43
 
 #define GRAY	0
 #define WHITE	1
@@ -30,6 +34,7 @@
 
 #define TITLE_SCREEN	0
 #define PLAY_SCREEN		1
+#define RESET			2
 
 #define MAX_PIECE_SIZE		9
 #define NUM_OF_TITLE_PIECES 19
@@ -44,7 +49,9 @@
 #define CCW	1
 
 #define CLEARING_TIME	20
-#define OVER_TIME		39
+#define OVER_TIME		40
+
+#define OPTIONS	10
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris
