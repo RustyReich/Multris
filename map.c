@@ -32,6 +32,7 @@ SDL_Texture* createPieceTexture(piece, sprite, SDL_Renderer*);
 //file.c
 void saveOption(unsigned short line, unsigned short value);
 bool fileExists(char* fileName);
+unsigned short getOption(unsigned short line);
 
 piece* getMovingPieces(piece*);
 bool updateTitle(SDL_Texture*, piece*, double, sprite, SDL_Renderer*);
@@ -182,12 +183,20 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 
 		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), 2 * (CHAR_DIMENSION + LETTER_GAP));
 		SDL_SetRenderTarget(renderer, Texture_Options);
-		print_string("BLOCK SPRITE:", 0, 0, 1, WHITE, renderer, Sprites);
-		print_string("^", 13 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string(">", 0, 0, 1, WHITE, renderer, Sprites);
+		print_string("BLOCK SPRITE:", 2 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, WHITE, renderer, Sprites);
+		print_string("Ghost:", 2 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+		//Print current GHOST option
+		if (getOption(1) == 0)
+			print_string("OFF", 9 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+		else if (getOption(1) == 1)
+			print_string("ON", 9 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
 
 		unsigned short color = (rand() % (RED - YELLOW + 1)) + YELLOW;
-		drawSprite(Sprites[BLOCK_CHAR_1], 13 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
-		drawSprite(Sprites[BLOCK_CHAR_2], 15 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
+		drawSprite(Sprites[BLOCK_CHAR_1], 15 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
+		drawSprite(Sprites[BLOCK_CHAR_2], 17 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
 
 		SDL_SetRenderTarget(renderer, NULL);
 
@@ -195,8 +204,11 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 
 	//Sounds
 	static sound* Sound_Move;
+	static sound* Sound_Rotate;
 	if (Sound_Move == NULL)
 		Sound_Move = loadSound("move.wav", wavSpec);
+	if (Sound_Rotate == NULL)
+		Sound_Rotate = loadSound("rotate.wav", wavSpec);
 
 	//Variables
 	static bool* titleUpdating;
@@ -266,41 +278,58 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 		if (GetAsyncKeyState(VK_RETURN) && *inputLock == false)
 		{
 
+			//Play COMPLETE sound
+			playSound(Sound_Rotate, audioDevice, wavSpec);
+
 			//Return the mode 
 			*returnMode = *mode;
 
-			//Free Textures
-			SDL_DestroyTexture(Texture_Title);
-			Texture_Title = NULL;
-			SDL_DestroyTexture(Texture_Next);
-			Texture_Next = NULL;
-			SDL_DestroyTexture(Texture_Score);
-			Texture_Score = NULL;
-			SDL_DestroyTexture(Texture_Level);
-			Texture_Level = NULL;
-			SDL_DestroyTexture(Texture_Lines);
-			Texture_Lines = NULL;
-			SDL_DestroyTexture(Texture_Modes);
-			Texture_Modes = NULL;
-			SDL_DestroyTexture(Texture_Options);
-			Texture_Options = NULL;
+			if (*returnMode != OPTIONS + 2)
+			{
 
-			//Free sounds
-			delSound(&Sound_Move);
+				//Free Textures
+				SDL_DestroyTexture(Texture_Title);
+				Texture_Title = NULL;
+				SDL_DestroyTexture(Texture_Next);
+				Texture_Next = NULL;
+				SDL_DestroyTexture(Texture_Score);
+				Texture_Score = NULL;
+				SDL_DestroyTexture(Texture_Level);
+				Texture_Level = NULL;
+				SDL_DestroyTexture(Texture_Lines);
+				Texture_Lines = NULL;
+				SDL_DestroyTexture(Texture_Modes);
+				Texture_Modes = NULL;
+				SDL_DestroyTexture(Texture_Options);
+				Texture_Options = NULL;
 
-			//Free single variables
-			free(Y);
-			Y = NULL;
-			free(inputLock);
-			inputLock = NULL;
-			free(titleUpdating);
-			titleUpdating = NULL;
-			free(nextText_Width);
-			nextText_Width = NULL;
-			free(nextText_Height);
-			nextText_Height = NULL;
-			free(mode);
-			mode = NULL;
+				//Free sounds
+				delSound(&Sound_Move);
+				delSound(&Sound_Rotate);
+
+				//Free single variables
+				free(Y);
+				Y = NULL;
+				free(inputLock);
+				inputLock = NULL;
+				free(titleUpdating);
+				titleUpdating = NULL;
+				free(nextText_Width);
+				nextText_Width = NULL;
+				free(nextText_Height);
+				nextText_Height = NULL;
+				free(mode);
+				mode = NULL;
+
+			}
+			else
+			{
+
+				//Swap GHOST option
+				saveOption(1, !getOption(1));
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			//Only copy first piece if we are not resetting, meaning not in OPTIONS
 			if (*returnMode < OPTIONS)
@@ -315,14 +344,19 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 			else
 				delPiece(&Piece);	//Otherwise, delete the piece
 
-			Piece = NULL;
+			if (*returnMode != OPTIONS + 2)
+			{
 
-			//free movingPieces
-			for (unsigned short i = 0; i < 5; i++)
-				delPiece((piece**)(&movingPieces[i]));
-			free(movingPieces);
-			movingPieces = NULL;
-			
+				Piece = NULL;
+
+				//free movingPieces
+				for (unsigned short i = 0; i < 5; i++)
+					delPiece((piece**)(&movingPieces[i]));
+				free(movingPieces);
+				movingPieces = NULL;
+
+			}
+
 			//Change the block sprite if thats what the player did
 			if (*returnMode == MAX_PIECE_SIZE + 1)
 			{
@@ -343,8 +377,10 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				return RESET;
 
 			}
-			else
+			else if (*returnMode <= MAX_PIECE_SIZE)
 				return PLAY_SCREEN;	//If thats not what they did, then theyre trying to play
+
+			*inputLock = true;
 
 		}	//Mode 0 = default mode, Mode 1-9 = Numerical mode, Mode 10+ = OPTIONS
 		else if (GetAsyncKeyState(VK_DOWN) && *inputLock == false && mode != NULL)
@@ -367,6 +403,14 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
+			else if (*mode == OPTIONS || *mode == OPTIONS + 1)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode = OPTIONS + 2;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -382,12 +426,20 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
 
 			}
-			else if (*mode >= OPTIONS)
+			else if (*mode == OPTIONS || *mode == OPTIONS + 1)
 			{
 
 				playSound(Sound_Move, audioDevice, wavSpec);
 				*mode = 1;
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
+
+			}
+			else if (*mode == OPTIONS + 2)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode = OPTIONS;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
 
@@ -405,7 +457,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateModes(Texture_Modes, *mode, Sprites, renderer);
 
 			}
-			else if (*mode > OPTIONS)
+			else if (*mode == OPTIONS + 1)
 			{
 
 				playSound(Sound_Move, audioDevice, wavSpec);
@@ -458,19 +510,54 @@ void updateOptions(SDL_Texture* texture, unsigned short mode, sprite* Sprites, S
 	if (mode == OPTIONS)
 	{
 
-		//Erase "^" by printing it in black
-		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
-		//Reprint "^"
-		print_string("^", 13 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		//Erase "^" and ">"
+		print_string("^", 17 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_string(">", 0, CHAR_DIMENSION + LETTER_GAP, 1, BLACK, renderer, Sprites);
+		//Reprint
+		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string(">", 0, 0, 1, WHITE, renderer, Sprites);
 
 	}
 	else if (mode == OPTIONS + 1)
 	{
 
-		//Erase "^" by printing it in black
-		print_string("^", 13 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
-		//Reprint "^"
-		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		//Erase "^" and ">" by printing it in black
+		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_string(">", 0, CHAR_DIMENSION + LETTER_GAP, 1, BLACK, renderer, Sprites);
+		//Reprint
+		print_string("^", 17 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string(">", 0, 0, 1, WHITE, renderer, Sprites);
+
+	}
+	else if (mode == OPTIONS + 2)
+	{
+
+		//Erase "^" and ">"
+		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_string("^", 17 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_string(">", 0, 0, 1, BLACK, renderer, Sprites);
+
+		//Print the current GHOST option
+		if (getOption(1) == 0)
+		{
+
+			//Erase ON
+			print_string("ON", 9 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, BLACK, renderer, Sprites);
+			//Print OFF
+			print_string("OFF", 9 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+
+		}
+		else if (getOption(1) == 1)
+		{
+
+			//Erase OFF
+			print_string("OFF", 9 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, BLACK, renderer, Sprites);
+			//Print ON
+			print_string("ON", 9 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
+
+		}
+
+		print_string(">", 0, CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
 
 	}
 

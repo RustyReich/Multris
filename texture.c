@@ -24,6 +24,9 @@ SDL_Texture* createPieceTexture(piece Piece, sprite Sprite, SDL_Renderer* render
 	drawPiece(Piece, 0, 0, Sprite, renderer);
 	SDL_SetRenderTarget(renderer, NULL);
 
+	//Make it so stuff can render on top of it
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+
 	return texture;
 
 }
@@ -60,8 +63,6 @@ void drawTexture(SDL_Texture* texture, unsigned short X, unsigned short Y, SDL_R
 	//Draw texture at X, Y
 	DestR.x = X;
 	DestR.y = Y;
-	DestR.w;
-	DestR.h;
 	//Get the width and height of the texture
 	SDL_QueryTexture(texture, NULL, NULL, &DestR.w, &DestR.h);
 

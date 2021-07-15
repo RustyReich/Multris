@@ -5,6 +5,32 @@
 
 #include "technicalDefinitions.h"
 
+unsigned short getLineCount(char* fileName)
+{
+
+	FILE* file = NULL;
+	errno_t err;
+
+	char currentLine[256];
+	unsigned short lineCount = 0;
+
+	err = fopen_s(&file, fileName, "r");
+	if (file != NULL)
+	{
+
+		while (fgets(currentLine, sizeof(currentLine), file) != NULL)
+			lineCount++;
+
+		fclose(file);
+
+		return lineCount;
+
+	}
+	else
+		return 0;
+
+}
+
 bool fileExists(char* fileName)
 {
 
@@ -24,7 +50,7 @@ void createOptions()
 	if (optionsFile != NULL)
 	{
 
-		fprintf(optionsFile, "0");
+		fprintf(optionsFile, "1\n1");
 
 		fclose(optionsFile);
 
@@ -38,17 +64,58 @@ void saveOption(unsigned short line, unsigned short value)
 	FILE* optionsFile = NULL;
 	errno_t err;
 
-	//Open file for writing
-	err = fopen_s(&optionsFile, "options.cfg", "w");
-	if (optionsFile != NULL)
+	char currentLine[2];
+	unsigned short count = 0;
+
+	unsigned short lineCount = getLineCount("options.cfg");
+
+	char* fileLines = NULL;
+	if (fileLines == NULL)
+		fileLines = malloc(lineCount * sizeof(*fileLines));
+	
+	//Save all lines of file 
+	err = fopen_s(&optionsFile, "options.cfg", "r");
+	if (optionsFile != NULL && fileLines != NULL)
 	{
 
-		fprintf(optionsFile, "%d", value);
+		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
+		{
+		
+			//Dont count any newlines
+			if (currentLine[0] != 10)
+			{
+				
+				//Edit the line that we are saving
+				if (count == line)
+					*(fileLines + count) = '0' + value;
+				else
+					*(fileLines + count) = currentLine[0];
+				
+				count++;
+
+			}
+			
+		}
+
+		fclose(optionsFile);
+
+	}
+	
+	//Rewrite all the lines back to the file
+	err = fopen_s(&optionsFile, "options.cfg", "w");
+	if (optionsFile != NULL && fileLines != NULL)
+	{
+		
+		for (unsigned short i = 0; i < lineCount; i++)
+			fprintf(optionsFile, "%c\n", *(fileLines + i));
 
 		fclose(optionsFile);
 
 	}
 
+	free(fileLines);
+	fileLines = NULL;
+	
 }
 
 unsigned short getOption(unsigned short line)
@@ -57,13 +124,32 @@ unsigned short getOption(unsigned short line)
 	FILE* optionsFile = NULL;
 	errno_t err;
 
+	char currentLine[2];
+	unsigned short count = 0;
+
+	unsigned short returnValue = 0;
+
 	//Open file for reading
 	err = fopen_s(&optionsFile, "options.cfg", "r");
 	if (optionsFile != NULL)
 	{
 
-		//Conver the char into an integer value
-		unsigned short returnValue = getc(optionsFile) - '0';
+		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
+		{
+
+			//Dont count any newlines
+			if (currentLine[0] != 10)
+			{
+
+				//Return the value at the requested line
+				if (count == line)
+					returnValue = currentLine[0] - '0';
+
+				count++;
+				
+			}
+
+		}
 
 		fclose(optionsFile);
 

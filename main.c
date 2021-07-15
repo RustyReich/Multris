@@ -49,7 +49,8 @@ int main(int argc, char* argv[])
 	//Create options file if it doesn't exist
 	if (!fileExists("options.cfg"))
 		createOptions();
-	else
+
+	if (fileExists("options.cfg"))
 	{
 
 		//Load the BLOCK_CHAR from options file
