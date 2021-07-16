@@ -198,10 +198,7 @@ void saveTop(unsigned int score)
 	errno_t err;
 
 	//Create file if it does not exist, open it if it does
-	if (!fileExists("top.md"))
-		err = fopen_s(&topFile, "top.md", "a");
-	else
-		err = fopen_s(&topFile, "top.md", "w");
+err = fopen_s(&topFile, "top.md", "w");
 
 	if (topFile != NULL)
 	{
@@ -233,10 +230,11 @@ void saveTop(unsigned int score)
 				*(string + i) = ((*(string + i) - '0') % (COMP_END - COMP_START) + COMP_START);
 
 		}
-
+		
 		//Print score to topFile
 		if (string != 0)
-			fprintf(topFile, string);
+			for (unsigned short i = 0; i < length; i++)
+				fprintf(topFile, "%c", *(string + i));
 
 		free(string);
 		fclose(topFile);

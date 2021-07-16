@@ -441,13 +441,19 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	{
 
 		if (*overAnimation == false)
-			*overAnimation = playOverAnimation(renderer, foreground, Sprites, *Score);
-		else
 		{
 
+			*overAnimation = playOverAnimation(renderer, foreground, Sprites, *Score);
+
 			//Only save the top score if the player is playing in MULTRIS mode
-			if (*Score > loadTop() && size == 0)
-				saveTop(*Score);
+				//Save score once overAnimation is finished playing
+			if (*overAnimation == true)
+				if (*Score > loadTop() && size == 0)
+					saveTop(*Score);
+
+		}
+		else
+		{
 
 			if (GetAsyncKeyState(VK_RETURN))
 			{

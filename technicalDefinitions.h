@@ -49,7 +49,7 @@ extern unsigned short BLOCK_CHAR;
 #define CCW	1
 
 #define CLEARING_TIME	20
-#define OVER_TIME		41
+#define OVER_TIME		42
 
 #define OPTIONS	10
 
