@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_Init(SDL_INIT_AUDIO);
 
-	SDL_Window* window = SDL_CreateWindow("Multris v1.0.1 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+	SDL_Window* window = SDL_CreateWindow("Multris v1.0.3 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		CHAR_DIMENSION * HEIGHT_IN_CHARS * ASPECT_RATIO, CHAR_DIMENSION * HEIGHT_IN_CHARS, SDL_WINDOW_OPENGL);
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
