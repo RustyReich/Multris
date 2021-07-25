@@ -50,9 +50,12 @@ sprite* loadSprites(size_t* numOfSprites)
 	*numOfSprites = 0;
 
 	FILE* file = NULL;
-	#ifdef __unix__
+#ifdef __unix__
 	file = fopen("SPRITES/L12.mse1", "r");
-	#endif
+#endif
+#ifdef _WIN32
+	file = fopen("SPRITES/W12.mse1", "r");
+#endif
 	if (file != NULL)
 	{
 		

@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "HEADERS/technicalDefinitions.h"
 #include "HEADERS/Structures.h"
