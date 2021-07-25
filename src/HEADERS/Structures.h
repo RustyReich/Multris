@@ -1,4 +1,9 @@
-#include <SDL.h>
+#ifdef __unix__
+	#include "SDL2/SDL.h"
+#endif
+#ifdef _WIN32
+	#include "SDL.h"
+#endif
 
 typedef struct rectangle
 {
