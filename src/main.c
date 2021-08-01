@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 
 	}
 
-	SDL_Window* window = SDL_CreateWindow("Multris v1.0.4 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+	SDL_Window* window = SDL_CreateWindow("Multris v1.0.5 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		WINDOW_BOX_DIMENSION, WINDOW_BOX_DIMENSION, SDL_WINDOW_OPENGL);
 
 	//Get the screen resolution

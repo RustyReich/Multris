@@ -85,6 +85,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	static SDL_Texture* Texture_Score;
 	static SDL_Texture* Texture_Level;
 	static SDL_Texture* Texture_Lines;
+	static SDL_Texture* Texture_Paused;
 	static SDL_Texture* foreground;
 	if (Texture_Current == NULL)
 		Texture_Current = createPieceTexture(*currentPiece, Sprites[BLOCK_CHAR], renderer);
@@ -124,6 +125,15 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		SDL_SetRenderTarget(renderer, NULL);
 
 	}
+	if (Texture_Paused == NULL)
+	{
+
+		Texture_Paused = createTexture(renderer, 6 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION);
+		SDL_SetRenderTarget(renderer, Texture_Paused);
+		print_string("PAUSED", 0, 0, 1, WHITE, renderer, Sprites);
+		SDL_SetRenderTarget(renderer, NULL);
+
+	}
 	if (foreground == NULL)
 	{
 		
@@ -138,6 +148,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	static sound* Sound_Rotate;
 	static sound* Sound_Complete;
 	static sound* Sound_Over;
+	static sound* Sound_Pause;
 	if (Sound_Move == NULL)
 		Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
 	if (Sound_Land == NULL)
@@ -148,6 +159,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		Sound_Complete = loadSound("AUDIO/complete.wav", wavSpec);
 	if (Sound_Over == NULL)
 		Sound_Over = loadSound("AUDIO/over.wav", wavSpec);
+	if (Sound_Pause == NULL)
+		Sound_Pause = loadSound("AUDIO/pause.wav", wavSpec);
 
 	//Variables
 	static unsigned short* X;
@@ -190,12 +203,20 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		*gameOver = false;
 
 	}
-	static bool *clearingLine;
+	static bool* clearingLine;
 	if (clearingLine == NULL)
 	{
 
 		clearingLine = malloc(sizeof(*clearingLine));
 		*clearingLine = false;
+
+	}
+	static bool* paused;
+	if (paused == NULL)
+	{
+
+		paused = malloc(sizeof(*paused));
+		*paused = false;
 
 	}
 	static bool* overAnimation;
@@ -286,7 +307,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	{
 
 		//Movement
-		if (currentPiece != NULL)
+		if (currentPiece != NULL && !*paused)
 		{
 
 			if (keys[SDL_SCANCODE_LEFT] && !isColliding(*currentPiece, *X, Y, LEFT, mapData))
@@ -361,6 +382,14 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 			
 		}
 
+		if (keys[SDL_SCANCODE_RETURN])	//Pause the game by pressing the ENTER key
+		{
+
+			playSound(Sound_Pause, audioDevice, wavSpec);
+			*paused = !*paused;
+
+		}
+
 		*inputLock = true;
 
 	}
@@ -395,7 +424,13 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 
 	}
 
+	//Draw the foreground
 	drawTexture(foreground, CHAR_DIMENSION, CHAR_DIMENSION, renderer);
+
+	//Draw PAUSED if game is paused
+		//Center the text
+	if (*paused)
+		drawTexture(Texture_Paused, CHAR_DIMENSION + CHAR_DIMENSION * WIDTH_OF_PLAYSPACE / 2 - 3 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION * (23 - 0.5), renderer);
 
 	//--------------------------------------
 
@@ -482,6 +517,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				Texture_Level = NULL;
 				SDL_DestroyTexture(Texture_Lines);
 				Texture_Lines = NULL;
+				SDL_DestroyTexture(Texture_Paused);
+				Texture_Paused = NULL;
 				SDL_DestroyTexture(foreground);
 				foreground = NULL;
 
@@ -490,6 +527,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				delSound(&Sound_Rotate);
 				delSound(&Sound_Complete);
 				delSound(&Sound_Over);
+				delSound(&Sound_Pause);
 
 				keys = NULL;
 
@@ -507,6 +545,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				clearingLine = NULL;
 				free(overAnimation);
 				overAnimation = NULL;
+				free(paused);
+				paused = NULL;
 				free(completedRows);
 				completedRows = NULL;
 				free(numCompleted);
@@ -541,7 +581,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	//---------------------------------------------
 
 	//Gravity
-	if (currentPiece != NULL && !*gameOver)
+	if (currentPiece != NULL && !*gameOver && !*paused)
 	{
 		
 		//Piece is falling
@@ -1018,6 +1058,8 @@ bool inputLockPressed(Uint8* keys)
 	else if (keys[SDL_SCANCODE_Z])
 		return true;
 	else if (keys[SDL_SCANCODE_X])
+		return true;
+	else if (keys[SDL_SCANCODE_RETURN])
 		return true;
 
 	return false;
