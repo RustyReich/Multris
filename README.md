@@ -6,7 +6,7 @@ A version of Tetris with randomly generated polyominoes of varying sizes
 ARROW KEYS - Move
          Z - Rotate CCW
          X - Rotate CW
-     ENTER - Select/Accept
+     ENTER - Select/Pause
 ``` 
 ----- GAME MODES -----
 ```
