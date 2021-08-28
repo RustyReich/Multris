@@ -3,10 +3,12 @@ A version of Tetris with randomly generated polyominoes of varying sizes
 
 ----- CONTROLS -----
 ```
-ARROW KEYS - Move
-         Z - Rotate CCW
-         X - Rotate CW
-     ENTER - Select/Pause
+LEFT / RIGHT ARROW - Move
+        DOWN ARROW - Soft Drop
+          UP ARROW - Hard Drop
+                 Z - Rotate CCW
+                 X - Rotate CW
+             ENTER - Select/Pause
 ``` 
 ----- GAME MODES -----
 ```
