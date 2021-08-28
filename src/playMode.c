@@ -379,6 +379,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				}
 
 			}
+			else if (keys[SDL_SCANCODE_UP])
+				*Y = *ghostY + 1;
 			
 		}
 
@@ -1060,6 +1062,8 @@ bool inputLockPressed(Uint8* keys)
 	else if (keys[SDL_SCANCODE_X])
 		return true;
 	else if (keys[SDL_SCANCODE_RETURN])
+		return true;
+	else if (keys[SDL_SCANCODE_UP])
 		return true;
 
 	return false;
