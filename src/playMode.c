@@ -276,6 +276,14 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		*ghostY = HEIGHT_IN_CHARS - 2 - currentPiece->height;
 
 	}
+	static Uint32* moveStart;
+	if (moveStart == NULL)
+	{
+
+		moveStart = malloc(sizeof(*moveStart));
+		*moveStart = 0;
+
+	}
 
 	//map data matrix
 	static bool* mapData;
@@ -310,32 +318,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		if (currentPiece != NULL && !*paused)
 		{
 
-			if (keys[SDL_SCANCODE_LEFT] && !isColliding(*currentPiece, *X, Y, LEFT, mapData))
-			{
-
-				//Only play sound if can actually move
-				if (*X != 0)
-					playSound(Sound_Move, audioDevice, wavSpec);
-				move(LEFT, X, *currentPiece);
-
-				//Recalculate ghostY
-				if (*ghostEnabled)
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-			}
-			else if (keys[SDL_SCANCODE_RIGHT] && !isColliding(*currentPiece, *X, Y, RIGHT, mapData))
-			{
-
-				if (*X + currentPiece->width < WIDTH_OF_PLAYSPACE)
-					playSound(Sound_Move, audioDevice, wavSpec);
-				move(RIGHT, X, *currentPiece);
-
-				//Recalculate ghostY
-				if (*ghostEnabled)
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-			}
-			else if (keys[SDL_SCANCODE_Z] && *X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
+			if (keys[SDL_SCANCODE_Z] && *X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
 				*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
 			{
 
@@ -403,6 +386,59 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		*softDrop = true;
 	else
 		*softDrop = false;
+
+	//Left and right movement
+	if (keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_RIGHT])
+	{
+
+		Uint32 currTicks = SDL_GetTicks();
+
+		//Start the counter for holding the movement keys
+		if (*moveStart == 0)
+			*moveStart = currTicks;
+
+		if (*moveStart == currTicks || (currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+		{
+
+			if (keys[SDL_SCANCODE_LEFT] && !isColliding(*currentPiece, *X, Y, LEFT, mapData))
+			{
+
+				//Only play sound if can actually move
+				if (*X != 0)
+					playSound(Sound_Move, audioDevice, wavSpec);
+				move(LEFT, X, *currentPiece);
+
+				//Recalculate ghostY
+				if (*ghostEnabled)
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+			}
+			else if (keys[SDL_SCANCODE_RIGHT] && !isColliding(*currentPiece, *X, Y, RIGHT, mapData))
+			{
+
+				if (*X + currentPiece->width < WIDTH_OF_PLAYSPACE)
+					playSound(Sound_Move, audioDevice, wavSpec);
+				move(RIGHT, X, *currentPiece);
+
+				//Recalculate ghostY
+				if (*ghostEnabled)
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+			}
+
+			//Reset moveStart
+				//The way this works is this:
+					//When the player pushes an arrow, the piece will move once
+					//If they hold the arrow for longer than (MOVEMENT_WAIT + MOVEMENT_TIME) ms, the piece will move again
+					//If they continue to hold it past that point, the piece will move every MOVEMENT_TIME ms
+			if ((currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+				*moveStart = currTicks - MOVEMENT_WAIT;
+
+		}
+
+	}
+	else
+		*moveStart = 0;
 
 	// RENDERING -------------------------------
 
@@ -563,6 +599,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				ghostEnabled = NULL;
 				free(ghostY);
 				ghostY = NULL;
+				free(moveStart);
+				moveStart = NULL;
 
 				free(inputLock);
 				inputLock = NULL;
@@ -1053,11 +1091,7 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece, unsig
 bool inputLockPressed(Uint8* keys)
 {
 
-	if (keys[SDL_SCANCODE_LEFT])
-		return true;
-	else if (keys[SDL_SCANCODE_RIGHT])
-		return true;
-	else if (keys[SDL_SCANCODE_Z])
+	if (keys[SDL_SCANCODE_Z])
 		return true;
 	else if (keys[SDL_SCANCODE_X])
 		return true;
