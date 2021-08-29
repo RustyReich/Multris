@@ -3,7 +3,7 @@ A version of Tetris with randomly generated polyominoes of varying sizes
 
 ----- CONTROLS -----
 ```
-LEFT / RIGHT ARROW - Move
+LEFT / RIGHT ARROW - Move. Hold to move quicker.
         DOWN ARROW - Soft Drop
           UP ARROW - Hard Drop
                  Z - Rotate CCW
