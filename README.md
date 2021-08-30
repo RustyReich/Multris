@@ -6,6 +6,7 @@ A version of Tetris with randomly generated polyominoes of varying sizes
 LEFT / RIGHT ARROW - Move. Hold to move quicker.
         DOWN ARROW - Soft Drop
           UP ARROW - Hard Drop
+             SPACE - Hold current piece / Swap current piece with held piece
                  Z - Rotate CCW
                  X - Rotate CW
              ENTER - Select/Pause
