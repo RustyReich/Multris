@@ -9,6 +9,7 @@ LEFT / RIGHT ARROW - Move. Hold to move quicker.
              SPACE - Hold current piece / Swap current piece with held piece
                  Z - Rotate CCW
                  X - Rotate CW
+                 C - Mirror piece over Y-Axis
              ENTER - Select/Pause
 ``` 
 ----- GAME MODES -----
