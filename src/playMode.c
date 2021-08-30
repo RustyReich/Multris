@@ -19,6 +19,7 @@ unsigned short getIntLength(int num);
 
 //rotate.c
 void rotatePiece(piece*, unsigned short);
+void mirrorPieceOverY(piece*);
 
 //audio.c
 void playSound(sound*, SDL_AudioDeviceID*, SDL_AudioSpec*);
@@ -376,6 +377,27 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					Texture_Current = NULL;
 
 					//Recalculate ghostY
+					if (*ghostEnabled)
+						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+				}
+
+			}
+			else if (keys[SDL_SCANCODE_C])
+			{
+
+				mirrorPieceOverY(currentPiece);
+				//If mirroring puts the piece inside another piece, just mirror it back
+				if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+					mirrorPieceOverY(currentPiece);
+				else
+				{
+
+					//Only play sound if actually mirrored
+					playSound(Sound_Rotate, audioDevice, wavSpec);
+					SDL_DestroyTexture(Texture_Current);
+					Texture_Current = NULL;
+
 					if (*ghostEnabled)
 						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
@@ -1226,6 +1248,8 @@ bool inputLockPressed(Uint8* keys)
 	else if (keys[SDL_SCANCODE_UP])
 		return true;
 	else if (keys[SDL_SCANCODE_SPACE])
+		return true;
+	else if (keys[SDL_SCANCODE_C])
 		return true;
 
 	return false;
