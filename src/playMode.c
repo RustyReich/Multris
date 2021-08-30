@@ -158,6 +158,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	static sound* Sound_Complete;
 	static sound* Sound_Over;
 	static sound* Sound_Pause;
+	static sound* Sound_Hold;
 	if (Sound_Move == NULL)
 		Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
 	if (Sound_Land == NULL)
@@ -170,6 +171,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		Sound_Over = loadSound("AUDIO/over.wav", wavSpec);
 	if (Sound_Pause == NULL)
 		Sound_Pause = loadSound("AUDIO/pause.wav", wavSpec);
+	if (Sound_Hold == NULL)
+		Sound_Hold = loadSound("AUDIO/hold.wav", wavSpec);
 
 	//Variables
 	static unsigned short* X;
@@ -383,6 +386,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				*Y = *ghostY + 1;
 			else if (keys[SDL_SCANCODE_SPACE] && !*justHeld)						//Hold button
 			{
+
+				playSound(Sound_Hold, audioDevice, wavSpec);
 
 				if (holdPiece == NULL)
 				{
@@ -682,6 +687,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				delSound(&Sound_Complete);
 				delSound(&Sound_Over);
 				delSound(&Sound_Pause);
+				delSound(&Sound_Hold);
 
 				keys = NULL;
 
