@@ -63,6 +63,7 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 
 		print_string("SCORE", CHAR_DIMENSION * 39, CHAR_DIMENSION * 5, 1, WHITE, renderer, Sprites);
 		print_string("NEXT", CHAR_DIMENSION * 40, CHAR_DIMENSION * 23, 1, WHITE, renderer, Sprites);
+		print_string("HOLD", CHAR_DIMENSION * 40, CHAR_DIMENSION * 37, 1, WHITE, renderer, Sprites);
 		print_string("LEVEL:", CHAR_DIMENSION * 39, CHAR_DIMENSION * 10, 1, WHITE, renderer, Sprites);
 		print_string("lines", (int)(CHAR_DIMENSION * 39.5), CHAR_DIMENSION * 14, 1, WHITE, renderer, Sprites);
 		print_string("until", (int)(CHAR_DIMENSION * 39.5), CHAR_DIMENSION * 15 + LETTER_GAP, 1, WHITE, renderer, Sprites);

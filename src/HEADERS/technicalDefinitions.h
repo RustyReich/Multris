@@ -53,6 +53,11 @@ extern unsigned short UPDATE_FULLSCREEN_MODE;
 #define CLEARING_TIME	20
 #define OVER_TIME		42
 
+#define MOVEMENT_WAIT	500
+#define MOVEMENT_TIME	50
+
+#define HOLD_TEXTURE_MULTI 0.75
+
 #define OPTIONS	10
 
 #define FPS_MAX 500

@@ -25,7 +25,7 @@ void delSound(sound** Sound);
 
 //texture.c
 SDL_Texture* createTexture(SDL_Renderer*, unsigned short, unsigned short);
-void drawTexture(SDL_Texture*, unsigned short, unsigned short, SDL_Renderer*);
+void drawTexture(SDL_Texture*, unsigned short, unsigned short, float, SDL_Renderer*);
 SDL_Texture* createPieceTexture(piece, sprite, SDL_Renderer*);
 
 //file.c
@@ -245,16 +245,16 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 
 	//Rendering -------------------------------------------
 
-	drawTexture(Texture_Title, CHAR_DIMENSION * 2, CHAR_DIMENSION * (int)*Y, renderer);
+	drawTexture(Texture_Title, CHAR_DIMENSION * 2, CHAR_DIMENSION * (int)*Y, 1.0, renderer);
 	drawTexture(Texture_Next, (int)(CHAR_DIMENSION * 42.5) - *nextText_Width / 2,
-		(int)(CHAR_DIMENSION * 29.5) - *nextText_Height / 2, renderer);
-	drawTexture(Texture_Score, CHAR_DIMENSION * 39, CHAR_DIMENSION * 6 + LETTER_GAP, renderer);
-	drawTexture(Texture_Level, CHAR_DIMENSION * 46, CHAR_DIMENSION * 10, renderer);
-	drawTexture(Texture_Lines, CHAR_DIMENSION * 42, CHAR_DIMENSION * 18, renderer);
-	drawTexture(Texture_Modes, CHAR_DIMENSION * 2, CHAR_DIMENSION * 5, renderer);
+		(int)(CHAR_DIMENSION * 29.5) - *nextText_Height / 2, 1.0, renderer);
+	drawTexture(Texture_Score, CHAR_DIMENSION * 39, CHAR_DIMENSION * 6 + LETTER_GAP, 1.0, renderer);
+	drawTexture(Texture_Level, CHAR_DIMENSION * 46, CHAR_DIMENSION * 10, 1.0, renderer);
+	drawTexture(Texture_Lines, CHAR_DIMENSION * 42, CHAR_DIMENSION * 18, 1.0, renderer);
+	drawTexture(Texture_Modes, CHAR_DIMENSION * 2, CHAR_DIMENSION * 5, 1.0, renderer);
 
 	if (*mode >= OPTIONS)
-		drawTexture(Texture_Options, 134, 103, renderer);
+		drawTexture(Texture_Options, 134, 103, 1.0, renderer);
 
 	//-----------------------------------------------------
 
@@ -408,7 +408,8 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 			else if (*returnMode <= MAX_PIECE_SIZE)
 				return PLAY_SCREEN;	//If thats not what they did, then theyre trying to play
 
-			*inputLock = true;
+			if (inputLock != NULL)
+				*inputLock = true;
 
 		}	//Mode 0 = default mode, Mode 1-9 = Numerical mode, Mode 10+ = OPTIONS
 		else if (keys[SDL_SCANCODE_DOWN] && *inputLock == false && mode != NULL)
@@ -803,7 +804,7 @@ piece** getMovingPieces(piece** titlePieces)
 		for (unsigned short i = 0; i < 5; i++)
 			movingPieces[i] = malloc(sizeof(*movingPieces[i]));
 		movingPieces[0]->blocks = malloc(titlePieces[1]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[1]->blocks = malloc(titlePieces[9]->numOfBlocks * sizeof(movingPieces[0]->blocks));
+		movingPieces[1]->blocks = malloc(titlePieces[9]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 		movingPieces[2]->blocks = malloc(titlePieces[13]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 		movingPieces[3]->blocks = malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 		movingPieces[4]->blocks = malloc(titlePieces[16]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
@@ -828,7 +829,10 @@ void drawBorders(sprite sprite, SDL_Renderer* renderer)
 	drawRectangle(sprite, 0, 0, 50, 1, GRAY, true, renderer);
 	drawRectangle(sprite, 0, CHAR_DIMENSION, 1, 49, GRAY, true, renderer);
 	drawRectangle(sprite, CHAR_DIMENSION, CHAR_DIMENSION * 49, 49, 1, GRAY, true, renderer);
-	drawRectangle(sprite, CHAR_DIMENSION * 36, CHAR_DIMENSION * 35, 13, 11, GRAY, true, renderer);
+	drawRectangle(sprite, CHAR_DIMENSION * 36, CHAR_DIMENSION * 35, 13, 1, GRAY, true, renderer);
+	drawRectangle(sprite, CHAR_DIMENSION * 36, CHAR_DIMENSION * 45, 13, 1, GRAY, true, renderer);
+	drawRectangle(sprite, CHAR_DIMENSION * 36, CHAR_DIMENSION * 36, 1, 9, GRAY, true, renderer);
+	drawRectangle(sprite, CHAR_DIMENSION * 48, CHAR_DIMENSION * 36, 1, 9, GRAY, true, renderer);
 	drawRectangle(sprite, CHAR_DIMENSION * 49, CHAR_DIMENSION, 1, 48, GRAY, true, renderer);
 	drawRectangle(sprite, CHAR_DIMENSION * 35, CHAR_DIMENSION, 1, 48, GRAY, true, renderer);
 	drawRectangle(sprite, CHAR_DIMENSION * 36, CHAR_DIMENSION * 8, 13, 1, GRAY, true, renderer);

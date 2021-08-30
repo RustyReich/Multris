@@ -55,7 +55,7 @@ SDL_Texture* createTexture(SDL_Renderer* renderer, unsigned short width, unsigne
 
 }
 
-void drawTexture(SDL_Texture* texture, unsigned short X, unsigned short Y, SDL_Renderer* renderer)
+void drawTexture(SDL_Texture* texture, unsigned short X, unsigned short Y, float multi, SDL_Renderer* renderer)
 {
 
 	//Rect used to draw the texture
@@ -65,6 +65,10 @@ void drawTexture(SDL_Texture* texture, unsigned short X, unsigned short Y, SDL_R
 	DestR.y = Y;
 	//Get the width and height of the texture
 	SDL_QueryTexture(texture, NULL, NULL, &DestR.w, &DestR.h);
+
+	//Resize Texture appropriately
+	DestR.w *= multi;
+	DestR.h *= multi;
 
 	//Copy the texture to the current rendering target
 	SDL_RenderCopy(renderer, texture, NULL, &DestR);

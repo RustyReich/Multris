@@ -6,6 +6,7 @@
 //generate.c
 piece* generateGamePiece(unsigned short size);
 void delPiece(piece** Piece);
+void copyPiece(piece*, piece*);
 
 //draw.c
 void drawPiece(piece, unsigned short, unsigned short, sprite, SDL_Renderer*);
@@ -31,7 +32,7 @@ unsigned short getOption(unsigned short line);
 
 //texture.c
 SDL_Texture* createTexture(SDL_Renderer*, unsigned short, unsigned short);
-void drawTexture(SDL_Texture*, unsigned short, unsigned short, SDL_Renderer*);
+void drawTexture(SDL_Texture*, unsigned short, unsigned short, float, SDL_Renderer*);
 SDL_Texture* createPieceTexture(piece, sprite, SDL_Renderer*);
 
 piece* getFirstPiece(piece*);
@@ -61,6 +62,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	//Game pieces
 	static piece* nextPiece;
 	static piece* currentPiece;
+	static piece* holdPiece;
 	if (currentPiece == NULL)
 		currentPiece = getFirstPiece(firstPiece);
 	if (nextPiece == NULL)
@@ -76,12 +78,19 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	//Texutures
 	static SDL_Texture* Texture_Current;
 	static SDL_Texture* Texture_Next;
+	static SDL_Texture* Texture_Hold;
 		static int* nextText_Width;
 		if (nextText_Width == NULL)
 			nextText_Width = malloc(sizeof(*nextText_Width));
 		static int* nextText_Height;
 		if (nextText_Height == NULL)
 			nextText_Height = malloc(sizeof(*nextText_Height));
+		static int* holdText_Width;
+		if (holdText_Width == NULL)
+			holdText_Width = malloc(sizeof(*holdText_Width));
+		static int* holdText_Height;
+		if (holdText_Height == NULL)
+			holdText_Height = malloc(sizeof(*holdText_Height));
 	static SDL_Texture* Texture_Score;
 	static SDL_Texture* Texture_Level;
 	static SDL_Texture* Texture_Lines;
@@ -227,6 +236,14 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		*overAnimation = false;
 
 	}
+	static bool* justHeld;
+	if (justHeld == NULL)
+	{
+
+		justHeld = malloc(sizeof(*justHeld));
+		*justHeld = false;
+
+	}
 	static unsigned short* completedRows;
 	static unsigned short* numCompleted;
 	if (numCompleted == NULL)
@@ -364,6 +381,90 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 			}
 			else if (keys[SDL_SCANCODE_UP])
 				*Y = *ghostY + 1;
+			else if (keys[SDL_SCANCODE_SPACE] && !*justHeld)						//Hold button
+			{
+
+				if (holdPiece == NULL)
+				{
+
+					//Create holdPiece by copying currentPiece
+					holdPiece = malloc(sizeof(*holdPiece));
+					holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+					copyPiece(currentPiece, holdPiece);
+					Texture_Hold = createPieceTexture(*holdPiece, Sprites[BLOCK_CHAR], renderer);
+					SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
+
+					//Delete currentPiece
+					delPiece(&currentPiece);
+					SDL_DestroyTexture(Texture_Current);
+					Texture_Current = NULL;
+
+					//Move nextPiece to currentPiece
+					currentPiece = nextPiece;
+					adjustNewPiece(currentPiece, X);
+
+					//Destory nextPiece
+					SDL_DestroyTexture(Texture_Next);
+					Texture_Next = NULL;
+
+					//Generate new piece
+					if (size == 0)
+						nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
+					else
+						nextPiece = generateGamePiece(size);
+
+					//Reset Y
+					*Y = 0;
+
+					//Recalculate ghostY
+					if (*ghostEnabled)
+						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+				}
+				else //Swap holdPiece and currentPiece
+				{
+
+					//Store current holdPiece in tempPeiece
+					piece* tempPiece;
+					tempPiece = malloc(sizeof(*tempPiece));
+					tempPiece->blocks = malloc(holdPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+					copyPiece(holdPiece, tempPiece);
+
+					//Recreate holdPiece
+					delPiece(&holdPiece);
+					SDL_DestroyTexture(Texture_Hold);
+					holdPiece = malloc(sizeof(*holdPiece));
+					holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+					copyPiece(currentPiece, holdPiece);
+					Texture_Hold = createPieceTexture(*holdPiece, Sprites[BLOCK_CHAR], renderer);
+					SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
+
+					//Delete currentPiece
+					delPiece(&currentPiece);
+					SDL_DestroyTexture(Texture_Current);
+					Texture_Current = NULL;
+
+					//Copy tempPiece to currentPiece
+					currentPiece = malloc(sizeof(*currentPiece));
+					currentPiece->blocks = malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+					copyPiece(tempPiece, currentPiece);
+					adjustNewPiece(currentPiece, X);
+
+					//Delete tempPeice
+					delPiece(&tempPiece);
+
+					//Reset Y
+					*Y = 0;
+
+					//Recalculate ghostY
+					if (*ghostEnabled)
+						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+				}
+
+				*justHeld = true;
+
+			}
 			
 		}
 
@@ -442,12 +543,14 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 
 	// RENDERING -------------------------------
 
-	drawTexture(Texture_Current, CHAR_DIMENSION * (*X + 1), CHAR_DIMENSION * ((int)*Y + 1), renderer);
+	drawTexture(Texture_Current, CHAR_DIMENSION * (*X + 1), CHAR_DIMENSION * ((int)*Y + 1), 1.0, renderer);
 	drawTexture(Texture_Next, (int)(CHAR_DIMENSION * 42.5) - *nextText_Width / 2, 
-		(int)(CHAR_DIMENSION * 29.5) - *nextText_Height / 2, renderer);
-	drawTexture(Texture_Score, CHAR_DIMENSION * 39, CHAR_DIMENSION * 6 + LETTER_GAP, renderer);
-	drawTexture(Texture_Level, CHAR_DIMENSION * 46, CHAR_DIMENSION * 10, renderer);
-	drawTexture(Texture_Lines, CHAR_DIMENSION * 41, CHAR_DIMENSION * 18, renderer);
+		(int)(CHAR_DIMENSION * 29.5) - *nextText_Height / 2, 1.0, renderer);
+	drawTexture(Texture_Hold, (int)(CHAR_DIMENSION * 42.5) - (*holdText_Width / 2) * HOLD_TEXTURE_MULTI,
+		(int)(CHAR_DIMENSION * 41.5) - (*holdText_Height / 2) * HOLD_TEXTURE_MULTI, HOLD_TEXTURE_MULTI, renderer);
+	drawTexture(Texture_Score, CHAR_DIMENSION * 39, CHAR_DIMENSION * 6 + LETTER_GAP, 1.0, renderer);
+	drawTexture(Texture_Level, CHAR_DIMENSION * 46, CHAR_DIMENSION * 10, 1.0, renderer);
+	drawTexture(Texture_Lines, CHAR_DIMENSION * 41, CHAR_DIMENSION * 18, 1.0, renderer);
 
 	//Draw ghost if enabled
 	if (*ghostEnabled)
@@ -456,19 +559,19 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		//Make Texture_Current opaque
 		SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
 		//Draw Texture_Current at ghostY
-		drawTexture(Texture_Current, CHAR_DIMENSION * (*X + 1), CHAR_DIMENSION * ((int)*ghostY + 1), renderer);
+		drawTexture(Texture_Current, CHAR_DIMENSION * (*X + 1), CHAR_DIMENSION * ((int)*ghostY + 1), 1.0, renderer);
 		//Reset Texture_Current opacity
 		SDL_SetTextureAlphaMod(Texture_Current, 255);
 
 	}
 
 	//Draw the foreground
-	drawTexture(foreground, CHAR_DIMENSION, CHAR_DIMENSION, renderer);
+	drawTexture(foreground, CHAR_DIMENSION, CHAR_DIMENSION, 1.0, renderer);
 
 	//Draw PAUSED if game is paused
 		//Center the text
 	if (*paused)
-		drawTexture(Texture_Paused, CHAR_DIMENSION + CHAR_DIMENSION * WIDTH_OF_PLAYSPACE / 2 - 3 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION * (23 - 0.5), renderer);
+		drawTexture(Texture_Paused, CHAR_DIMENSION + CHAR_DIMENSION * WIDTH_OF_PLAYSPACE / 2 - 3 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION * (23 - 0.5), 1.0, renderer);
 
 	//--------------------------------------
 
@@ -544,10 +647,23 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
+				if (holdPiece != NULL)
+				{
+
+					delPiece(&holdPiece);
+					SDL_DestroyTexture(Texture_Hold);
+					Texture_Hold = NULL;
+
+				}
+
 				free(nextText_Width);
 				nextText_Width = NULL;
 				free(nextText_Height);
 				nextText_Height = NULL;
+				free(holdText_Width);
+				holdText_Width = NULL;
+				free(holdText_Height);
+				holdText_Height = NULL;
 
 				SDL_DestroyTexture(Texture_Score);
 				Texture_Score = NULL;
@@ -707,6 +823,10 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 
 			//Reset Y
 			*Y = 0;
+
+			//Player can hold again
+			if (*justHeld)
+				*justHeld = false;
 
 			//Recalculate ghostY
 			if (*ghostEnabled)
@@ -1098,6 +1218,8 @@ bool inputLockPressed(Uint8* keys)
 	else if (keys[SDL_SCANCODE_RETURN])
 		return true;
 	else if (keys[SDL_SCANCODE_UP])
+		return true;
+	else if (keys[SDL_SCANCODE_SPACE])
 		return true;
 
 	return false;
