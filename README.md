@@ -34,4 +34,5 @@ BLOCK SPRITE - Choose what sprite to use for the squares that make up the polyom
        GHOST - Choose to have a transparent "ghost" image of the current polyomino displayed where it would
                land if unchanged.
   FULLSCREEN - Enable or disable fullscreen mode
+      VOLUME - Set the volume of the game audio. Between 0-9
 ```
