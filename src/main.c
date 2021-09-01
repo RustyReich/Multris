@@ -24,7 +24,7 @@ void setWindowMode(unsigned short, SDL_Renderer*, SDL_Window*, SDL_DisplayMode);
 //Initialize global variables
 unsigned short BLOCK_CHAR = BLOCK_CHAR_1;
 unsigned short UPDATE_FULLSCREEN_MODE = true;
-unsigned short GLOBAL_VOLUME = 100;
+unsigned short GLOBAL_VOLUME = 9;
 
 int main(int argc, char* argv[])
 {
