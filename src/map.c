@@ -226,8 +226,6 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	//Sounds
 	static sound* Sound_Move;
 	static sound* Sound_Rotate;
-	static sound* Modified_Move;
-	static sound* Modified_Rotate;
 	if (Sound_Move == NULL)
 	{
 
@@ -546,7 +544,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
-			else if (*mode = OPTIONS + 4)
+			else if (*mode == OPTIONS + 4)
 			{
 
 				if (GLOBAL_VOLUME > 0)
@@ -597,7 +595,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
-			else if (*mode = OPTIONS + 4)
+			else if (*mode == OPTIONS + 4)
 			{
 
 				if (GLOBAL_VOLUME < 9)
