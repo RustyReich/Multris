@@ -71,3 +71,25 @@ void delSound(sound** Sound)
 	*Sound = NULL;
 
 }
+
+//Set volume of sound
+void setVolume(sound** Sound, SDL_AudioSpec* wavSpec, unsigned short volume)
+{
+
+	//Buffer that stores audio after volume adjustment
+	Uint8* dstStream;
+	dstStream = calloc((*Sound)->length, sizeof(*dstStream));
+
+	//Mix audio with volume adjustment
+	SDL_MixAudioFormat(dstStream, (*Sound)->buffer, wavSpec->format, (*Sound)->length, SDL_MIX_MAXVOLUME * (volume / 100.0));
+
+	//Copy volume adjusted buffer back to Sound->buffer
+	if (dstStream != NULL)
+		for (int i = 0; i < (*Sound)->length; i++)
+			(*Sound)->buffer[i] = dstStream[i];
+	
+	//Free dstStream
+	free(dstStream);
+	dstStream = NULL;
+	
+}

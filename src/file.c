@@ -55,7 +55,7 @@ void createOptions()
 	if (optionsFile != NULL)
 	{
 
-		fprintf(optionsFile, "1\n1\n0");
+		fprintf(optionsFile, "1\n1\n0\n9\n");
 
 		fclose(optionsFile);
 

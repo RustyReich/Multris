@@ -24,7 +24,8 @@ void mirrorPieceOverY(piece*);
 //audio.c
 void playSound(sound*, SDL_AudioDeviceID*, SDL_AudioSpec*);
 sound* loadSound(char*, SDL_AudioSpec*);
-void delSound(sound** Sound);
+void delSound(sound**);
+void setVolume(sound**, SDL_AudioSpec*, unsigned short);
 
 //file.c
 void saveTop(unsigned int score);
@@ -161,19 +162,54 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	static sound* Sound_Pause;
 	static sound* Sound_Hold;
 	if (Sound_Move == NULL)
+	{
+
 		Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
+		setVolume(&Sound_Move, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Land == NULL)
+	{
+
 		Sound_Land = loadSound("AUDIO/land.wav", wavSpec);
+		setVolume(&Sound_Land, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Rotate == NULL)
+	{
+
 		Sound_Rotate = loadSound("AUDIO/rotate.wav", wavSpec);
+		setVolume(&Sound_Rotate, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Complete == NULL)
+	{
+
 		Sound_Complete = loadSound("AUDIO/complete.wav", wavSpec);
+		setVolume(&Sound_Complete, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Over == NULL)
+	{
+
 		Sound_Over = loadSound("AUDIO/over.wav", wavSpec);
+		setVolume(&Sound_Over, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Pause == NULL)
+	{
+
 		Sound_Pause = loadSound("AUDIO/pause.wav", wavSpec);
+		setVolume(&Sound_Pause, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Hold == NULL)
+	{
+
 		Sound_Hold = loadSound("AUDIO/hold.wav", wavSpec);
+		setVolume(&Sound_Hold, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 
 	//Variables
 	static unsigned short* X;
@@ -290,7 +326,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 
 	}
 	static unsigned short* ghostY;
-	if (ghostY == NULL && *ghostEnabled)
+	if (ghostY == NULL)
 	{
 
 		ghostY = malloc(sizeof(*ghostY));
@@ -356,8 +392,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					Texture_Current = NULL;
 
 					//Recalculate ghostY
-					if (*ghostEnabled)
-						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 				}
 
@@ -377,8 +412,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					Texture_Current = NULL;
 
 					//Recalculate ghostY
-					if (*ghostEnabled)
-						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 				}
 
@@ -398,8 +432,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					SDL_DestroyTexture(Texture_Current);
 					Texture_Current = NULL;
 
-					if (*ghostEnabled)
-						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 				}
 
@@ -444,8 +477,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					*Y = 0;
 
 					//Recalculate ghostY
-					if (*ghostEnabled)
-						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 				}
 				else //Swap holdPiece and currentPiece
@@ -484,8 +516,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					*Y = 0;
 
 					//Recalculate ghostY
-					if (*ghostEnabled)
-						*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 				}
 
@@ -537,8 +568,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				move(LEFT, X, *currentPiece);
 
 				//Recalculate ghostY
-				if (*ghostEnabled)
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 			}
 			else if (keys[SDL_SCANCODE_RIGHT] && !isColliding(*currentPiece, *X, Y, RIGHT, mapData))
@@ -549,8 +579,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				move(RIGHT, X, *currentPiece);
 
 				//Recalculate ghostY
-				if (*ghostEnabled)
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 			}
 
@@ -635,8 +664,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		}
 
 		//Recalculate ghostY
-		if (*ghostEnabled)
-			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 		
 	}
 
@@ -857,8 +885,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				*justHeld = false;
 
 			//Recalculate ghostY
-			if (*ghostEnabled)
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 			//Player lost
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData))

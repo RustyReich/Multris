@@ -10,6 +10,8 @@ void drawRectangle(sprite, unsigned short, unsigned short, unsigned short, unsig
 void print_string(char*, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*, sprite*);
 void drawPiece(piece, unsigned short, unsigned short, sprite, SDL_Renderer*);
 void drawSprite(sprite, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*);
+void print_int(int, unsigned short, unsigned short, unsigned short, unsigned short,
+	SDL_Renderer*, sprite*);
 
 //generate.c
 piece* generateGamePiece(unsigned short size);
@@ -21,7 +23,8 @@ void copyPiece(piece*, piece*);
 //audio.c
 void playSound(sound*, SDL_AudioDeviceID*, SDL_AudioSpec*);
 sound* loadSound(char*, SDL_AudioSpec*);
-void delSound(sound** Sound);
+void delSound(sound**);
+void setVolume(sound**, SDL_AudioSpec*, unsigned short);
 
 //texture.c
 SDL_Texture* createTexture(SDL_Renderer*, unsigned short, unsigned short);
@@ -83,7 +86,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				NUM_OF_TITLE_PIECES * sizeof pieceY[0]);
 
 		//Starting Y value of the title
-		*Y = 13;
+		*Y = 14;
 
 	}
 
@@ -185,13 +188,15 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	if (Texture_Options == NULL)
 	{
 
-		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP));
+		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), 4 * (CHAR_DIMENSION + LETTER_GAP));
 		SDL_SetRenderTarget(renderer, Texture_Options);
 		print_string(">", 0, 0, 1, WHITE, renderer, Sprites);
 		print_string("BLOCK SPRITE:", 2 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, WHITE, renderer, Sprites);
 		print_string("Ghost:", 2 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION + LETTER_GAP, 1, WHITE, renderer, Sprites);
 		print_string("Fullscreen:", 2 * (CHAR_DIMENSION + LETTER_GAP), 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, 
 						Sprites);
+		print_string("Volume:", 2 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
+			Sprites);
 		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 		//Print current GHOST option
@@ -206,6 +211,9 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 		else if (getOption(2) == 1)
 			print_string("ON", 13 * (CHAR_DIMENSION + LETTER_GAP), 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
+		//Print the current VOLUME option
+		print_int(GLOBAL_VOLUME, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
 		//Draw BLOCK_CHAR options
 		unsigned short color = (rand() % (RED - YELLOW + 1)) + YELLOW;
 		drawSprite(Sprites[BLOCK_CHAR_1], 15 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, color, renderer);
@@ -218,10 +226,22 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	//Sounds
 	static sound* Sound_Move;
 	static sound* Sound_Rotate;
+	static sound* Modified_Move;
+	static sound* Modified_Rotate;
 	if (Sound_Move == NULL)
+	{
+
 		Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
+		setVolume(&Sound_Move, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 	if (Sound_Rotate == NULL)
+	{
+
 		Sound_Rotate = loadSound("AUDIO/rotate.wav", wavSpec);
+		setVolume(&Sound_Rotate, wavSpec, GLOBAL_VOLUME * 10);
+
+	}
 
 	//Variables
 	static bool* titleUpdating;
@@ -448,6 +468,14 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
+			else if (*mode == OPTIONS + 3)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode += 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -487,6 +515,14 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
+			else if (*mode == OPTIONS + 4)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode -= 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -510,6 +546,34 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
+			else if (*mode = OPTIONS + 4)
+			{
+
+				if (GLOBAL_VOLUME > 0)
+				{
+
+					GLOBAL_VOLUME -= 1;
+
+					//Reload sounds
+					delSound(&Sound_Move);
+					Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
+					delSound(&Sound_Rotate);
+					Sound_Rotate = loadSound("AUDIO/rotate.wav", wavSpec);
+
+					//Set volumes
+					setVolume(&Sound_Move, wavSpec, GLOBAL_VOLUME * 10);
+					setVolume(&Sound_Rotate, wavSpec, GLOBAL_VOLUME * 10);
+
+					playSound(Sound_Move, audioDevice, wavSpec);
+
+					//Save volume
+					saveOption(3, GLOBAL_VOLUME);
+
+				}
+
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -530,6 +594,34 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 
 				playSound(Sound_Move, audioDevice, wavSpec);
 				*mode += 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
+			else if (*mode = OPTIONS + 4)
+			{
+
+				if (GLOBAL_VOLUME < 9)
+				{
+
+					GLOBAL_VOLUME += 1;
+
+					//Reload sounds
+					delSound(&Sound_Move);
+					Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
+					delSound(&Sound_Rotate);
+					Sound_Rotate = loadSound("AUDIO/rotate.wav", wavSpec);
+
+					//Set volumes
+					setVolume(&Sound_Move, wavSpec, GLOBAL_VOLUME * 10);
+					setVolume(&Sound_Rotate, wavSpec, GLOBAL_VOLUME * 10);
+
+					playSound(Sound_Move, audioDevice, wavSpec);
+
+					//Save volume
+					saveOption(3, GLOBAL_VOLUME);
+
+				}
+
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
@@ -611,6 +703,7 @@ void updateOptions(SDL_Texture* texture, unsigned short mode, sprite* Sprites, S
 
 		//Erasures
 		print_string(">", 0, CHAR_DIMENSION + LETTER_GAP, 1, BLACK, renderer, Sprites);
+		print_string(">", 0, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
 
 		//Print the current FULLSCREEN option
 		if (getOption(2) == 0)
@@ -635,6 +728,20 @@ void updateOptions(SDL_Texture* texture, unsigned short mode, sprite* Sprites, S
 		}
 
 		print_string(">", 0, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+	}
+	else if (mode == OPTIONS + 4)
+	{
+
+		//Erasures
+		print_string(">", 0, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_int(GLOBAL_VOLUME + 1, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_int(GLOBAL_VOLUME - 1, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+
+		//Print current volume
+		print_int(GLOBAL_VOLUME, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+		print_string(">", 0, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 	}
 

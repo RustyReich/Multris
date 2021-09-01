@@ -1,6 +1,7 @@
 //Global variables
 extern unsigned short BLOCK_CHAR;
 extern unsigned short UPDATE_FULLSCREEN_MODE;
+extern unsigned short GLOBAL_VOLUME;
 
 #define CHAR_DIMENSION			12
 #define ASPECT_RATIO			1
@@ -65,7 +66,7 @@ extern unsigned short UPDATE_FULLSCREEN_MODE;
 #define WINDOWED	0
 #define FULLSCREEN 	1
 
-#define NUM_OF_OPTIONS 3
+#define NUM_OF_OPTIONS 4
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris
