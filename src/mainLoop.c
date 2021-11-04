@@ -46,10 +46,9 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 
 		//Draw borders
 		drawBorders(Sprites[WALL_CHAR], renderer);
-		//Print all strings
 
+		//Print all strings
 		print_string("TOP", CHAR_DIMENSION * 39, CHAR_DIMENSION * 2, 1, WHITE, renderer, Sprites);
-		
 		//print the top score
 		char* top;
 		unsigned short zeroLength = 6 - getIntLength(loadTop());

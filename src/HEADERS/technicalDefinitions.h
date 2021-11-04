@@ -66,7 +66,7 @@ extern unsigned short GLOBAL_VOLUME;
 #define WINDOWED	0
 #define FULLSCREEN 	1
 
-#define NUM_OF_OPTIONS 4
+#define NUM_OF_OPTIONS 5
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris

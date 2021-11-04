@@ -86,7 +86,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				NUM_OF_TITLE_PIECES * sizeof pieceY[0]);
 
 		//Starting Y value of the title
-		*Y = 14;
+		*Y = 15;
 
 	}
 
@@ -188,7 +188,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	if (Texture_Options == NULL)
 	{
 
-		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), 4 * (CHAR_DIMENSION + LETTER_GAP));
+		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), NUM_OF_OPTIONS * (CHAR_DIMENSION + LETTER_GAP));
 		SDL_SetRenderTarget(renderer, Texture_Options);
 		print_string(">", 0, 0, 1, WHITE, renderer, Sprites);
 		print_string("BLOCK SPRITE:", 2 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, WHITE, renderer, Sprites);
@@ -198,6 +198,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 		print_string("Volume:", 2 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer,
 			Sprites);
 		print_string("^", 15 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+		print_string("CONTROLS", 2 * (CHAR_DIMENSION + LETTER_GAP), 4 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 		//Print current GHOST option
 		if (getOption(1) == 0)

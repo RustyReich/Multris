@@ -48,7 +48,16 @@ void createOptions()
 	//Create SAVES folder if it does not exist
 	struct stat st = {0};
 	if (stat("SAVES", &st) == -1)
-		mkdir("SAVES", 0700);
+	{
+
+		#ifdef __unix__
+			mkdir("SAVES", 0700);
+		#endif
+		#ifdef _WIN32
+			mkdir("SAVES");
+		#endif
+
+	}
 
 	//Create options file and fill it with default data
 	optionsFile = fopen("SAVES/options.cfg", "w");

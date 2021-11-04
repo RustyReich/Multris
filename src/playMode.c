@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <math.h>
 
 #include "HEADERS/technicalDefinitions.h"
 #include "HEADERS/Structures.h"
