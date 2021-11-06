@@ -25,6 +25,7 @@ void setWindowMode(unsigned short, SDL_Renderer*, SDL_Window*, SDL_DisplayMode);
 unsigned short BLOCK_CHAR = BLOCK_CHAR_1;
 unsigned short UPDATE_FULLSCREEN_MODE = true;
 unsigned short GLOBAL_VOLUME = 9;
+unsigned short RUNNING = true;
 
 int main(int argc, char* argv[])
 {
@@ -79,17 +80,14 @@ int main(int argc, char* argv[])
 
 	}
 
-	//Variable storing if the game is running
-	bool running = true;
-
 	SDL_Event event;
 	
-	while (running)
+	while (RUNNING)
 	{
 
 		 while (SDL_PollEvent(&event))
 			if (event.type == SDL_QUIT)
-				running = false;
+				RUNNING = false;
 
 		//Clear Screen with black
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

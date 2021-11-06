@@ -2,6 +2,7 @@
 extern unsigned short BLOCK_CHAR;
 extern unsigned short UPDATE_FULLSCREEN_MODE;
 extern unsigned short GLOBAL_VOLUME;
+extern unsigned short RUNNING;
 
 #define CHAR_DIMENSION			12
 #define ASPECT_RATIO			1
@@ -37,7 +38,8 @@ extern unsigned short GLOBAL_VOLUME;
 
 #define TITLE_SCREEN	0
 #define PLAY_SCREEN		1
-#define RESET			2
+#define CONTROLS_SCREEN	2
+#define RESET			3
 
 #define MAX_PIECE_SIZE		9
 #define NUM_OF_TITLE_PIECES 19
@@ -66,7 +68,7 @@ extern unsigned short GLOBAL_VOLUME;
 #define WINDOWED	0
 #define FULLSCREEN 	1
 
-#define NUM_OF_OPTIONS 5
+#define NUM_OF_OPTIONS 4
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris

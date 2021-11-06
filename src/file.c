@@ -74,7 +74,7 @@ void createOptions()
 
 void saveOption(unsigned short line, unsigned short value)
 {
-
+	
 	FILE* optionsFile = NULL;
 
 	char currentLine[2];

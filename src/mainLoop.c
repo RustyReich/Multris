@@ -27,6 +27,9 @@ unsigned int loadTop();
 void delPiece(piece** Piece);
 piece* generateGamePiece(unsigned short size);
 
+//controls.c
+unsigned short controlsScreen(sprite*, SDL_AudioDeviceID*, SDL_AudioSpec*, SDL_Renderer*);
+
 void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 {
 	
@@ -143,9 +146,11 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 			game_state = playMode(Sprites, frame_time, renderer, NULL, audioDevice, wavSpec, mode);	//So we just pass NULL its place
 
 	}
+	else if (game_state == CONTROLS_SCREEN)
+		game_state = controlsScreen(Sprites, audioDevice, wavSpec, renderer);
 	else if (game_state == RESET)	//Reset the game to the main menu
 	{
-
+		
 		//So lets reset the background just in case the top score has been updated
 		SDL_SetRenderTarget(renderer, background);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);

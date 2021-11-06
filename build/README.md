@@ -11,6 +11,7 @@ LEFT / RIGHT ARROW - Move. Hold to move quicker.
                  X - Rotate CW
                  C - Mirror piece over Y-Axis
              ENTER - Select/Pause
+            ESCAPE - Exit the game if pressed in the menu
 ``` 
 ----- GAME MODES -----
 ```
@@ -31,8 +32,7 @@ Score - You score points by completing lines.
 ----- OPTIONS -----
 ```
 BLOCK SPRITE - Choose what sprite to use for the squares that make up the polyominoes
-       GHOST - Choose to have a transparent "ghost" image of the current polyomino displayed where it would
-               land if unchanged.
+       GHOST - Choose to have a transparent "ghost" image of the current polyomino displayed where it would land if unchanged.
   FULLSCREEN - Enable or disable fullscreen mode
       VOLUME - Set the volume of the game audio. Between 0-9
 ```

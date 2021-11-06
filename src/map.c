@@ -188,7 +188,7 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	if (Texture_Options == NULL)
 	{
 
-		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), NUM_OF_OPTIONS * (CHAR_DIMENSION + LETTER_GAP));
+		Texture_Options = createTexture(renderer, 20 * (CHAR_DIMENSION + LETTER_GAP), 5 * (CHAR_DIMENSION + LETTER_GAP));
 		SDL_SetRenderTarget(renderer, Texture_Options);
 		print_string(">", 0, 0, 1, WHITE, renderer, Sprites);
 		print_string("BLOCK SPRITE:", 2 * (CHAR_DIMENSION + LETTER_GAP), 0, 1, WHITE, renderer, Sprites);
@@ -305,18 +305,23 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 	else
 	{
 
+		//If player presses ESCAPE in the menu, close the game
+		if (keys[SDL_SCANCODE_ESCAPE])
+			RUNNING = false;
+
 		//Exit Menu if enter key is pressed
 			//This means clearing all of the memory used by the Title screen
 		if (keys[SDL_SCANCODE_RETURN] && *inputLock == false)
 		{
 
-			//Play COMPLETE sound
+			//Play ROTATE sound
 			playSound(Sound_Rotate, audioDevice, wavSpec);
 
 			//Return the mode 
 			*returnMode = *mode;
 
-			if (*returnMode < OPTIONS + 2)
+			//Delete all title screen elements from memory if an option is selected that leaves or RESETS the title screen
+			if (*returnMode < OPTIONS + 2 || *returnMode == OPTIONS + 5)
 			{
 
 				//Free Textures
@@ -424,6 +429,8 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				return RESET;
 
 			}
+			else if (*returnMode == OPTIONS + 5)
+				return CONTROLS_SCREEN;
 			else if (*returnMode <= MAX_PIECE_SIZE)
 				return PLAY_SCREEN;	//If thats not what they did, then theyre trying to play
 
@@ -475,6 +482,14 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 				updateOptions(Texture_Options, *mode, Sprites, renderer);
 
 			}
+			else if (*mode == OPTIONS + 4)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode += 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
 
 			*inputLock = true;
 
@@ -515,6 +530,14 @@ unsigned short drawTitle(sprite* Sprites, double frame_time, SDL_Renderer* rende
 
 			}
 			else if (*mode == OPTIONS + 4)
+			{
+
+				playSound(Sound_Move, audioDevice, wavSpec);
+				*mode -= 1;
+				updateOptions(Texture_Options, *mode, Sprites, renderer);
+
+			}
+			else if (*mode == OPTIONS + 5)
 			{
 
 				playSound(Sound_Move, audioDevice, wavSpec);
@@ -736,11 +759,21 @@ void updateOptions(SDL_Texture* texture, unsigned short mode, sprite* Sprites, S
 		print_string(">", 0, 2 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
 		print_int(GLOBAL_VOLUME + 1, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
 		print_int(GLOBAL_VOLUME - 1, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+		print_string(">", 0, 4 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
 
 		//Print current volume
 		print_int(GLOBAL_VOLUME, 9 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 		print_string(">", 0, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+
+	}
+	else if (mode == OPTIONS + 5)
+	{
+
+		//Erasures
+		print_string(">", 0, 3 * (CHAR_DIMENSION + LETTER_GAP), 1, BLACK, renderer, Sprites);
+
+		print_string(">", 0, 4 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
 
 	}
 
