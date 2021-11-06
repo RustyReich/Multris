@@ -43,7 +43,7 @@ unsigned short controlsScreen(sprite* Sprites, SDL_AudioDeviceID* audioDevice, S
         print_string("X : ROTATE CW", 1 * (CHAR_DIMENSION + LETTER_GAP), 6 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
         print_string("C : MIRROR PIECE", 1 * (CHAR_DIMENSION + LETTER_GAP), 7 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
         print_string("ENTER : SELECT PAUSE", 1 * (CHAR_DIMENSION + LETTER_GAP), 8 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("ESC : CLOSE GAME FROM MENU", 1 * (CHAR_DIMENSION + LETTER_GAP), 9 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
+        print_string("ESC : EXIT GAME FROM MENU", 1 * (CHAR_DIMENSION + LETTER_GAP), 9 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
         SDL_SetRenderTarget(renderer, NULL);
 
     }
