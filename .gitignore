@@ -1,5 +1,12 @@
 *
+
 !src/
+!src/*
+!src/HEADERS
+!src/HEADERS/*
+
 !build/
 !build/AUDIO
+!build/AUDIO/*
 !build/SPRITES
+!build/SPRITES/*
