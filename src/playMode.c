@@ -1,60 +1,58 @@
 #include <stdbool.h>
 #include <math.h>
 
-#include "HEADERS/technicalDefinitions.h"
-#include "HEADERS/Structures.h"
+#include "HEADERS/MGF.h"
 
 //generate.c
 piece* generateGamePiece(unsigned short size);
 void delPiece(piece** Piece);
-void copyPiece(piece*, piece*);
+void copyPiece(piece* piece1, piece* piece2);
 
 //draw.c
-void drawPiece(piece, unsigned short, unsigned short, sprite, SDL_Renderer*);
-void drawSprite(sprite, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*);
-void print_int(int num, unsigned short X, unsigned short Y, unsigned short multi, unsigned short color,
-	SDL_Renderer* renderer, sprite* Sprites);
-void print_string(char* string, unsigned short X, unsigned short Y, unsigned short multi, unsigned short color,
-	SDL_Renderer* renderer, sprite* Sprites);
+void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, 
+	unsigned short Y);
+void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
+void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
+	float multiplier, unsigned short color);
+void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
+	float multiplier, unsigned short color);
 unsigned short getIntLength(int num);
+SDL_Texture* createTexture(int width, int height);
+void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y, 
+	float multiplier, Uint8 color);
+void clearTexture(SDL_Texture* texture);
+SDL_Texture* createPieceTexture(piece Piece);
 
 //rotate.c
-void rotatePiece(piece*, unsigned short);
-void mirrorPieceOverY(piece*);
+void rotatePiece(piece *Piece, unsigned short direction);
+void mirrorPieceOverY(piece* Piece);
 
 //audio.c
-void playSound(sound*, SDL_AudioDeviceID*, SDL_AudioSpec*);
-sound* loadSound(char*, SDL_AudioSpec*);
-void delSound(sound**);
-void setVolume(sound**, SDL_AudioSpec*, unsigned short);
+void playSound(sound* Sound);
+sound* loadSound(char* file);
+void delSound(sound** Sound);
+void setVolume(sound** Sound, unsigned short volume);
 
 //file.c
 void saveTop(unsigned int score);
 unsigned int loadTop();
 unsigned short getOption(unsigned short line);
 
-//texture.c
-SDL_Texture* createTexture(SDL_Renderer*, unsigned short, unsigned short);
-void drawTexture(SDL_Texture*, unsigned short, unsigned short, float, SDL_Renderer*);
-SDL_Texture* createPieceTexture(piece, sprite, SDL_Renderer*);
-
 piece* getFirstPiece(piece*);
 void move(char, unsigned short*, piece);
 bool isColliding(piece, unsigned short, double*, unsigned short, bool*);
 void adjustNewPiece(piece*, unsigned short*);
-bool inputLockPressed(Uint8*);
 unsigned short completedLine(bool*, unsigned short, piece, unsigned short**);
 bool lineIsComplete(bool*, unsigned short);
-void removeLine(unsigned short, bool*, SDL_Texture*, SDL_Renderer*);
-bool playLineAnimation(SDL_Renderer*, SDL_Texture*, sprite, unsigned short, bool*, bool*, unsigned short*);
-void updateScore(unsigned int, SDL_Texture*, sprite*, SDL_Renderer*);
-void updateLevel(unsigned short, SDL_Texture*, sprite*, SDL_Renderer*);
-void updateLines(unsigned short, SDL_Texture*, sprite*, SDL_Renderer*);
-bool playOverAnimation(SDL_Renderer*, SDL_Texture*, sprite*, unsigned int);
+void removeLine(unsigned short, bool*, SDL_Texture*);
+bool playLineAnimation(SDL_Texture*, unsigned short, bool*, bool*, unsigned short*);
+void updateScore(unsigned int, SDL_Texture*);
+void updateLevel(unsigned short, SDL_Texture*);
+void updateLines(unsigned short, SDL_Texture*);
+bool playOverAnimation(SDL_Texture*, unsigned int);
 unsigned short calcGhostY(piece*, unsigned short, unsigned short, bool*);
 
-unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* renderer, piece* firstPiece, 
-	SDL_AudioDeviceID* audioDevice, SDL_AudioSpec* wavSpec, unsigned short size)
+unsigned short playMode(piece* firstPiece, unsigned short size)
 {
 	
 	//Get current keyboard state
@@ -100,57 +98,54 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	static SDL_Texture* Texture_Paused;
 	static SDL_Texture* foreground;
 	if (Texture_Current == NULL)
-		Texture_Current = createPieceTexture(*currentPiece, Sprites[BLOCK_CHAR], renderer);
+		Texture_Current = createPieceTexture(*currentPiece);
 	if (Texture_Next == NULL)
 	{
 		
-		Texture_Next = createPieceTexture(*nextPiece, Sprites[BLOCK_CHAR], renderer);
-		SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
+		Texture_Next = createPieceTexture(*nextPiece);
+		SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, 
+			nextText_Height);
 
 	}
 	if (Texture_Score == NULL)
 	{
 
-		Texture_Score = createTexture(renderer, 6 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION);
+		Texture_Score = createTexture(6 * (FONT_WIDTH + STRING_GAP), 
+			FONT_HEIGHT);
 
-		SDL_SetRenderTarget(renderer, Texture_Score);
-		print_string("000000", 0, 0, 1, WHITE, renderer, Sprites);
-		SDL_SetRenderTarget(renderer, NULL);
+		printToTexture("000000", Texture_Score, 0, 0, 1, WHITE);
 
 	}
 	if (Texture_Level == NULL)
 	{
 
-		Texture_Level = createTexture(renderer, 2 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION);
+		Texture_Level = createTexture(2 * (FONT_WIDTH + STRING_GAP), 
+			FONT_HEIGHT);
 
-		SDL_SetRenderTarget(renderer, Texture_Level);
-		print_string("0", 0, 0, 1, RED, renderer, Sprites);
-		SDL_SetRenderTarget(renderer, NULL);
+		printToTexture("0", Texture_Level, 0, 0, 1, RED);
 
 	}
 	if (Texture_Lines == NULL)
 	{
 
-		Texture_Lines = createTexture(renderer, 3 * CHAR_DIMENSION + 2 * LETTER_GAP, CHAR_DIMENSION);
-		SDL_SetRenderTarget(renderer, Texture_Lines);
-		print_string("5", CHAR_DIMENSION, 0, 1, ORANGE, renderer, Sprites);
-		SDL_SetRenderTarget(renderer, NULL);
+		Texture_Lines = createTexture(3 * FONT_WIDTH + 2 * STRING_GAP, 
+			FONT_HEIGHT);
+		printToTexture("5", Texture_Lines, FONT_WIDTH, 0, 1, ORANGE);
 
 	}
 	if (Texture_Paused == NULL)
 	{
 
-		Texture_Paused = createTexture(renderer, 6 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION);
-		SDL_SetRenderTarget(renderer, Texture_Paused);
-		print_string("PAUSED", 0, 0, 1, WHITE, renderer, Sprites);
-		SDL_SetRenderTarget(renderer, NULL);
+		Texture_Paused = createTexture(6 * (FONT_WIDTH + STRING_GAP), 
+			FONT_HEIGHT);
+		printToTexture("PAUSED", Texture_Paused, 0, 0, 1, WHITE);
 
 	}
 	if (foreground == NULL)
 	{
 		
-		foreground = createTexture(renderer, CHAR_DIMENSION * WIDTH_OF_PLAYSPACE,
-			CHAR_DIMENSION * (HEIGHT_IN_CHARS - 2));
+		foreground = createTexture(FONT_WIDTH * WIDTH_OF_PLAYSPACE,
+			FONT_HEIGHT * (HEIGHT_IN_CHARS - 2));
 
 	}
 
@@ -165,50 +160,50 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 	if (Sound_Move == NULL)
 	{
 
-		Sound_Move = loadSound("AUDIO/move.wav", wavSpec);
-		setVolume(&Sound_Move, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Move = loadSound("AUDIO/move.wav");
+		setVolume(&Sound_Move, globalInstance->global_volume * 10);
 
 	}
 	if (Sound_Land == NULL)
 	{
 
-		Sound_Land = loadSound("AUDIO/land.wav", wavSpec);
-		setVolume(&Sound_Land, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Land = loadSound("AUDIO/land.wav");
+		setVolume(&Sound_Land, globalInstance->global_volume * 10);
 
 	}
 	if (Sound_Rotate == NULL)
 	{
 
-		Sound_Rotate = loadSound("AUDIO/rotate.wav", wavSpec);
-		setVolume(&Sound_Rotate, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Rotate = loadSound("AUDIO/rotate.wav");
+		setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
 
 	}
 	if (Sound_Complete == NULL)
 	{
 
-		Sound_Complete = loadSound("AUDIO/complete.wav", wavSpec);
-		setVolume(&Sound_Complete, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Complete = loadSound("AUDIO/complete.wav");
+		setVolume(&Sound_Complete, globalInstance->global_volume * 10);
 
 	}
 	if (Sound_Over == NULL)
 	{
 
-		Sound_Over = loadSound("AUDIO/over.wav", wavSpec);
-		setVolume(&Sound_Over, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Over = loadSound("AUDIO/over.wav");
+		setVolume(&Sound_Over, globalInstance->global_volume * 10);
 
 	}
 	if (Sound_Pause == NULL)
 	{
 
-		Sound_Pause = loadSound("AUDIO/pause.wav", wavSpec);
-		setVolume(&Sound_Pause, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Pause = loadSound("AUDIO/pause.wav");
+		setVolume(&Sound_Pause, globalInstance->global_volume * 10);
 
 	}
 	if (Sound_Hold == NULL)
 	{
 
-		Sound_Hold = loadSound("AUDIO/hold.wav", wavSpec);
-		setVolume(&Sound_Hold, wavSpec, GLOBAL_VOLUME * 10);
+		Sound_Hold = loadSound("AUDIO/hold.wav");
+		setVolume(&Sound_Hold, globalInstance->global_volume * 10);
 
 	}
 
@@ -342,6 +337,14 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		*moveStart = 0;
 
 	}
+	static bool* moveStartBool;
+	if (moveStartBool == NULL)
+	{
+
+		moveStartBool = calloc(1, sizeof(*moveStartBool));
+		*moveStartBool = false;
+
+	}
 
 	//map data matrix
 	static bool* mapData;
@@ -356,258 +359,281 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 
 	}
 
-	//CONTROLS ---------------
+	//CONTROLS ---------------------------------------------------------------
 
-	//inputLocked keys
-	static char* inputLock;		//This prevents the user from holding down certain buttons
-	if (inputLock == NULL)
+	//These controls only work if it is not a game over and the game is not paused
+	if (!*gameOver && !*paused)
 	{
 
-		inputLock = malloc(sizeof(*inputLock));
-		if (inputLock != NULL)
-			*inputLock = true;
-
-	}
-
-	if (*inputLock == false && inputLockPressed(keys) && !*gameOver)
-	{
-
-		//Movement
-		if (currentPiece != NULL && !*paused)
+		//Left and right movement
+		if (globalInstance->controls[LEFT_BUTTON_ID].onHold || 
+			globalInstance->controls[RIGHT_BUTTON_ID].onHold)
 		{
 
-			if (keys[SDL_SCANCODE_Z] && *X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
-				*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
+			Uint32 currTicks = SDL_GetTicks();
+
+			//Start the counter for holding the movement keys
+			if (*moveStart == 0)
 			{
 
-				rotatePiece(currentPiece, CCW);
-				//If rotation puts the piece inside another piece, just rotate back the opposite way
-				if (isColliding(*currentPiece, *X, Y, NONE, mapData))
-					rotatePiece(currentPiece, CW);
-				else
+				*moveStart = currTicks;
+				*moveStartBool = true;
+
+			}
+
+			if (*moveStartBool || (currTicks - *moveStart) >= 
+				(MOVEMENT_WAIT + MOVEMENT_TIME))
+			{
+
+				if (globalInstance->controls[LEFT_BUTTON_ID].onHold && 
+					!isColliding(*currentPiece, *X, Y, LEFT, mapData))
 				{
 
-					//Only play sound if it actually rotated
-					playSound(Sound_Rotate, audioDevice, wavSpec);
-					SDL_DestroyTexture(Texture_Current);
-					Texture_Current = NULL;
+					//Only play sound if can actually move
+					if (*X != 0)
+						playSound(Sound_Move);
+					move(LEFT, X, *currentPiece);
 
 					//Recalculate ghostY
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, 
+											mapData);
+
+				}
+				else if (globalInstance->controls[RIGHT_BUTTON_ID].onHold && 
+							!isColliding(*currentPiece, *X, Y, RIGHT, mapData))
+				{
+
+					if (*X + currentPiece->width < WIDTH_OF_PLAYSPACE)
+						playSound(Sound_Move);
+					move(RIGHT, X, *currentPiece);
+
+					//Recalculate ghostY
+					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, 
+											mapData);
 
 				}
 
-			}
-			else if (keys[SDL_SCANCODE_X] && *X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
-				*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
-			{
+				*moveStartBool = false;
 
+				//Reset moveStart
+					//The way this works is this:
+						//When the player pushes an arrow, the piece will move once
+						//If they hold the arrow for longer than (MOVEMENT_WAIT + 
+						//MOVEMENT_TIME) ms, the piece will move again
+						//If they continue to hold it past that point, the piece 
+						//will move every MOVEMENT_TIME ms
+				if ((currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+					*moveStart = currTicks - MOVEMENT_WAIT;
+
+			}
+
+		}
+		else
+			*moveStart = 0;
+
+		//Rotate CCW
+		if (globalInstance->controls[ROTATE_CCW_BUTTON_ID].onPress && 
+			*X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
+			*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
+		{
+
+			rotatePiece(currentPiece, CCW);
+			//If rotation puts the piece inside another piece, just rotate back the 
+			//opposite way
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
 				rotatePiece(currentPiece, CW);
-				if (isColliding(*currentPiece, *X, Y, NONE, mapData))
-					rotatePiece(currentPiece, CCW);
-				else
-				{
-
-					playSound(Sound_Rotate, audioDevice, wavSpec);
-					SDL_DestroyTexture(Texture_Current);
-					Texture_Current = NULL;
-
-					//Recalculate ghostY
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-				}
-
-			}
-			else if (keys[SDL_SCANCODE_C])
+			else
 			{
 
-				mirrorPieceOverY(currentPiece);
-				//If mirroring puts the piece inside another piece, just mirror it back
-				if (isColliding(*currentPiece, *X, Y, NONE, mapData))
-					mirrorPieceOverY(currentPiece);
-				else
-				{
+				//Only play sound if it actually rotated
+				playSound(Sound_Rotate);
+				SDL_DestroyTexture(Texture_Current);
+				Texture_Current = NULL;
 
-					//Only play sound if actually mirrored
-					playSound(Sound_Rotate, audioDevice, wavSpec);
-					SDL_DestroyTexture(Texture_Current);
-					Texture_Current = NULL;
-
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-				}
+				//Recalculate ghostY
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
 
 			}
-			else if (keys[SDL_SCANCODE_UP])
-				*Y = *ghostY + 1;
-			else if (keys[SDL_SCANCODE_SPACE] && !*justHeld)						//Hold button
-			{
 
-				playSound(Sound_Hold, audioDevice, wavSpec);
-
-				if (holdPiece == NULL)
-				{
-
-					//Create holdPiece by copying currentPiece
-					holdPiece = malloc(sizeof(*holdPiece));
-					holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
-					copyPiece(currentPiece, holdPiece);
-					Texture_Hold = createPieceTexture(*holdPiece, Sprites[BLOCK_CHAR], renderer);
-					SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
-
-					//Delete currentPiece
-					delPiece(&currentPiece);
-					SDL_DestroyTexture(Texture_Current);
-					Texture_Current = NULL;
-
-					//Move nextPiece to currentPiece
-					currentPiece = nextPiece;
-					adjustNewPiece(currentPiece, X);
-
-					//Destory nextPiece
-					SDL_DestroyTexture(Texture_Next);
-					Texture_Next = NULL;
-
-					//Generate new piece
-					if (size == 0)
-						nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
-					else
-						nextPiece = generateGamePiece(size);
-
-					//Reset Y
-					*Y = 0;
-
-					//Recalculate ghostY
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-				}
-				else //Swap holdPiece and currentPiece
-				{
-
-					//Store current holdPiece in tempPeiece
-					piece* tempPiece;
-					tempPiece = malloc(sizeof(*tempPiece));
-					tempPiece->blocks = malloc(holdPiece->numOfBlocks * sizeof(*tempPiece->blocks));
-					copyPiece(holdPiece, tempPiece);
-
-					//Recreate holdPiece
-					delPiece(&holdPiece);
-					SDL_DestroyTexture(Texture_Hold);
-					holdPiece = malloc(sizeof(*holdPiece));
-					holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
-					copyPiece(currentPiece, holdPiece);
-					Texture_Hold = createPieceTexture(*holdPiece, Sprites[BLOCK_CHAR], renderer);
-					SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
-
-					//Delete currentPiece
-					delPiece(&currentPiece);
-					SDL_DestroyTexture(Texture_Current);
-					Texture_Current = NULL;
-
-					//Copy tempPiece to currentPiece
-					currentPiece = malloc(sizeof(*currentPiece));
-					currentPiece->blocks = malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
-					copyPiece(tempPiece, currentPiece);
-					adjustNewPiece(currentPiece, X);
-
-					//Delete tempPeice
-					delPiece(&tempPiece);
-
-					//Reset Y
-					*Y = 0;
-
-					//Recalculate ghostY
-					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-				}
-
-				*justHeld = true;
-
-			}
-			
 		}
 
-		if (keys[SDL_SCANCODE_RETURN])	//Pause the game by pressing the ENTER key
+		//Rotate CW
+		if (globalInstance->controls[ROTATE_CW_BUTTON_ID].onPress && 
+			*X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
+			*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
 		{
 
-			playSound(Sound_Pause, audioDevice, wavSpec);
+			rotatePiece(currentPiece, CW);
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+				rotatePiece(currentPiece, CCW);
+			else
+			{
+
+				playSound(Sound_Rotate);
+				SDL_DestroyTexture(Texture_Current);
+				Texture_Current = NULL;
+
+				//Recalculate ghostY
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+			}
+
+		}
+
+		//Mirroring
+		if (globalInstance->controls[MIRROR_BUTTON_ID].onPress)
+		{
+
+			mirrorPieceOverY(currentPiece);
+			//If mirroring puts the piece inside another piece, just mirror it back
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+				mirrorPieceOverY(currentPiece);
+			else
+			{
+
+				//Only play sound if actually mirrored
+				playSound(Sound_Rotate);
+				SDL_DestroyTexture(Texture_Current);
+				Texture_Current = NULL;
+
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+			}
+
+		}
+
+		//Holding
+		if (globalInstance->controls[HOLD_BUTTON_ID].onPress && !*justHeld)
+		{
+
+			playSound(Sound_Hold);
+
+			if (holdPiece == NULL)
+			{
+
+				//Create holdPiece by copying currentPiece
+				holdPiece = malloc(sizeof(*holdPiece));
+				holdPiece->blocks = 
+					malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+				copyPiece(currentPiece, holdPiece);
+				Texture_Hold = createPieceTexture(*holdPiece);
+				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
+
+				//Delete currentPiece
+				delPiece(&currentPiece);
+				SDL_DestroyTexture(Texture_Current);
+				Texture_Current = NULL;
+
+				//Move nextPiece to currentPiece
+				currentPiece = nextPiece;
+				adjustNewPiece(currentPiece, X);
+
+				//Destory nextPiece
+				SDL_DestroyTexture(Texture_Next);
+				Texture_Next = NULL;
+
+				//Generate new piece
+				if (size == 0)
+					nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
+				else
+					nextPiece = generateGamePiece(size);
+
+				//Reset Y
+				*Y = 0;
+
+				//Recalculate ghostY
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+			}
+			else //Swap holdPiece and currentPiece
+			{
+
+				//Store current holdPiece in tempPeiece
+				piece* tempPiece;
+				tempPiece = malloc(sizeof(*tempPiece));
+				tempPiece->blocks = 
+					malloc(holdPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+				copyPiece(holdPiece, tempPiece);
+
+				//Recreate holdPiece
+				delPiece(&holdPiece);
+				SDL_DestroyTexture(Texture_Hold);
+				holdPiece = malloc(sizeof(*holdPiece));
+				holdPiece->blocks = 
+					malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+				copyPiece(currentPiece, holdPiece);
+				Texture_Hold = createPieceTexture(*holdPiece);
+				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
+
+				//Delete currentPiece
+				delPiece(&currentPiece);
+				SDL_DestroyTexture(Texture_Current);
+				Texture_Current = NULL;
+
+				//Copy tempPiece to currentPiece
+				currentPiece = malloc(sizeof(*currentPiece));
+				currentPiece->blocks = 
+					malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+				copyPiece(tempPiece, currentPiece);
+				adjustNewPiece(currentPiece, X);
+
+				//Delete tempPeice
+				delPiece(&tempPiece);
+
+				//Reset Y
+				*Y = 0;
+
+				//Recalculate ghostY
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+
+			}
+
+			*justHeld = true;
+
+		}
+
+		//Hard drop
+		if (globalInstance->controls[HARD_DROP_BUTTON_ID].onPress)
+			*Y = *ghostY + 1;
+			
+		//Soft drop
+		if (globalInstance->controls[SOFT_DROP_BUTTON_ID].onHold)
+			*softDrop = true;
+		else
+			*softDrop = false;
+
+	}
+	
+	if (!*gameOver)	//These controls work even when paused, as long as the game is
+	{				//not over
+
+		//Pausing
+		if (globalInstance->controls[SELECT_BUTTON_ID].onPress)
+		{
+
+			playSound(Sound_Pause);
 			*paused = !*paused;
 
 		}
 
-		*inputLock = true;
-
 	}
-	else if (!inputLockPressed(keys))
-		*inputLock = false;
 
-	//Non-inputlocked keys
-	if (keys[SDL_SCANCODE_DOWN])
-		*softDrop = true;
-	else
-		*softDrop = false;
+	//-----------------------------------------------------------------------
 
-	//Left and right movement
-	if (keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_RIGHT])
-	{
+	// RENDERING -------------------------------------------------------------
 
-		Uint32 currTicks = SDL_GetTicks();
+	drawTexture(Texture_Next, (int)(FONT_WIDTH * 42.5) - *nextText_Width / 2, 
+		(int)(FONT_HEIGHT * 29.5) - *nextText_Height / 2, 1.0);
+	drawTexture(Texture_Hold, (int)(FONT_WIDTH * 42.5) - (*holdText_Width / 2) 
+		* HOLD_TEXTURE_MULTI, (int)(FONT_HEIGHT * 41.5) - (*holdText_Height / 
+		2) * HOLD_TEXTURE_MULTI, HOLD_TEXTURE_MULTI);
+	drawTexture(Texture_Score, FONT_WIDTH * 39, FONT_HEIGHT * 6 + STRING_GAP, 
+		1.0);
+	drawTexture(Texture_Level, FONT_WIDTH * 46, FONT_HEIGHT * 10, 1.0);
+	drawTexture(Texture_Lines, FONT_WIDTH * 41, FONT_HEIGHT * 18, 1.0);
 
-		//Start the counter for holding the movement keys
-		if (*moveStart == 0)
-			*moveStart = currTicks;
-
-		if (*moveStart == currTicks || (currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
-		{
-
-			if (keys[SDL_SCANCODE_LEFT] && !isColliding(*currentPiece, *X, Y, LEFT, mapData))
-			{
-
-				//Only play sound if can actually move
-				if (*X != 0)
-					playSound(Sound_Move, audioDevice, wavSpec);
-				move(LEFT, X, *currentPiece);
-
-				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-			}
-			else if (keys[SDL_SCANCODE_RIGHT] && !isColliding(*currentPiece, *X, Y, RIGHT, mapData))
-			{
-
-				if (*X + currentPiece->width < WIDTH_OF_PLAYSPACE)
-					playSound(Sound_Move, audioDevice, wavSpec);
-				move(RIGHT, X, *currentPiece);
-
-				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
-
-			}
-
-			//Reset moveStart
-				//The way this works is this:
-					//When the player pushes an arrow, the piece will move once
-					//If they hold the arrow for longer than (MOVEMENT_WAIT + MOVEMENT_TIME) ms, the piece will move again
-					//If they continue to hold it past that point, the piece will move every MOVEMENT_TIME ms
-			if ((currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
-				*moveStart = currTicks - MOVEMENT_WAIT;
-
-		}
-
-	}
-	else
-		*moveStart = 0;
-
-	// RENDERING -------------------------------
-
-	drawTexture(Texture_Current, CHAR_DIMENSION * (*X + 1), CHAR_DIMENSION * ((int)*Y + 1), 1.0, renderer);
-	drawTexture(Texture_Next, (int)(CHAR_DIMENSION * 42.5) - *nextText_Width / 2, 
-		(int)(CHAR_DIMENSION * 29.5) - *nextText_Height / 2, 1.0, renderer);
-	drawTexture(Texture_Hold, (int)(CHAR_DIMENSION * 42.5) - (*holdText_Width / 2) * HOLD_TEXTURE_MULTI,
-		(int)(CHAR_DIMENSION * 41.5) - (*holdText_Height / 2) * HOLD_TEXTURE_MULTI, HOLD_TEXTURE_MULTI, renderer);
-	drawTexture(Texture_Score, CHAR_DIMENSION * 39, CHAR_DIMENSION * 6 + LETTER_GAP, 1.0, renderer);
-	drawTexture(Texture_Level, CHAR_DIMENSION * 46, CHAR_DIMENSION * 10, 1.0, renderer);
-	drawTexture(Texture_Lines, CHAR_DIMENSION * 41, CHAR_DIMENSION * 18, 1.0, renderer);
+	//Draw the foreground
+	drawTexture(foreground, FONT_WIDTH, FONT_HEIGHT, 1.0);
 
 	//Draw ghost if enabled
 	if (*ghostEnabled)
@@ -616,19 +642,22 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		//Make Texture_Current opaque
 		SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
 		//Draw Texture_Current at ghostY
-		drawTexture(Texture_Current, CHAR_DIMENSION * (*X + 1), CHAR_DIMENSION * ((int)*ghostY + 1), 1.0, renderer);
+		drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
+			FONT_HEIGHT * ((int)*ghostY + 1), 1.0);
 		//Reset Texture_Current opacity
 		SDL_SetTextureAlphaMod(Texture_Current, 255);
 
 	}
 
-	//Draw the foreground
-	drawTexture(foreground, CHAR_DIMENSION, CHAR_DIMENSION, 1.0, renderer);
+	drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
+		FONT_HEIGHT * ((int)*Y + 1), 1.0);
 
 	//Draw PAUSED if game is paused
 		//Center the text
 	if (*paused)
-		drawTexture(Texture_Paused, CHAR_DIMENSION + CHAR_DIMENSION * WIDTH_OF_PLAYSPACE / 2 - 3 * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION * (23 - 0.5), 1.0, renderer);
+		drawTexture(Texture_Paused, 
+			FONT_WIDTH + FONT_WIDTH * WIDTH_OF_PLAYSPACE / 2 - 3 * 
+			(FONT_WIDTH + STRING_GAP), FONT_HEIGHT * (23 - 0.5), 1.0);
 
 	//--------------------------------------
 
@@ -639,9 +668,9 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		
 		unsigned short prevNumCompleted = *numCompleted;
 		
-		if (playLineAnimation(renderer, foreground, Sprites[BLOCK_CHAR], *completedRows, clearingLine,
+		if (playLineAnimation(foreground, *completedRows, clearingLine,
 			mapData, numCompleted) == true)
-			playSound(Sound_Complete, audioDevice, wavSpec);
+			playSound(Sound_Complete);
 
 		//Remove first element in completedRows array
 			//Also resize completedRows array
@@ -679,7 +708,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		if (*overAnimation == false)
 		{
 
-			*overAnimation = playOverAnimation(renderer, foreground, Sprites, *Score);
+			*overAnimation = playOverAnimation(foreground, *Score);
 
 			//Only save the top score if the player is playing in MULTRIS mode
 				//Save score once overAnimation is finished playing
@@ -774,9 +803,8 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				ghostY = NULL;
 				free(moveStart);
 				moveStart = NULL;
-
-				free(inputLock);
-				inputLock = NULL;
+				free(moveStartBool);
+				moveStartBool = NULL;
 
 				free(mapData);
 				mapData = NULL;
@@ -806,9 +834,9 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 			{
 
 				if (*softDrop == false)
-					*Y = *Y + *speed * frame_time;
+					*Y = *Y + *speed * globalInstance->frame_time;
 				else
-					*Y = *Y + 20 * *speed * frame_time;
+					*Y = *Y + 20 * *speed * globalInstance->frame_time;
 
 			}
 
@@ -816,12 +844,10 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 		else     //Piece is placed
 		{
 
-			playSound(Sound_Land, audioDevice, wavSpec);
+			playSound(Sound_Land);
 
-			SDL_SetRenderTarget(renderer, foreground);
-			drawPiece(*currentPiece, *X * CHAR_DIMENSION, (int)*Y * CHAR_DIMENSION, Sprites[BLOCK_CHAR], 
-				renderer);
-			SDL_SetRenderTarget(renderer, NULL);
+			drawPiece(*currentPiece, foreground, *X * SPRITE_WIDTH, 
+				(int)*Y * SPRITE_HEIGHT);
 
 			//Store piece in mapData
 			if (mapData != NULL)
@@ -842,7 +868,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 				//a best-fit line
 				*Score += (unsigned int)((93.333 * pow(*numCompleted, 3) - 490 * pow(*numCompleted, 2) + 
 					876.67 * *numCompleted - 440) * (*Level + 1));
-				updateScore(*Score, Texture_Score, Sprites, renderer);
+				updateScore(*Score, Texture_Score);
 
 				//Keep track of the number of lines that have been cleared on the current level
 				*linesAtCurrentLevel += *numCompleted;
@@ -852,13 +878,14 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 					//Increase level count and update Texture_Level
 					*Level += 1;
 					*linesAtCurrentLevel = 0;
-					updateLevel(*Level, Texture_Level, Sprites, renderer);
+					updateLevel(*Level, Texture_Level);
 
 					//Increase speed
 					*speed = (double)(60.0988 / (48 - 5 * *Level));
 
 				}
-				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, Texture_Lines, Sprites, renderer);
+				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, 
+					Texture_Lines);
 
 			}
 
@@ -892,7 +919,7 @@ unsigned short playMode(sprite* Sprites, double frame_time, SDL_Renderer* render
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
 			{
 
-				playSound(Sound_Over, audioDevice, wavSpec);
+				playSound(Sound_Over);
 				*gameOver = true;
 
 			}
@@ -917,7 +944,7 @@ unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY,
 
 }
 
-bool playOverAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite* Sprites, unsigned int score)
+bool playOverAnimation(SDL_Texture* foreground, unsigned int score)
 {
 
 	//Return if the animation is done playing or not
@@ -947,7 +974,7 @@ bool playOverAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite* 
 			if ((*time_now - *time_start) > OVER_TIME)
 			{
 
-				SDL_SetRenderTarget(renderer, foreground);
+				SDL_SetRenderTarget(globalInstance->renderer, foreground);
 
 				static unsigned short* row;
 				if (row == NULL)
@@ -966,8 +993,9 @@ bool playOverAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite* 
 
 					//Fill the current row with randomly colored BLOCKSs
 					for (unsigned short i = 0; i < WIDTH_OF_PLAYSPACE; i++)
-						drawSprite(Sprites[BLOCK_CHAR], CHAR_DIMENSION * i, CHAR_DIMENSION * *row, 1,
-							(rand() % (RED - YELLOW + 1)) + YELLOW, renderer);
+						drawToTexture(BLOCK_SPRITE_ID, foreground, 
+							SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1,
+							(rand() % (RED - YELLOW + 1)) + YELLOW);
 
 					//Check if we are on the last row
 					if (*row < HEIGHT_IN_CHARS - 2)
@@ -982,16 +1010,22 @@ bool playOverAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite* 
 						row = NULL;
 
 						//Print "GAME OVER"
-						print_string("GAME", (unsigned short)(CHAR_DIMENSION * 3.5), 
-							(unsigned short)(CHAR_DIMENSION * 10), 6, BLACK, renderer, Sprites);
-						print_string("OVER", (unsigned short)(CHAR_DIMENSION * 3.5),
-							(unsigned short)(CHAR_DIMENSION * 17), 6, BLACK, renderer, Sprites);
+						printToTexture("GAME", foreground, 
+							(unsigned short)(FONT_WIDTH * 3.5), 
+							(unsigned short)(FONT_HEIGHT * 10), 6, BLACK);
+						printToTexture("OVER", foreground, 
+							(unsigned short)(FONT_WIDTH * 3.5),
+							(unsigned short)(FONT_HEIGHT * 17), 6, BLACK);
 
 						//Print the score
-						print_string("Score:", (unsigned short)(CHAR_DIMENSION * (10.5 - getIntLength(score))),
-							(unsigned short)(CHAR_DIMENSION * 24), 2, BLACK, renderer, Sprites);
-						print_int(score, (unsigned short)(CHAR_DIMENSION * (23.5 - getIntLength(score))),
-							(unsigned short)(CHAR_DIMENSION * 24), 2, BLACK, renderer, Sprites);
+						printToTexture("Score:", foreground,
+							(unsigned short)(FONT_WIDTH * (10.5 - 
+							getIntLength(score))),
+							(unsigned short)(FONT_HEIGHT * 24), 2, BLACK);
+						intToTexture(score, foreground,
+							(unsigned short)(FONT_WIDTH * (23.5 - 
+							getIntLength(score))),
+							(unsigned short)(FONT_HEIGHT * 24), 2, BLACK);
 
 					}
 
@@ -1003,7 +1037,7 @@ bool playOverAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite* 
 				free(time_now);
 				time_now = NULL;
 
-				SDL_SetRenderTarget(renderer, NULL);
+				SDL_SetRenderTarget(globalInstance->renderer, NULL);
 
 			}
 
@@ -1015,43 +1049,33 @@ bool playOverAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite* 
 
 }
 
-void updateLines(unsigned short lines, SDL_Texture* linesTexture, sprite* Sprites, SDL_Renderer* renderer)
+void updateLines(unsigned short lines, SDL_Texture* linesTexture)
 {
 
 	//Get the number of digits in the lines number
 	unsigned short length = getIntLength(lines);
 
 	//Clear lines texture
-	SDL_SetRenderTarget(renderer, linesTexture);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_RenderClear(renderer);
+	clearTexture(linesTexture);
 
 	//Draw new level to levelTexture
-	print_int(lines, (int)(CHAR_DIMENSION * (1.5 - (float)length / 2)), 0, 1, ORANGE, renderer, Sprites);
-
-
-	//Restore RenderTarget
-	SDL_SetRenderTarget(renderer, NULL);
+	intToTexture(lines, linesTexture, 
+		(int)(FONT_WIDTH * (1.5 - (float)length / 2)), 0, 1, ORANGE);
 
 }
 
-void updateLevel(unsigned short level, SDL_Texture* levelTexture, sprite* Sprites, SDL_Renderer* renderer)
+void updateLevel(unsigned short level, SDL_Texture* levelTexture)
 {
 
 	//Clear level texture
-	SDL_SetRenderTarget(renderer, levelTexture);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_RenderClear(renderer);
+	clearTexture(levelTexture);
 
 	//Draw new level to levelTexture
-	print_int(level, 0, 0, 1, RED, renderer, Sprites);
-
-	//Restore RenderTarget
-	SDL_SetRenderTarget(renderer, NULL);
+	intToTexture(level, levelTexture, 0, 0, 1, RED);
 
 }
 
-void updateScore(unsigned int score, SDL_Texture* scoreTexture, sprite* Sprites, SDL_Renderer* renderer)
+void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 {
 
 	//Get the number of digits in the score
@@ -1060,24 +1084,24 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture, sprite* Sprites,
 	//Clear area of scoreTexture that will be updated
 	SDL_Rect rect;
 	SDL_QueryTexture(scoreTexture, NULL, NULL, &rect.w, &rect.h);
-	rect.x = rect.w - length * (CHAR_DIMENSION + LETTER_GAP);
-	rect.w = length * (CHAR_DIMENSION + LETTER_GAP);
-	rect.h = CHAR_DIMENSION;
+	rect.x = rect.w - length * (FONT_WIDTH + STRING_GAP);
+	rect.w = length * (FONT_WIDTH + STRING_GAP);
+	rect.h = FONT_HEIGHT;
 	rect.y = 0;
-	SDL_SetRenderTarget(renderer, scoreTexture);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_RenderFillRect(renderer, &rect);
+	SDL_SetRenderTarget(globalInstance->renderer, scoreTexture);
+	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
+	SDL_RenderFillRect(globalInstance->renderer, &rect);
 
 	//Draw new score to scoreTexture
-	print_int(score, rect.x, rect.y, 1, WHITE, renderer, Sprites);
+	intToTexture(score, scoreTexture, rect.x, rect.y, 1, WHITE);
 
 	//Restore RenderTarget
-	SDL_SetRenderTarget(renderer, NULL);
+	SDL_SetRenderTarget(globalInstance->renderer, NULL);
 
 }
 
-bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite Sprite, 
-	unsigned short row, bool *clearingLine, bool *mapData, unsigned short* numCompleted)
+bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
+	bool *clearingLine, bool *mapData, unsigned short* numCompleted)
 {
 
 	bool playSound = false;
@@ -1105,7 +1129,7 @@ bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite S
 			{
 
 				//With each frame of the animation, remove two blocks from the line being erased
-				SDL_SetRenderTarget(renderer, foreground);
+				SDL_SetRenderTarget(globalInstance->renderer, foreground);
 
 				static unsigned short* column;
 				if (column == NULL)
@@ -1117,8 +1141,9 @@ bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite S
 
 						//Except on the first frame, we only erase one block
 						*column = 0;
-						drawSprite(Sprite, (WIDTH_OF_PLAYSPACE / 2) * CHAR_DIMENSION,
-							row * CHAR_DIMENSION, 1, BLACK, renderer);
+						drawToTexture(BLOCK_SPRITE_ID, foreground, 
+							(WIDTH_OF_PLAYSPACE / 2) * SPRITE_WIDTH,
+							row * SPRITE_HEIGHT, 1, BLACK);
 
 						playSound = true;
 
@@ -1133,12 +1158,12 @@ bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite S
 					*column = *column + 1;
 					//Because we remove a block on each side of the chasm
 						//The blocks getting removed are +-*column blocks away from the center
-					drawSprite(Sprite,
-						(WIDTH_OF_PLAYSPACE / 2 - *column) * CHAR_DIMENSION, row * CHAR_DIMENSION, 1, 
-							BLACK, renderer);
-					drawSprite(Sprite,
-						(WIDTH_OF_PLAYSPACE / 2 + *column) * CHAR_DIMENSION, row * CHAR_DIMENSION, 1, 
-							BLACK, renderer);
+					drawToTexture(BLOCK_SPRITE_ID, foreground,
+						(WIDTH_OF_PLAYSPACE / 2 - *column) * SPRITE_WIDTH, 
+						row * SPRITE_HEIGHT, 1, BLACK);
+					drawToTexture(BLOCK_SPRITE_ID, foreground,
+						(WIDTH_OF_PLAYSPACE / 2 + *column) * SPRITE_WIDTH, 
+						row * SPRITE_HEIGHT, 1, BLACK);
 
 					if (*column > WIDTH_OF_PLAYSPACE / 2)
 					{
@@ -1150,7 +1175,7 @@ bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite S
 						if (*numCompleted == 0)
 							*clearingLine = false;
 
-						removeLine(row, mapData, foreground, renderer);
+						removeLine(row, mapData, foreground);
 
 					}
 
@@ -1161,7 +1186,7 @@ bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite S
 				free(time_now);
 				time_now = NULL;
 
-				SDL_SetRenderTarget(renderer, NULL);
+				SDL_SetRenderTarget(globalInstance->renderer, NULL);
 
 			}
 
@@ -1173,7 +1198,7 @@ bool playLineAnimation(SDL_Renderer* renderer, SDL_Texture* foreground, sprite S
 
 }
 
-void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, SDL_Renderer* renderer)
+void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground)
 {
 
 	//All blocks in memory for the clearedLine are set to empty
@@ -1181,31 +1206,32 @@ void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, SDL_
 		*(mapData + row * WIDTH_OF_PLAYSPACE + j) = false;
 
 	SDL_Rect srcRect
-		= { .x = 0, .y = 0, .w = WIDTH_OF_PLAYSPACE * CHAR_DIMENSION, .h = row * CHAR_DIMENSION };
+		= { .x = 0, .y = 0, .w = WIDTH_OF_PLAYSPACE * SPRITE_WIDTH, 
+			.h = row * SPRITE_HEIGHT };
 	
 	//Copy portion of the foreground above the clearedLine
 	SDL_Texture* aboveText;
-	aboveText = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 
-		srcRect.w, srcRect.h);
-	SDL_SetRenderTarget(renderer, aboveText);
-	SDL_RenderCopy(renderer, foreground, &srcRect, NULL);
+	aboveText = createTexture(srcRect.w, srcRect.h);
+	SDL_SetRenderTarget(globalInstance->renderer, aboveText);
+	SDL_RenderCopy(globalInstance->renderer, foreground, &srcRect, NULL);
 
 	//Clear area of foreground above the clearedLine
-	SDL_SetRenderTarget(renderer, foreground);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_RenderFillRect(renderer, &srcRect);
+	SDL_SetRenderTarget(globalInstance->renderer, foreground);
+	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
+	SDL_RenderFillRect(globalInstance->renderer, &srcRect);
 
 	SDL_Rect dstRect
-		= { .x = 0, .y = CHAR_DIMENSION, .w = srcRect.w, .h = srcRect.h };
+		= { .x = 0, .y = SPRITE_HEIGHT, .w = srcRect.w, .h = srcRect.h };
 
 	//Copy the texture from above the clearedLine down by 1 row
-	SDL_RenderCopy(renderer, aboveText, NULL, &dstRect);
-	SDL_SetRenderTarget(renderer, NULL);
+	SDL_RenderCopy(globalInstance->renderer, aboveText, NULL, &dstRect);
+	SDL_SetRenderTarget(globalInstance->renderer, NULL);
 
 	//Shift all mapData above clearedLine down by 1
 	for (unsigned short i = row; i > 0; i--)
 		for (unsigned short j = 0; j < WIDTH_OF_PLAYSPACE; j++)
-			*(mapData + i * WIDTH_OF_PLAYSPACE + j) = *(mapData + (i - 1) * WIDTH_OF_PLAYSPACE + j);
+			*(mapData + i * WIDTH_OF_PLAYSPACE + j) = 
+				*(mapData + (i - 1) * WIDTH_OF_PLAYSPACE + j);
 
 }
 
@@ -1260,27 +1286,6 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece, unsig
 	}
 
 	return numCompleted;
-
-}
-
-//Just check if an inputlocked key is being pressed
-bool inputLockPressed(Uint8* keys)
-{
-
-	if (keys[SDL_SCANCODE_Z])
-		return true;
-	else if (keys[SDL_SCANCODE_X])
-		return true;
-	else if (keys[SDL_SCANCODE_RETURN])
-		return true;
-	else if (keys[SDL_SCANCODE_UP])
-		return true;
-	else if (keys[SDL_SCANCODE_SPACE])
-		return true;
-	else if (keys[SDL_SCANCODE_C])
-		return true;
-
-	return false;
 
 }
 

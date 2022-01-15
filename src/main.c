@@ -3,29 +3,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "HEADERS/technicalDefinitions.h"
-#include "HEADERS/Structures.h"
+#include "HEADERS/MGF.h"
 
 //mainLoop.c
-void mainLoop(SDL_Renderer*, sprite*);
-
-//Comp_Decomp.c
-sprite* loadSprites(size_t*);
+void mainLoop();
 
 //file.c
-bool fileExists(char*);
+bool fileExists(char* fileName);
 void createOptions();
-unsigned short getOption(unsigned short);
-unsigned short getLineCount(char*);
+unsigned short getOption(unsigned short line);
+unsigned short getLineCount(char* fileName);
 
-//window.c
-void setWindowMode(unsigned short, SDL_Renderer*, SDL_Window*, SDL_DisplayMode);
+//instance.c
+void initInstance(gameInstance** instance);
+void scaleRenderer();
+void setWindowMode(unsigned short mode);
+
+//controls.c
+void updateControls();
 
 //Initialize global variables
-unsigned short BLOCK_CHAR = BLOCK_CHAR_1;
+unsigned short BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
 unsigned short UPDATE_FULLSCREEN_MODE = true;
-unsigned short GLOBAL_VOLUME = 9;
-unsigned short RUNNING = true;
+
+//Global Instance
+gameInstance *globalInstance;
 
 int main(int argc, char* argv[])
 {
@@ -49,18 +51,16 @@ int main(int argc, char* argv[])
 
 	}
 
-	SDL_Window* window = SDL_CreateWindow("Multris v1.0.7 | By: Russell Reich", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		WINDOW_BOX_DIMENSION, WINDOW_BOX_DIMENSION, SDL_WINDOW_OPENGL);
+	//Used to check if this is the very first frame of the game
+	bool firstLoop = true;
 
-	//Get the screen resolution
-	SDL_DisplayMode DM;
-	SDL_GetCurrentDisplayMode(0, &DM);
+	int frames_per_DS = 0;
 
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	Uint32 prevTicks = 0;
+	int deltaTicks = 0;
 
-	//All game sprites are stored here
-	size_t numOfSprites;
-	sprite* Sprites = loadSprites(&numOfSprites);
+	//Initialize game instance
+	initInstance(&globalInstance);
 
 	//Create options file if it doesn't exist or has the wrong number of lines
 	if (!fileExists("SAVES/options.cfg") || getLineCount("SAVES/options.cfg") != NUM_OF_OPTIONS)
@@ -71,40 +71,95 @@ int main(int argc, char* argv[])
 
 		//Load the BLOCK_CHAR from options file
 		if (getOption(0) == 0)
-			BLOCK_CHAR = BLOCK_CHAR_1;
+			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
 		else if (getOption(0) == 1)
-			BLOCK_CHAR = BLOCK_CHAR_2;
+			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_2;
 
 		//Load volume from options file
-		GLOBAL_VOLUME = getOption(3);
+		globalInstance->global_volume = getOption(3);
 
 	}
-
-	SDL_Event event;
 	
-	while (RUNNING)
+	while (globalInstance->running)
 	{
 
-		 while (SDL_PollEvent(&event))
-			if (event.type == SDL_QUIT)
-				RUNNING = false;
+		 while (SDL_PollEvent(&globalInstance->event))
+		 {
 
-		//Clear Screen with black
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
+			//User quit
+            if (globalInstance->event.type == SDL_QUIT)
+                globalInstance->running = false;
+
+            //Window resized
+            if (globalInstance->event.type == SDL_WINDOWEVENT)
+			{
+
+                if (globalInstance->event.window.event == 
+                    SDL_WINDOWEVENT_SIZE_CHANGED)
+                        scaleRenderer();
+
+			}
+
+		 }
+
+		//Update 'controls' states
+			updateControls();
+
+		//Clear screen with black
+        SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 255);
+        SDL_RenderClear(globalInstance->renderer);
+
+		//Calcualte frame_time and FPS-------------------------------------------
+            //FPS and frame_time get updated every ~100 ms (10 times per second)
+        if (!firstLoop)
+        {
+
+            frames_per_DS++;
+
+            deltaTicks = SDL_GetTicks() - prevTicks;
+
+            if (deltaTicks >= 100)
+            {
+
+                globalInstance->FPS = (int)((frames_per_DS - 
+                    ((float)deltaTicks - 100) * frames_per_DS / deltaTicks) * 10);
+                frames_per_DS = 0;
+
+                prevTicks = SDL_GetTicks();
+
+            }
+
+        }
+        else
+        {   
+
+            prevTicks = SDL_GetTicks();
+
+            //Scale renderer to fit window
+            scaleRenderer();
+
+            //It is no longer the first loop
+            firstLoop = false;
+
+        }
+
+        if (globalInstance->FPS > 0)
+            globalInstance->frame_time = (double)1 / (double)globalInstance->FPS;
+
+        //-----------------------------------------------------------------------
 
 		//Main game loop
-		mainLoop(renderer, Sprites);
+		mainLoop();
 
 		//Render the current frame
-		SDL_RenderPresent(renderer);
+		SDL_RenderPresent(globalInstance->renderer);
 
 		//Update window in and out of fullscreen
 			//For some reason this has to be done at the end of the frame or else it wont update correctly on launch
 		if (UPDATE_FULLSCREEN_MODE)
 		{
 
-			setWindowMode(getOption(2), renderer ,window, DM);
+			setWindowMode(getOption(2));
 
 			//We are not loger updating the fullscreen mode
 			UPDATE_FULLSCREEN_MODE = false;
@@ -113,8 +168,8 @@ int main(int argc, char* argv[])
 
 	}
 
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(globalInstance->renderer);
+	SDL_DestroyWindow(globalInstance->window);
 	SDL_Quit();
 
 	return 0;

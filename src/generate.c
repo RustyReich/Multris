@@ -1,8 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "HEADERS/Structures.h"
-#include "HEADERS/technicalDefinitions.h"
+#include "HEADERS/MGF.h"
 
 //Function for copying all blocks from one piece to another
 	//Make sure piece2 has allocated enough space to store all blocks
@@ -20,6 +19,7 @@ void copyBlocks(piece* piece1, piece* piece2)
 	
 }
 
+//Copy a piece
 void copyPiece(piece* piece1, piece* piece2)
 {
 
@@ -128,6 +128,7 @@ bool isSurrounded(piece* Piece, unsigned short blockID)
 
 }
 
+//Get the width, in blocks, of a piece
 unsigned short calcWidth(piece* Piece)
 {
 
@@ -150,6 +151,7 @@ unsigned short calcWidth(piece* Piece)
 
 }
 
+//Get the height, in blocks, of a piece
 unsigned short calcHeight(piece* Piece)
 {
 
@@ -172,6 +174,7 @@ unsigned short calcHeight(piece* Piece)
 
 }
 
+//Generate a random piece of the given size
 piece* generateGamePiece(unsigned short size)
 {
 

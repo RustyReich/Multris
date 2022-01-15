@@ -5,7 +5,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "HEADERS/technicalDefinitions.h"
+#include "HEADERS/MGF.h"
+
+#define COMP_START	32
+#define COMP_END	126
 
 unsigned short getLineCount(char* fileName)
 {
