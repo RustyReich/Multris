@@ -1,24 +1,25 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "HEADERS/technicalDefinitions.h"
-#include "HEADERS/Structures.h"
+#include "HEADERS/MGF.h"
 
 //draw.c
-void print_string(char*, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*, sprite*);
-void print_int(int, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*, sprite*);
+void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
+	float multiplier, unsigned short color);
+void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
+	float multiplier, unsigned short color);
 unsigned short getIntLength(int num);
-
-//audio.c
-SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec**);
+SDL_Texture* createTexture(int width, int height);
+void clearTexture(SDL_Texture* texture);
+void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
+int getStringLength(char* str, float multiplier);
 
 //map.c
-unsigned short drawTitle(sprite*, double, SDL_Renderer*, piece**, SDL_AudioDeviceID*, SDL_AudioSpec*, 
-	unsigned short*);
-void drawBorders(sprite, SDL_Renderer*);
+unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode);
+void drawBorders(SDL_Texture* background);
 
 //playMode.c
-unsigned short playMode(sprite*, double, SDL_Renderer*, piece*, SDL_AudioDeviceID*, SDL_AudioSpec*, unsigned short);
+unsigned short playMode(piece* firstPiece, unsigned short size);
 
 //file.c
 unsigned int loadTop();
@@ -28,30 +29,32 @@ void delPiece(piece** Piece);
 piece* generateGamePiece(unsigned short size);
 
 //controls.c
-unsigned short controlsScreen(sprite*, SDL_AudioDeviceID*, SDL_AudioSpec*, SDL_Renderer*);
+unsigned short controlsScreen();
 
-void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
+//The main game loop
+void mainLoop()
 {
-	
-	//Used to check if this is the very first frame of the game
-	static bool firstLoop = true;
 
 	//Texture storing everything on screen that never changes
 		//This includes things like the border walls, strings, etc.
-	static SDL_Texture* background = NULL;
-	if (background == NULL)
+	static SDL_Texture* Texture_Background = NULL;
+	if (Texture_Background == NULL)
 	{
 
-		background = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,
-			CHAR_DIMENSION * 50, CHAR_DIMENSION * 50);
+		//Get renderer dimensions
+		int renderWidth;
+		int renderHeight;
+		SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, 
+			&renderHeight);
 
-		SDL_SetRenderTarget(renderer, background);
+		Texture_Background = createTexture(renderWidth, renderHeight);
 
 		//Draw borders
-		drawBorders(Sprites[WALL_CHAR], renderer);
+		drawBorders(Texture_Background);
 
 		//Print all strings
-		print_string("TOP", CHAR_DIMENSION * 39, CHAR_DIMENSION * 2, 1, WHITE, renderer, Sprites);
+		printToTexture("TOP", Texture_Background, FONT_WIDTH * 39, 
+			FONT_HEIGHT * 2, 1, WHITE);
 		//print the top score
 		char* top;
 		unsigned short zeroLength = 6 - getIntLength(loadTop());
@@ -59,37 +62,42 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 		*(top + zeroLength) = '\0';
 		for (unsigned short i = 0; i < zeroLength; i++)
 			*(top + i) = '0';
-		print_string(top, CHAR_DIMENSION * 39, CHAR_DIMENSION * 3 + LETTER_GAP, 1, WHITE, renderer, Sprites);
+		printToTexture(top, Texture_Background, FONT_WIDTH * 39, 
+			FONT_HEIGHT * 3 + STRING_GAP, 1, WHITE);
 		free(top);
-		print_int(loadTop(), CHAR_DIMENSION * 39 + zeroLength * (CHAR_DIMENSION + LETTER_GAP), CHAR_DIMENSION * 3 + LETTER_GAP, 1, WHITE, renderer, Sprites);
+		intToTexture(loadTop(), Texture_Background, 
+			FONT_WIDTH * 39 + zeroLength * (FONT_WIDTH + STRING_GAP), 
+			FONT_HEIGHT * 3 + STRING_GAP, 1, WHITE);
 
-		print_string("SCORE", CHAR_DIMENSION * 39, CHAR_DIMENSION * 5, 1, WHITE, renderer, Sprites);
-		print_string("NEXT", CHAR_DIMENSION * 40, CHAR_DIMENSION * 23, 1, WHITE, renderer, Sprites);
-		print_string("HOLD", CHAR_DIMENSION * 40, CHAR_DIMENSION * 37, 1, WHITE, renderer, Sprites);
-		print_string("LEVEL:", CHAR_DIMENSION * 39, CHAR_DIMENSION * 10, 1, WHITE, renderer, Sprites);
-		print_string("lines", (int)(CHAR_DIMENSION * 39.5), CHAR_DIMENSION * 14, 1, WHITE, renderer, Sprites);
-		print_string("until", (int)(CHAR_DIMENSION * 39.5), CHAR_DIMENSION * 15 + LETTER_GAP, 1, WHITE, renderer, Sprites);
-		print_string("levelup", (int)(CHAR_DIMENSION * 38.5), CHAR_DIMENSION * 16 + 2 * LETTER_GAP, 1, WHITE, renderer, Sprites);
-		print_string("FPS:", CHAR_DIMENSION * 39, CHAR_DIMENSION * 47, 1, WHITE, renderer, Sprites);
-
-		SDL_SetRenderTarget(renderer, NULL);
-		SDL_RenderCopy(renderer, background, NULL, NULL);
+		printToTexture("SCORE", Texture_Background, FONT_WIDTH * 39, 
+			FONT_HEIGHT * 5, 1, WHITE);
+		printToTexture("NEXT", Texture_Background, FONT_WIDTH * 40, 
+			FONT_HEIGHT * 23, 1, WHITE);
+		printToTexture("HOLD", Texture_Background, FONT_WIDTH * 40, 
+			FONT_HEIGHT * 37, 1, WHITE);
+		printToTexture("LEVEL:", Texture_Background, FONT_WIDTH * 39, 
+			FONT_HEIGHT * 10, 1, WHITE);
+		printToTexture("LINES", Texture_Background, (int)(FONT_WIDTH * 39.5), 
+			FONT_HEIGHT * 14, 1, WHITE);
+		printToTexture("UNTIL", Texture_Background, (int)(FONT_WIDTH * 39.5), 
+			FONT_HEIGHT * 15 + STRING_GAP, 1, WHITE);
+		printToTexture("LEVELUP", Texture_Background, (int)(FONT_WIDTH * 38.5), 
+			FONT_HEIGHT * 16 + 2 * STRING_GAP, 1, WHITE);
+		printToTexture("FPS:", Texture_Background, FONT_WIDTH * 39, 
+			FONT_HEIGHT * 47, 1, WHITE);
 
 	}
-	else
-		SDL_RenderCopy(renderer, background, NULL, NULL);	//Draw the background
+	
+	static SDL_Texture* Texture_FPS;
+	if (Texture_FPS == NULL)
+	{
 
-	//Audio Technicals
-	static SDL_AudioDeviceID* audioDevice;
-	static SDL_AudioSpec* wavSpec;
-	if (audioDevice == NULL)
-		audioDevice = prepareAudioDevice(&wavSpec);
+		Texture_FPS = createTexture(getStringLength("0000", 1.0), FONT_HEIGHT);
+
+	}
 
 	//Hold the first piece that is generated in the title screen and will be the first piece played
 	static piece* firstPiece;
-
-	//Stores the amount of time, in seconds, between this frame and the last frame
-	static double frame_time = 0;
 
 	//Stores the current game state
 	static unsigned short game_state = TITLE_SCREEN;
@@ -97,31 +105,17 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 	//For determing what mode to launch playMode in
 	static unsigned short mode;
 
-	//Calculate frame time
-	static Uint32 prevTicks;
-	if (!firstLoop)
+	//Display frame rate
+	if (globalInstance->frame_time != 0.0)
 	{
 
-		//Don't let a framerate be higher than FPS_MAX
-		frame_time = (double)(SDL_GetTicks() - prevTicks) / 1000;
-		if (frame_time < (double)1 / FPS_MAX)
-		{
-
-			SDL_Delay(1000 * ((double)1 / FPS_MAX - frame_time));
-			frame_time = (double)(SDL_GetTicks() - prevTicks) / 1000;
-		
-		}
+		clearTexture(Texture_FPS);
+		intToTexture(globalInstance->FPS, Texture_FPS, 0, 0, 1.0, YELLOW);
 
 	}
-	prevTicks = SDL_GetTicks();
-
-	//Calculate and display frame rate
-	if (frame_time != 0.0)
-		print_int((int)(1 / frame_time), CHAR_DIMENSION * 43 + LETTER_GAP, CHAR_DIMENSION * 47, 1, YELLOW, 
-			renderer, Sprites);
 
 	if (game_state == TITLE_SCREEN)
-		game_state = drawTitle(Sprites, frame_time, renderer, &firstPiece, audioDevice, wavSpec, &mode);
+		game_state = drawTitle(&firstPiece, &mode);
 	else if (game_state == PLAY_SCREEN)
 	{
 
@@ -135,36 +129,33 @@ void mainLoop(SDL_Renderer* renderer, sprite* Sprites)
 				firstPiece = generateGamePiece(mode);
 
 			}
-			game_state = playMode(Sprites, frame_time, renderer, firstPiece, audioDevice, wavSpec,
-				mode);
+			game_state = playMode(firstPiece, mode);
 
 			//We can delete the firstPiece after passing it to playMode
 			delPiece(&firstPiece);
 
 		}
 		else     //The firstPiece has been deleted since it is no longer needed
-			game_state = playMode(Sprites, frame_time, renderer, NULL, audioDevice, wavSpec, mode);	//So we just pass NULL its place
+			game_state = playMode(NULL, mode);	//So we just pass NULL in its place
 
 	}
 	else if (game_state == CONTROLS_SCREEN)
-		game_state = controlsScreen(Sprites, audioDevice, wavSpec, renderer);
+		game_state = controlsScreen();
 	else if (game_state == RESET)	//Reset the game to the main menu
 	{
 		
 		//So lets reset the background just in case the top score has been updated
-		SDL_SetRenderTarget(renderer, background);
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-		SDL_RenderClear(renderer);
-		SDL_DestroyTexture(background);
-		background = NULL;
-		SDL_SetRenderTarget(renderer, NULL);
+		clearTexture(Texture_Background);
+		SDL_DestroyTexture(Texture_Background);
+		Texture_Background = NULL;
 
 		game_state = TITLE_SCREEN;
 
 	}
 
-	//It is no longer the first loop
-	if (firstLoop)
-		firstLoop = false;
+	// RENDERING --------------------------------------------------------------
+	drawTexture(Texture_Background, 0, 0, 1.0);
+	drawTexture(Texture_FPS, FONT_WIDTH * 43 + STRING_GAP, FONT_HEIGHT * 47, 
+		1.0);
 
 }

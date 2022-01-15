@@ -1,49 +1,27 @@
-#include "HEADERS/Structures.h"
+#include "HEADERS/MGF.h"
 
-SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)
-{
-
-	//Populate wavSpec structure
-	*wavSpec = malloc(sizeof(**wavSpec));
-	Uint32 wavLength;
-	Uint8* wavBuffer;
-	//All sound files have the same specs as move.wav, so we can use it to load the audio specs
-	SDL_LoadWAV("AUDIO/move.wav", (*wavSpec), &wavBuffer, &wavLength);
-
-	//Open the Audio device
-	SDL_AudioDeviceID* device;
-	device = malloc(sizeof(*device));
-	if (device != NULL)
-		*device = SDL_OpenAudioDevice(NULL, 0, *wavSpec, NULL, 0);
-
-	//Free the memory taken by loading "move.wav"
-	SDL_FreeWAV(wavBuffer);
-
-	return device;
-
-}
-
-void playSound(sound* Sound, SDL_AudioDeviceID* audioDevice, SDL_AudioSpec* wavSpec)
+void playSound(sound* Sound)
 {
 
 	//If the sound being played is not the one already queued into the audio buffer
 		//Technically we don't check if its the same one, we just check if its the same length
 			//This still works since all audio files in the game are different lengths
-	if (Sound->length != SDL_GetQueuedAudioSize(*audioDevice))
+	if (Sound->length != SDL_GetQueuedAudioSize(*globalInstance->audioDevice))
 	{
 
 		//Then we need to clear the audio buffer and queue the audio currently trying to be played
-		SDL_ClearQueuedAudio(*audioDevice);
-		SDL_QueueAudio(*audioDevice, Sound->buffer, Sound->length);
+		SDL_ClearQueuedAudio(*globalInstance->audioDevice);
+		SDL_QueueAudio(*globalInstance->audioDevice, Sound->buffer, 
+			Sound->length);
 
 	}
 
 	//Play the audio currently queued
-	SDL_PauseAudioDevice(*audioDevice, 0);
+	SDL_PauseAudioDevice(*globalInstance->audioDevice, 0);
 
 }
 
-sound* loadSound(char* file, SDL_AudioSpec* wavSpec)
+sound* loadSound(char* file)
 {
 
 	//Allocate memory for the sound 
@@ -52,7 +30,8 @@ sound* loadSound(char* file, SDL_AudioSpec* wavSpec)
 
 	//Load the sound into the allocated memory
 	if (newSound != NULL)
-		SDL_LoadWAV(file, wavSpec, &newSound->buffer, &newSound->length);
+		SDL_LoadWAV(file, globalInstance->wavSpec, &newSound->buffer, 
+			&newSound->length);
 
 	return newSound;
 
@@ -73,7 +52,7 @@ void delSound(sound** Sound)
 }
 
 //Set volume of sound
-void setVolume(sound** Sound, SDL_AudioSpec* wavSpec, unsigned short volume)
+void setVolume(sound** Sound, unsigned short volume)
 {
 
 	//Buffer that stores audio after volume adjustment
@@ -81,7 +60,9 @@ void setVolume(sound** Sound, SDL_AudioSpec* wavSpec, unsigned short volume)
 	dstStream = calloc((*Sound)->length, sizeof(*dstStream));
 
 	//Mix audio with volume adjustment
-	SDL_MixAudioFormat(dstStream, (*Sound)->buffer, wavSpec->format, (*Sound)->length, SDL_MIX_MAXVOLUME * (volume / 100.0));
+	SDL_MixAudioFormat(dstStream, (*Sound)->buffer, 
+		globalInstance->wavSpec->format, (*Sound)->length, 
+		SDL_MIX_MAXVOLUME * (volume / 100.0));
 
 	//Copy volume adjusted buffer back to Sound->buffer
 	if (dstStream != NULL)

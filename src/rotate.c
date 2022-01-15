@@ -1,12 +1,12 @@
-#include "HEADERS/Structures.h"
-#include "HEADERS/technicalDefinitions.h"
+#include "HEADERS/MGF.h"
 
-void inversePiece(piece*);
-void mirrorPieceOverY(piece*);
+void inversePiece(piece* Piece);
+void mirrorPieceOverY(piece* Piece);
 
-void swap_signed(signed short*, signed short*);
-void swap_unsigned(unsigned short*, unsigned short*);
+void swap_signed(signed short* A, signed short* B);
+void swap_unsigned(unsigned short* A, unsigned short* B);
 
+//Rotate a piece
 void rotatePiece(piece *Piece, unsigned short direction)
 {
 
@@ -28,6 +28,7 @@ void rotatePiece(piece *Piece, unsigned short direction)
 
 }
 
+//Inverse the x and y values of every block in a piece
 void inversePiece(piece* Piece)
 {
 
@@ -58,7 +59,7 @@ void mirrorPieceOverY(piece* Piece)
 
 }
 
-//Swap two numbers
+//Swap two signed numbers
 void swap_signed(signed short* A, signed short* B)
 {
 
@@ -67,6 +68,8 @@ void swap_signed(signed short* A, signed short* B)
 	*B = temp;
 
 }
+
+//Swap two unsigned numbers
 void swap_unsigned(unsigned short* A, unsigned short* B)
 {
 

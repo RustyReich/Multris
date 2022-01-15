@@ -1,24 +1,59 @@
+#include <stdbool.h>
+
 #include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
 
-typedef struct rectangle
+#include <stdbool.h>
+
+#define STRUCTURES_H
+
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+
+typedef struct control
 {
 
-	unsigned short Width;
-	unsigned short Height;
+    Uint16 button;
 
-	unsigned short X;
-	unsigned short Y;
+    bool onPress;
+    bool onHold;
 
-} rectangle;
+} control;
 
-typedef struct sprite
+typedef struct gameInstance
 {
 
-	rectangle* rectangles;
-	
-	unsigned short numOfRect;
+    SDL_Window* window;
+    SDL_DisplayMode DM;
+    SDL_Renderer* renderer;
+    SDL_Event event;
+    SDL_Surface* windowSurface;
 
-} sprite;
+    int minimizedWindow_W;
+    int minimizedWindow_H;
+
+    SDL_AudioDeviceID* audioDevice;
+    SDL_AudioSpec* wavSpec;
+
+    SDL_Texture* stringSS;
+    int stringSS_W;
+	int stringSS_H;
+    SDL_Texture* gameSS;
+    int gameSS_W;
+    int gameSS_H;
+
+    bool running;
+
+    int FPS;
+    double frame_time;
+
+    unsigned short global_volume;
+
+    Uint8* keys;
+
+    control* controls;
+
+} gameInstance;
 
 typedef struct block
 {

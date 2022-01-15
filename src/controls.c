@@ -1,22 +1,56 @@
 #include <stdbool.h>
 
-#include "HEADERS/Structures.h"
-#include "HEADERS/technicalDefinitions.h"
-
-//texture.c
-SDL_Texture* createTexture(SDL_Renderer*, unsigned short, unsigned short);
-void drawTexture(SDL_Texture*, unsigned short, unsigned short, float, SDL_Renderer*);
-
-//audio.c
-void playSound(sound*, SDL_AudioDeviceID*, SDL_AudioSpec*);
-sound* loadSound(char*, SDL_AudioSpec*);
-void delSound(sound**);
-void setVolume(sound**, SDL_AudioSpec*, unsigned short);
+#include "HEADERS/MGF.h"
 
 //draw.c
-void print_string(char*, unsigned short, unsigned short, unsigned short, unsigned short, SDL_Renderer*, sprite*);
+SDL_Texture* createTexture(int width, int height);
+void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
+void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
+	float multiplier, unsigned short color);
 
-unsigned short controlsScreen(sprite* Sprites, SDL_AudioDeviceID* audioDevice, SDL_AudioSpec* wavSpec, SDL_Renderer* renderer)
+//audio.c
+void playSound(sound* Sound);
+sound* loadSound(char* file);
+void delSound(sound** Sound);
+void setVolume(sound** Sound, unsigned short volume);
+
+void updateControls()
+{
+
+    //Iterate over all controls
+    for (int i = 0; i < NUM_OF_CONTROLS; i++)
+    {
+        
+        //Update logic
+        if (globalInstance->keys[globalInstance->controls[i].button])
+        {
+
+            if (globalInstance->controls[i].onHold == false)
+            {
+
+                globalInstance->controls[i].onPress = true;
+                globalInstance->controls[i].onHold = true;
+
+            }
+            else
+                globalInstance->controls[i].onPress = false;
+
+        }
+        else
+            globalInstance->controls[i].onHold = false;
+
+    }
+
+}
+
+void setControls()
+{
+
+    //Valid buttons are SDL_SCANCODE_A to SDL_SCANCODE_NUMLOCKCLEAR
+
+}
+
+unsigned short controlsScreen()
 {
 
     //Get current keyboard state
@@ -30,21 +64,37 @@ unsigned short controlsScreen(sprite* Sprites, SDL_AudioDeviceID* audioDevice, S
     {
 
         //Make the texture the size of the play area
-        Texture_Controls = createTexture(renderer, CHAR_DIMENSION * WIDTH_OF_PLAYSPACE, 
-                                        CHAR_DIMENSION * (HEIGHT_IN_CHARS - 2));
+        Texture_Controls = createTexture(FONT_WIDTH * WIDTH_OF_PLAYSPACE, 
+            FONT_HEIGHT * (HEIGHT_IN_CHARS - 2));
 
         //Print controls to texture
-        SDL_SetRenderTarget(renderer, Texture_Controls);
-        print_string("LEFT RIGHT ARROWS : MOVE", 1 * (CHAR_DIMENSION + LETTER_GAP), 1 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("DOWN ARROW : SOFT DROP", 1 * (CHAR_DIMENSION + LETTER_GAP), 2 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("UP ARROW : HARD DROP", 1 * (CHAR_DIMENSION + LETTER_GAP), 3 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("SPACE : HOLD", 1 * (CHAR_DIMENSION + LETTER_GAP), 4 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("Z : ROTATE CCW", 1 * (CHAR_DIMENSION + LETTER_GAP), 5 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("X : ROTATE CW", 1 * (CHAR_DIMENSION + LETTER_GAP), 6 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("C : MIRROR PIECE", 1 * (CHAR_DIMENSION + LETTER_GAP), 7 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("ENTER : SELECT PAUSE", 1 * (CHAR_DIMENSION + LETTER_GAP), 8 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        print_string("ESC : EXIT GAME FROM MENU", 1 * (CHAR_DIMENSION + LETTER_GAP), 9 * (CHAR_DIMENSION + LETTER_GAP), 1, WHITE, renderer, Sprites);
-        SDL_SetRenderTarget(renderer, NULL);
+        printToTexture("LEFT RIGHT ARROWS : MOVE", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 1 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("DOWN ARROW : SOFT DROP", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("UP ARROW : HARD DROP", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("SPACE : HOLD", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 4 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("Z : ROTATE CCW", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 5 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("X : ROTATE CW", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 6 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("C : MIRROR PIECE", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 7 * (FONT_WIDTH + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("ENTER : SELECT PAUSE", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 8 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
+        printToTexture("ESC : EXIT GAME FROM MENU", Texture_Controls, 
+            1 * (FONT_WIDTH + STRING_GAP), 9 * (FONT_HEIGHT + STRING_GAP), 1, 
+            WHITE);
 
     }
 
@@ -53,14 +103,14 @@ unsigned short controlsScreen(sprite* Sprites, SDL_AudioDeviceID* audioDevice, S
     if (Sound_Rotate == NULL)
     {
 
-        Sound_Rotate = loadSound("AUDIO/rotate.wav", wavSpec);
-        setVolume(&Sound_Rotate, wavSpec, GLOBAL_VOLUME * 10);
+        Sound_Rotate = loadSound("AUDIO/rotate.wav");
+        setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
 
     }
 
     //Rendering --------------------------------------------------------
 
-    drawTexture(Texture_Controls, CHAR_DIMENSION, CHAR_DIMENSION, 1.0, renderer);
+    drawTexture(Texture_Controls, FONT_WIDTH, FONT_HEIGHT, 1.0);
 
     static char* inputLock;		//This prevents the user from holding down certain buttons
 	if (inputLock == NULL)
@@ -78,7 +128,7 @@ unsigned short controlsScreen(sprite* Sprites, SDL_AudioDeviceID* audioDevice, S
         {
             
             //play ROTATE sound
-            playSound(Sound_Rotate, audioDevice, wavSpec);
+            playSound(Sound_Rotate);
 
             //Free Textures
             SDL_DestroyTexture(Texture_Controls);
