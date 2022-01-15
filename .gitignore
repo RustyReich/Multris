@@ -1,2 +1,5 @@
 *
 !src/
+!build/
+!build/AUDIO
+!build/SPRITES
