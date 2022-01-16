@@ -10,3 +10,9 @@
 !build/AUDIO/*
 !build/SPRITES
 !build/SPRITES/*
+
+!Makefile_Linux
+!Makefile_Windows
+
+!unix_obj/
+!win_obj/
