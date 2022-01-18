@@ -24,6 +24,19 @@
 #define SELECT_BUTTON_ID		8
 #define EXIT_BUTTON_ID			9
 
+#define NUM_OF_SOUNDS		7
+#define COMPLETE_SOUND_ID 	0
+#define HOLD_SOUND_ID		1
+#define LAND_SOUND_ID		2
+#define MOVE_SOUND_ID		3
+#define OVER_SOUND_ID		4
+#define PAUSE_SOUND_ID		5
+#define ROTATE_SOUND_ID		6
+
+//Speed is in cells per second
+		//Calculated using values from NES version of Tetris
+#define INITIAL_SPEED	(double)(60.0988 / 48)
+
 #define ASPECT_RATIO				1
 #define HEIGHT_IN_CHARS				50
 #define WIDTH_OF_PLAYSPACE			34
@@ -75,13 +88,7 @@
 
 #define OPTIONS	10
 
-#define FPS_MAX 500
-
 #define WINDOWED	0
 #define FULLSCREEN 	1
 
 #define NUM_OF_OPTIONS 4
-
-//Speed is in cells per second
-		//Calculated using values from NES version of Tetris
-#define INITIAL_SPEED	(double)(60.0988 / 48)

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "HEADERS/MGF.h"
 
@@ -229,9 +230,9 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				1, WHITE);
 
 		//Print the current VOLUME option
-		intToTexture(globalInstance->global_volume, Texture_Options, 
-			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			WHITE);
+		intToTexture((int)((float)globalInstance->global_volume / 100.0 * 9), 
+			Texture_Options, 9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 
+			1, WHITE);
 
 		//Draw BLOCK_CHAR options
 		unsigned short color = (rand() % (RED - YELLOW + 1)) + YELLOW;
@@ -249,14 +250,14 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 	{
 
 		Sound_Move = loadSound("AUDIO/move.wav");
-		setVolume(&Sound_Move, globalInstance->global_volume * 10);
+		setVolume(&Sound_Move, 0);
 
 	}
 	if (Sound_Rotate == NULL)
 	{
 
 		Sound_Rotate = loadSound("AUDIO/rotate.wav");
-		setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
+		setVolume(&Sound_Rotate, 0);
 
 	}
 
@@ -601,8 +602,8 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 					Sound_Rotate = loadSound("AUDIO/rotate.wav");
 
 					//Set volumes
-					setVolume(&Sound_Move, globalInstance->global_volume * 10);
-					setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
+					setVolume(&Sound_Move, 0);
+					setVolume(&Sound_Rotate, 0);
 
 					playSound(Sound_Move);
 
@@ -658,7 +659,8 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 					playSound(Sound_Move);
 
 					//Save volume
-					saveOption(3, globalInstance->global_volume);
+					saveOption(3, 
+						round(((float)globalInstance->global_volume / 100.0 * 9)));
 
 				}
 
@@ -794,7 +796,7 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 		printToTexture(">", texture, 0, 4 * (FONT_WIDTH + STRING_GAP), 1, BLACK);
 
 		//Print current volume
-		intToTexture(globalInstance->global_volume, texture, 
+		intToTexture((int)((float)globalInstance->global_volume / 100.0 * 9), texture, 
 			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
 			WHITE);
 

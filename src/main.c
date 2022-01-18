@@ -18,13 +18,14 @@ unsigned short getLineCount(char* fileName);
 void initInstance(gameInstance** instance);
 void scaleRenderer();
 void setWindowMode(unsigned short mode);
+void updateVolume();
 
 //controls.c
 void updateControls();
 
 //Initialize global variables
 unsigned short BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
-unsigned short UPDATE_FULLSCREEN_MODE = true;
+bool UPDATE_FULLSCREEN_MODE = true;
 
 //Global Instance
 gameInstance *globalInstance;
@@ -63,8 +64,9 @@ int main(int argc, char* argv[])
 	initInstance(&globalInstance);
 
 	//Create options file if it doesn't exist or has the wrong number of lines
-	if (!fileExists("SAVES/options.cfg") || getLineCount("SAVES/options.cfg") != NUM_OF_OPTIONS)
-		createOptions();
+	if (!fileExists("SAVES/options.cfg") || getLineCount("SAVES/options.cfg") != 
+		NUM_OF_OPTIONS)
+			createOptions();
 
 	if (fileExists("SAVES/options.cfg"))
 	{
@@ -76,15 +78,18 @@ int main(int argc, char* argv[])
 			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_2;
 
 		//Load volume from options file
-		globalInstance->global_volume = getOption(3);
+		globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
 
 	}
+
+	//Update volume to that loaded from options file
+	updateVolume();
 	
 	while (globalInstance->running)
 	{
 
-		 while (SDL_PollEvent(&globalInstance->event))
-		 {
+		while (SDL_PollEvent(&globalInstance->event))
+		{
 
 			//User quit
             if (globalInstance->event.type == SDL_QUIT)
@@ -100,10 +105,10 @@ int main(int argc, char* argv[])
 
 			}
 
-		 }
+		}
 
 		//Update 'controls' states
-			updateControls();
+		updateControls();
 
 		//Clear screen with black
         SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 255);
@@ -155,7 +160,8 @@ int main(int argc, char* argv[])
 		SDL_RenderPresent(globalInstance->renderer);
 
 		//Update window in and out of fullscreen
-			//For some reason this has to be done at the end of the frame or else it wont update correctly on launch
+			//For some reason this has to be done at the end of the frame or else it wont 
+			//update correctly on launch
 		if (UPDATE_FULLSCREEN_MODE)
 		{
 

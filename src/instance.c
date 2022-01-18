@@ -4,6 +4,9 @@
 
 #include "HEADERS/MGF.h"
 
+//audio.c
+sound* loadSound(char* file);
+
 //Function for initializing an audio device
 SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)
 {
@@ -49,6 +52,27 @@ control* initControls()
     controls[EXIT_BUTTON_ID].button = SDL_SCANCODE_ESCAPE;
 
     return controls;
+
+}
+
+sound** initSounds()
+{
+
+    //Allocate memory for sounds
+    sound** sounds = calloc(NUM_OF_SOUNDS, sizeof(**sounds));
+    for (unsigned short i = 0; i < NUM_OF_SOUNDS; i++)
+        sounds[i] = calloc(1, sizeof(*sounds));
+
+    //Load all sounds
+    sounds[COMPLETE_SOUND_ID] = loadSound("AUDIO/complete.wav");
+    sounds[HOLD_SOUND_ID] = loadSound("AUDIO/hold.wav");
+    sounds[LAND_SOUND_ID] = loadSound("AUDIO/land.wav");
+    sounds[MOVE_SOUND_ID] = loadSound("AUDIO/move.wav");
+    sounds[OVER_SOUND_ID] = loadSound("AUDIO/over.wav");
+    sounds[PAUSE_SOUND_ID] = loadSound("AUDIO/pause.wav");
+    sounds[ROTATE_SOUND_ID] = loadSound("AUDIO/rotate.wav");
+
+    return sounds;
 
 }
 
@@ -131,7 +155,11 @@ void initInstance(gameInstance** instance)
         INITIAL_INTERNAL_HEIGHT);
 
     //Initialize audioDevice and wavSpec
-    globalInstance->audioDevice = prepareAudioDevice(&globalInstance->wavSpec);
+    (*instance)->audioDevice = prepareAudioDevice(&globalInstance->wavSpec);
+
+    //Load all game sounds
+    (*instance)->masterSounds = initSounds();
+    (*instance)->sounds = initSounds();
 
     //Initialize PNG loading
     int imgFlags = IMG_INIT_PNG;
@@ -165,6 +193,32 @@ void initInstance(gameInstance** instance)
 
     //Initialize controls with the default controls
     (*instance)->controls = initControls();
+
+}
+
+//Function for updating the volume of the game sounds
+void updateVolume()
+{
+
+    for (unsigned short i = 0; i < NUM_OF_SOUNDS; i++)
+    {
+
+        //Buffer that stores audio after volume adjustment
+        Uint8* dstStream = calloc(globalInstance->masterSounds[i]->length, 
+                                    sizeof(*dstStream));
+
+        //Mix audio with volume adjustment
+        SDL_MixAudioFormat(dstStream, 
+                            globalInstance->masterSounds[i]->buffer, 
+                            globalInstance->wavSpec->format,
+                            globalInstance->masterSounds[i]->length,
+                            SDL_MIX_MAXVOLUME * (globalInstance->global_volume / 100.0));
+
+        //Copy volume adjusted buffer to sounds[i]->buffer
+        for (int j = 0 ; j < globalInstance->masterSounds[i]->length; j++)
+            globalInstance->sounds[i]->buffer[j] = dstStream[j];
+
+    }
 
 }
 

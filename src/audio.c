@@ -1,5 +1,6 @@
 #include "HEADERS/MGF.h"
 
+//Play a sound
 void playSound(sound* Sound)
 {
 
@@ -21,6 +22,7 @@ void playSound(sound* Sound)
 
 }
 
+//Load a sound
 sound* loadSound(char* file)
 {
 

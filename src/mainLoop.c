@@ -114,6 +114,10 @@ void mainLoop()
 
 	}
 
+	//Exit game if user presses EXIT_BUTTON
+	if (globalInstance->controls[EXIT_BUTTON_ID].onPress)
+		globalInstance->running = false;
+
 	if (game_state == TITLE_SCREEN)
 		game_state = drawTitle(&firstPiece, &mode);
 	else if (game_state == PLAY_SCREEN)

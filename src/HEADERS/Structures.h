@@ -10,6 +10,16 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 
+typedef struct varVector
+{
+
+    void** adrs;
+    void** ptrs;
+
+    int count;
+
+} varVector;
+
 typedef struct control
 {
 
@@ -19,6 +29,14 @@ typedef struct control
     bool onHold;
 
 } control;
+
+typedef struct sound
+{
+
+	Uint32 length;
+	Uint8* buffer;
+
+} sound;
 
 typedef struct gameInstance
 {
@@ -53,6 +71,9 @@ typedef struct gameInstance
 
     control* controls;
 
+    sound** sounds;         //This holds the volume adjusted sounds
+    sound** masterSounds;   //This holds the original sonuds, that are not volume adjusted
+
 } gameInstance;
 
 typedef struct block
@@ -78,11 +99,3 @@ typedef struct piece
 	signed short minY;
 
 } piece;
-
-typedef struct sound
-{
-
-	Uint32 length;
-	Uint8* buffer;
-
-} sound;

@@ -38,6 +38,16 @@ void saveTop(unsigned int score);
 unsigned int loadTop();
 unsigned short getOption(unsigned short line);
 
+//memory.c
+varVector** pushAddress_VAR(void* addr, void** ptr);
+void freeVars(varVector** vector);
+void declare_unsigned_short(void** ptr, unsigned short value);
+void declare_double(void** ptr, double value);
+void declare_int(void** ptr, int value);
+void declare_char(void** ptr, char value);
+void declare_bool(void** ptr, bool value);
+void declare_unsigned_int(void** ptr, unsigned int value);
+
 piece* getFirstPiece(piece*);
 void move(char, unsigned short*, piece);
 bool isColliding(piece, unsigned short, double*, unsigned short, bool*);
@@ -54,11 +64,6 @@ unsigned short calcGhostY(piece*, unsigned short, unsigned short, bool*);
 
 unsigned short playMode(piece* firstPiece, unsigned short size)
 {
-	
-	//Get current keyboard state
-	static Uint8* keys = NULL;
-	if (keys == NULL)
-		keys = (Uint8*)SDL_GetKeyboardState(NULL);
 	
 	//Game pieces
 	static piece* nextPiece;
@@ -149,209 +154,35 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 	}
 
-	//Sounds
-	static sound* Sound_Move;
-	static sound* Sound_Land;
-	static sound* Sound_Rotate;
-	static sound* Sound_Complete;
-	static sound* Sound_Over;
-	static sound* Sound_Pause;
-	static sound* Sound_Hold;
-	if (Sound_Move == NULL)
-	{
-
-		Sound_Move = loadSound("AUDIO/move.wav");
-		setVolume(&Sound_Move, globalInstance->global_volume * 10);
-
-	}
-	if (Sound_Land == NULL)
-	{
-
-		Sound_Land = loadSound("AUDIO/land.wav");
-		setVolume(&Sound_Land, globalInstance->global_volume * 10);
-
-	}
-	if (Sound_Rotate == NULL)
-	{
-
-		Sound_Rotate = loadSound("AUDIO/rotate.wav");
-		setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
-
-	}
-	if (Sound_Complete == NULL)
-	{
-
-		Sound_Complete = loadSound("AUDIO/complete.wav");
-		setVolume(&Sound_Complete, globalInstance->global_volume * 10);
-
-	}
-	if (Sound_Over == NULL)
-	{
-
-		Sound_Over = loadSound("AUDIO/over.wav");
-		setVolume(&Sound_Over, globalInstance->global_volume * 10);
-
-	}
-	if (Sound_Pause == NULL)
-	{
-
-		Sound_Pause = loadSound("AUDIO/pause.wav");
-		setVolume(&Sound_Pause, globalInstance->global_volume * 10);
-
-	}
-	if (Sound_Hold == NULL)
-	{
-
-		Sound_Hold = loadSound("AUDIO/hold.wav");
-		setVolume(&Sound_Hold, globalInstance->global_volume * 10);
-
-	}
-
 	//Variables
-	static unsigned short* X;
-	if (X == NULL)
-	{
+	static unsigned short* X; declare(X, 0);
+	static double *Y; declare(Y, 0.0);
+	static double *speed; declare(speed, INITIAL_SPEED);
+	static bool *softDrop; declare(softDrop, false);
+	static bool* gameOver; declare(gameOver, false);
+	static bool* clearingLine; declare(clearingLine, false);
+	static bool* paused; declare(paused, false);
+	static bool* overAnimation; declare(overAnimation, false);
+	static bool* justHeld; declare(justHeld, false);
+	static unsigned short* numCompleted; declare(numCompleted, 0);
+	static unsigned int* Score; declare(Score, 0);
+	static unsigned short* Level; declare(Level, 0);
+	static unsigned short* linesAtCurrentLevel; declare(linesAtCurrentLevel, 0);
+	static bool* ghostEnabled; declare(ghostEnabled, getOption(1));
+	static unsigned short* ghostY; declare(ghostY, HEIGHT_IN_CHARS-2-currentPiece->height);
+	static Uint32* moveStart; declare(moveStart, 0);
+	static bool* moveStartBool; declare(moveStartBool, false);
 
-		X = malloc(sizeof(*X));
-		*X = 0;
-
-	}
-	static double *Y;
-	if (Y == NULL)
-	{
-
-		Y = malloc(sizeof(*Y));
-		*Y = 0;
-
-	}
-	static double *speed;
-	if (speed == NULL)
-	{
-
-		speed = malloc(sizeof(*speed));
-		*speed = (double)(60.0988 / 48);	//In cells / second
-
-	}
-	static bool *softDrop;
-	if (softDrop == NULL)
-	{
-
-		softDrop = malloc(sizeof(*softDrop));
-		*softDrop = false;
-
-	}
-	static bool* gameOver;
-	if (gameOver == NULL)
-	{
-
-		gameOver = malloc(sizeof(*gameOver));
-		*gameOver = false;
-
-	}
-	static bool* clearingLine;
-	if (clearingLine == NULL)
-	{
-
-		clearingLine = malloc(sizeof(*clearingLine));
-		*clearingLine = false;
-
-	}
-	static bool* paused;
-	if (paused == NULL)
-	{
-
-		paused = malloc(sizeof(*paused));
-		*paused = false;
-
-	}
-	static bool* overAnimation;
-	if (overAnimation == NULL)
-	{
-
-		overAnimation = malloc(sizeof(*overAnimation));
-		*overAnimation = false;
-
-	}
-	static bool* justHeld;
-	if (justHeld == NULL)
-	{
-
-		justHeld = malloc(sizeof(*justHeld));
-		*justHeld = false;
-
-	}
+	//Arrays
 	static unsigned short* completedRows;
-	static unsigned short* numCompleted;
-	if (numCompleted == NULL)
-	{
-
-		numCompleted = malloc(sizeof(*numCompleted));
-		*numCompleted = 0;
-
-	}
-	static unsigned int* Score;
-	if (Score == NULL)
-	{
-
-		Score = malloc(sizeof(*Score));
-		*Score = 0;
-
-	}
-	static unsigned short* Level;
-	if (Level == NULL)
-	{
-
-		Level = malloc(sizeof(*Level));
-		*Level = 0;
-
-	}
-	static unsigned short* linesAtCurrentLevel;
-	if (linesAtCurrentLevel == NULL)
-	{
-
-		linesAtCurrentLevel = malloc(sizeof(*linesAtCurrentLevel));
-		*linesAtCurrentLevel = 0;
-
-	}
-	static bool* ghostEnabled;
-	if (ghostEnabled == NULL)
-	{
-
-		ghostEnabled = malloc(sizeof(*ghostEnabled));
-		*ghostEnabled = getOption(1);
-
-	}
-	static unsigned short* ghostY;
-	if (ghostY == NULL)
-	{
-
-		ghostY = malloc(sizeof(*ghostY));
-		*ghostY = HEIGHT_IN_CHARS - 2 - currentPiece->height;
-
-	}
-	static Uint32* moveStart;
-	if (moveStart == NULL)
-	{
-
-		moveStart = malloc(sizeof(*moveStart));
-		*moveStart = 0;
-
-	}
-	static bool* moveStartBool;
-	if (moveStartBool == NULL)
-	{
-
-		moveStartBool = calloc(1, sizeof(*moveStartBool));
-		*moveStartBool = false;
-
-	}
 
 	//map data matrix
 	static bool* mapData;
 	if (mapData == NULL)
 	{
 
-		mapData = (bool*)malloc((HEIGHT_IN_CHARS - 2) * WIDTH_OF_PLAYSPACE * sizeof(*mapData));
+		mapData = 
+			(bool*)malloc((HEIGHT_IN_CHARS - 2) * WIDTH_OF_PLAYSPACE * sizeof(*mapData));
 		if (mapData != NULL)
 			for (unsigned short i = 0; i < HEIGHT_IN_CHARS - 2; i++)
 				for (unsigned short j = 0; j < WIDTH_OF_PLAYSPACE; j++)
@@ -391,7 +222,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 					//Only play sound if can actually move
 					if (*X != 0)
-						playSound(Sound_Move);
+						playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 					move(LEFT, X, *currentPiece);
 
 					//Recalculate ghostY
@@ -404,7 +235,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				{
 
 					if (*X + currentPiece->width < WIDTH_OF_PLAYSPACE)
-						playSound(Sound_Move);
+						playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 					move(RIGHT, X, *currentPiece);
 
 					//Recalculate ghostY
@@ -446,7 +277,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			{
 
 				//Only play sound if it actually rotated
-				playSound(Sound_Rotate);
+				playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
@@ -469,7 +300,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			else
 			{
 
-				playSound(Sound_Rotate);
+				playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
@@ -492,7 +323,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			{
 
 				//Only play sound if actually mirrored
-				playSound(Sound_Rotate);
+				playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
@@ -506,7 +337,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		if (globalInstance->controls[HOLD_BUTTON_ID].onPress && !*justHeld)
 		{
 
-			playSound(Sound_Hold);
+			playSound(globalInstance->sounds[HOLD_SOUND_ID]);
 
 			if (holdPiece == NULL)
 			{
@@ -611,7 +442,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		if (globalInstance->controls[SELECT_BUTTON_ID].onPress)
 		{
 
-			playSound(Sound_Pause);
+			playSound(globalInstance->sounds[PAUSE_SOUND_ID]);
 			*paused = !*paused;
 
 		}
@@ -622,6 +453,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 	// RENDERING -------------------------------------------------------------
 
+	//Draw various textures that don't move
 	drawTexture(Texture_Next, (int)(FONT_WIDTH * 42.5) - *nextText_Width / 2, 
 		(int)(FONT_HEIGHT * 29.5) - *nextText_Height / 2, 1.0);
 	drawTexture(Texture_Hold, (int)(FONT_WIDTH * 42.5) - (*holdText_Width / 2) 
@@ -649,6 +481,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 	}
 
+	//Draw current piece
 	drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
 		FONT_HEIGHT * ((int)*Y + 1), 1.0);
 
@@ -659,10 +492,11 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			FONT_WIDTH + FONT_WIDTH * WIDTH_OF_PLAYSPACE / 2 - 3 * 
 			(FONT_WIDTH + STRING_GAP), FONT_HEIGHT * (23 - 0.5), 1.0);
 
-	//--------------------------------------
+	//------------------------------------------------------------------------------
+
+	//Animations -----------------------------------------------------------------
 
 	//Line-clearing animation -------------------
-
 	if (*clearingLine == true && numCompleted != NULL)
 	{
 		
@@ -670,7 +504,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		
 		if (playLineAnimation(foreground, *completedRows, clearingLine,
 			mapData, numCompleted) == true)
-			playSound(Sound_Complete);
+			playSound(globalInstance->sounds[COMPLETE_SOUND_ID]);
 
 		//Remove first element in completedRows array
 			//Also resize completedRows array
@@ -698,10 +532,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		
 	}
 
-	//---------------------------------------------
-
-	//Game Over -----------------------------------
-
+	//If game is over
 	if (*gameOver == true)
 	{
 
@@ -720,10 +551,10 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		else
 		{
 
-			if (keys[SDL_SCANCODE_RETURN])
+			if (globalInstance->controls[SELECT_BUTTON_ID].onPress)
 			{
 
-				//Free all memory taken by PLAYMODE ------------------
+				//Free all memory taken by PLAYMODE -----------------------------------
 
 				delPiece(&nextPiece);
 				SDL_DestroyTexture(Texture_Next);
@@ -761,50 +592,12 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				SDL_DestroyTexture(foreground);
 				foreground = NULL;
 
-				delSound(&Sound_Move);
-				delSound(&Sound_Land);
-				delSound(&Sound_Rotate);
-				delSound(&Sound_Complete);
-				delSound(&Sound_Over);
-				delSound(&Sound_Pause);
-				delSound(&Sound_Hold);
+				//Free variables
+				freeVars(pushAddress_VAR(NULL, NULL));
 
-				keys = NULL;
-
-				free(X);
-				X = NULL;
-				free(Y);
-				Y = NULL;
-				free(speed);
-				speed = NULL;
-				free(softDrop);
-				softDrop = NULL;
-				free(gameOver);
-				gameOver = NULL;
-				free(clearingLine);
-				clearingLine = NULL;
-				free(overAnimation);
-				overAnimation = NULL;
-				free(paused);
-				paused = NULL;
+				//Free arrays
 				free(completedRows);
 				completedRows = NULL;
-				free(numCompleted);
-				numCompleted = NULL;
-				free(Score);
-				Score = NULL;
-				free(Level);
-				Level = NULL;
-				free(linesAtCurrentLevel);
-				linesAtCurrentLevel = NULL;
-				free(ghostEnabled);
-				ghostEnabled = NULL;
-				free(ghostY);
-				ghostY = NULL;
-				free(moveStart);
-				moveStart = NULL;
-				free(moveStartBool);
-				moveStartBool = NULL;
 
 				free(mapData);
 				mapData = NULL;
@@ -819,7 +612,9 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 	}
 
-	//---------------------------------------------
+	//----------------------------------------------------------------------------------
+
+	//LOGIC ------------------------------------------------------------------------------
 
 	//Gravity
 	if (currentPiece != NULL && !*gameOver && !*paused)
@@ -844,7 +639,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		else     //Piece is placed
 		{
 
-			playSound(Sound_Land);
+			playSound(globalInstance->sounds[LAND_SOUND_ID]);
 
 			drawPiece(*currentPiece, foreground, *X * SPRITE_WIDTH, 
 				(int)*Y * SPRITE_HEIGHT);
@@ -853,24 +648,27 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			if (mapData != NULL)
 				for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 					*(mapData + ((int)*Y + (currentPiece->blocks[i].Y - currentPiece->minY))
-						* WIDTH_OF_PLAYSPACE + (*X + (currentPiece->blocks[i].X - currentPiece->minX))) = true;
+					* WIDTH_OF_PLAYSPACE + (*X + (currentPiece->blocks[i].X - 
+					currentPiece->minX))) = true;
 
 			//Check if the player just completed a line
 			if (numCompleted != NULL)
-				*numCompleted = completedLine(mapData, (unsigned short)*Y, *currentPiece, &completedRows);
+				*numCompleted = completedLine(mapData, (unsigned short)*Y, *currentPiece, 
+												&completedRows);
 			if (*numCompleted > 0)
 			{
 
 				//This enables the clearing animation to play
 				*clearingLine = true;
 
-				//Scoring formula was derived by plotting the scoring table from the NES version of tetris and then finding
-				//a best-fit line
-				*Score += (unsigned int)((93.333 * pow(*numCompleted, 3) - 490 * pow(*numCompleted, 2) + 
-					876.67 * *numCompleted - 440) * (*Level + 1));
+				//Scoring formula was derived by plotting the scoring table from the NES 
+				//version of tetris and then finding a best-fit line
+				*Score += (unsigned int)((93.333 * pow(*numCompleted, 3) - 490 * 
+					pow(*numCompleted, 2) + 876.67 * *numCompleted - 440) * (*Level + 1));
 				updateScore(*Score, Texture_Score);
 
-				//Keep track of the number of lines that have been cleared on the current level
+				//Keep track of the number of lines that have been cleared on the current 
+				//level
 				*linesAtCurrentLevel += *numCompleted;
 				if (*linesAtCurrentLevel >= 5 * (*Level + 1))
 				{
@@ -919,7 +717,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
 			{
 
-				playSound(Sound_Over);
+				playSound(globalInstance->sounds[OVER_SOUND_ID]);
 				*gameOver = true;
 
 			}
@@ -932,7 +730,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 }
 
-unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY, bool* mapData)
+unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY, 
+							bool* mapData)
 {
 
 	double Y = startY;
@@ -1248,9 +1047,10 @@ bool lineIsComplete(bool* mapData, unsigned short row)
 
 }
 
-//This function gets both the number of lines that have just been completed, as well as the row numbers
-//of each one that was completed
-unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece, unsigned short** returnRows)
+//This function gets both the number of lines that have just been completed, as well as 
+//the row numbers of each one that was completed
+unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece, 
+								unsigned short** returnRows)
 {
 
 	unsigned short numCompleted = 0;
