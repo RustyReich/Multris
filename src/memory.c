@@ -1,8 +1,12 @@
 #include "HEADERS/MGF.h"
 
-//Function for pushing a variable into a vector of varVector structures designed to make
-//freeing variables at the end of a game_state easier
-varVector** pushAddress_VAR(void* addr, void** ptr)
+//generate.c
+void delPiece(piece** Piece);
+void copyPiece(piece* piece1, piece* piece2);
+
+//Function for pushing a variable or object onto an array of varVector structures 
+//designed to make freeing variables at the end of a game_state easier
+varVector** pushAddress(void** ptr, unsigned short type)
 {
 
     static varVector* vector;
@@ -13,59 +17,72 @@ varVector** pushAddress_VAR(void* addr, void** ptr)
 
     }
 
-    if(addr == NULL || ptr == NULL)
+    if(ptr == NULL)
         return &vector;
     else
     {
         
-        if (vector->adrs == NULL || vector->ptrs == NULL)
+        if (vector->ptrs == NULL)
         {
 
-            vector->adrs = calloc(1, sizeof(void*));
             vector->ptrs = calloc(1, sizeof(void*));
+            vector->types = calloc(1, sizeof(unsigned short));
 
         }
         else
         {
 
-            void** tempAdrs = calloc(vector->count, sizeof(void*));
             void** tempPtrs = calloc(vector->count, sizeof(void*));
+            unsigned short* tempTypes = calloc(vector->count, sizeof(unsigned short));
 
             for (int i = 0; i < vector->count; i++)
             {
 
-                tempAdrs[i] = vector->adrs[i];
                 tempPtrs[i] = vector->ptrs[i];
+                tempTypes[i] = vector->types[i];
 
             }
 
-            free(vector->adrs);
             free(vector->ptrs);
+            free(vector->types);
 
-            vector->adrs = calloc(vector->count + 1, sizeof(void*));
             vector->ptrs = calloc(vector->count + 1, sizeof(void*));
+            vector->types = calloc(vector->count + 1, sizeof(unsigned short));
 
             for(int i = 0; i < vector->count + 1; i++)
             {
 
-                vector->adrs[i] = tempAdrs[i];
                 vector->ptrs[i] = tempPtrs[i];
+                vector->types[i] = tempTypes[i];
 
             }
 
-            free(tempAdrs);
             free(tempPtrs);
+            free(tempTypes);
 
         }
         
-        vector->adrs[vector->count] = addr;
         vector->ptrs[vector->count] = ptr;
+        vector->types[vector->count] = type;
 
         vector->count++;
 
         return NULL;
 
     }
+
+}
+
+//Function for checking if a ptr is already stored in the varVector
+bool inVector(void** ptr)
+{
+
+    varVector** vector = pushAddress(NULL, TYPE_NA);
+
+    for (unsigned int i = 0; i < (*vector)->count; i++)
+        if (ptr == (*vector)->ptrs[i])
+            return true;
+    return false;
 
 }
 
@@ -78,7 +95,9 @@ void declare_unsigned_short(void** ptr, unsigned short value)
 
         *ptr = calloc(1, sizeof(unsigned short));
         **(unsigned short**)(ptr) = value;
-        pushAddress_VAR(*ptr, ptr);
+
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
 
     }
 
@@ -93,7 +112,9 @@ void declare_double(void** ptr, double value)
 
         *ptr = calloc(1, sizeof(double));
         **(double**)(ptr) = value;
-        pushAddress_VAR(*ptr, ptr);
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
 
     }
 
@@ -108,7 +129,9 @@ void declare_int(void** ptr, int value)
 
         *ptr = calloc(1, sizeof(int));
         **(int**)(ptr) = value;
-        pushAddress_VAR(*ptr, ptr);
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
 
     }
 
@@ -123,7 +146,9 @@ void declare_char(void** ptr, char value)
 
         *ptr = calloc(1, sizeof(char));
         **(char**)(ptr) = value;
-        pushAddress_VAR(*ptr, ptr);
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
 
     }
 
@@ -138,7 +163,9 @@ void declare_bool(void** ptr, bool value)
 
         *ptr = calloc(1, sizeof(bool));
         **(bool**)(ptr) = value;
-        pushAddress_VAR(*ptr, ptr);
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
 
     }
 
@@ -153,7 +180,32 @@ void declare_unsigned_int(void** ptr, unsigned int value)
 
         *ptr = calloc(1, sizeof(unsigned int));
         **(unsigned int**)(ptr) = value;
-        pushAddress_VAR(*ptr, ptr);
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
+
+    }
+
+}
+
+//Function for declaring a Piece on the varVector array
+void declare_Piece(piece** ptr, piece* Piece)
+{
+    
+    if (*ptr == NULL)
+    {
+
+        if (Piece != NULL)
+        {
+
+            *ptr = calloc(1, sizeof(piece));
+            (*ptr)->blocks = calloc(Piece->numOfBlocks, sizeof(*(*ptr)->blocks));
+            copyPiece(Piece, *ptr);
+
+        }
+
+        if (!inVector((void**)ptr))
+            pushAddress((void**)ptr, PIECE);
 
     }
 
@@ -166,12 +218,26 @@ void freeVars(varVector** vector)
     for (int i = 0; i < (*vector)->count; i++)
     {
 
-        free((*vector)->adrs[i]);
-        (*vector)->adrs[i] = NULL;
+        //Check if memory is actually allocated at *ptr[i]
+        if (*(void**)((*vector)->ptrs[i]) != NULL)
+        {
+
+            //If it is, then free it
+                //We call different freeing methods depending on the type of variable or
+                //object
+            if ((*vector)->types[i] == VARIABLE)
+                free(*(void**)((*vector)->ptrs[i]));
+            else if ((*vector)->types[i] == PIECE)
+                delPiece((piece**)&*(void**)((*vector)->ptrs[i]));
+            
+        }
+
+        //Reset the ptr to NULL
         *(void**)((*vector)->ptrs[i]) = NULL;
 
     }   
 
+    //Free the memory taken by the varVector
     free(*vector);
     *vector = NULL;
 

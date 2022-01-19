@@ -37,18 +37,9 @@
 		//Calculated using values from NES version of Tetris
 #define INITIAL_SPEED	(double)(60.0988 / 48)
 
-#define ASPECT_RATIO				1
-#define HEIGHT_IN_CHARS				50
-#define WIDTH_OF_PLAYSPACE			34
-#define WINDOW_BOX_DIMENSION		600
-
-#define SPACE_CHAR		26
-#define ZERO_CHAR		27
-#define COLON_CHAR		39
-#define WALL_CHAR		37
-#define RIGHT_CHAR		40
-#define LEFT_CHAR		41
-#define UP_CHAR			42
+#define TYPE_NA		0
+#define VARIABLE	1
+#define PIECE		2
 
 #define GRAY	0
 #define WHITE	1
@@ -60,6 +51,11 @@
 #define BLUE	7
 #define RED		8
 #define BLACK	9
+
+#define ASPECT_RATIO				1
+#define HEIGHT_IN_CHARS				50
+#define WIDTH_OF_PLAYSPACE			34
+#define WINDOW_BOX_DIMENSION		600
 
 #define TITLE_SCREEN	0
 #define PLAY_SCREEN		1

@@ -370,7 +370,7 @@ SDL_Texture* createTexture(int width, int height)
 	//Make it so stuff can render on top of it
 	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
-	return texture;
+	return texture;	
 
 }
 

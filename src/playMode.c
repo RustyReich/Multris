@@ -39,7 +39,7 @@ unsigned int loadTop();
 unsigned short getOption(unsigned short line);
 
 //memory.c
-varVector** pushAddress_VAR(void* addr, void** ptr);
+varVector** pushAddress(void** ptr, unsigned short type);
 void freeVars(varVector** vector);
 void declare_unsigned_short(void** ptr, unsigned short value);
 void declare_double(void** ptr, double value);
@@ -47,6 +47,7 @@ void declare_int(void** ptr, int value);
 void declare_char(void** ptr, char value);
 void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
+void declare_Piece(piece** ptr, piece* Piece);
 
 piece* getFirstPiece(piece*);
 void move(char, unsigned short*, piece);
@@ -66,20 +67,9 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 {
 	
 	//Game pieces
-	static piece* nextPiece;
-	static piece* currentPiece;
-	static piece* holdPiece;
-	if (currentPiece == NULL)
-		currentPiece = getFirstPiece(firstPiece);
-	if (nextPiece == NULL)
-	{
-
-		if (size == 0)
-			nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
-		else
-			nextPiece = generateGamePiece(size);
-
-	}
+	static piece* currentPiece; declare_Piece(&currentPiece, firstPiece);
+	static piece* holdPiece; declare_Piece(&holdPiece, NULL);
+	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
 
 	//Texutures
 	static SDL_Texture* Texture_Current;
@@ -104,14 +94,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	static SDL_Texture* foreground;
 	if (Texture_Current == NULL)
 		Texture_Current = createPieceTexture(*currentPiece);
-	if (Texture_Next == NULL)
-	{
-		
-		Texture_Next = createPieceTexture(*nextPiece);
-		SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, 
-			nextText_Height);
-
-	}
 	if (Texture_Score == NULL)
 	{
 
@@ -175,7 +157,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 	//Arrays
 	static unsigned short* completedRows;
-
 	//map data matrix
 	static bool* mapData;
 	if (mapData == NULL)
@@ -359,15 +340,12 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				currentPiece = nextPiece;
 				adjustNewPiece(currentPiece, X);
 
+				//NextPiece no longer exists
+				nextPiece = NULL;
+
 				//Destory nextPiece
 				SDL_DestroyTexture(Texture_Next);
 				Texture_Next = NULL;
-
-				//Generate new piece
-				if (size == 0)
-					nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
-				else
-					nextPiece = generateGamePiece(size);
 
 				//Reset Y
 				*Y = 0;
@@ -556,17 +534,17 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 				//Free all memory taken by PLAYMODE -----------------------------------
 
-				delPiece(&nextPiece);
+				//Free variables
+				freeVars(pushAddress(NULL, TYPE_NA));
+
 				SDL_DestroyTexture(Texture_Next);
 				Texture_Next = NULL;
-				delPiece(&currentPiece);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
 				if (holdPiece != NULL)
 				{
 
-					delPiece(&holdPiece);
 					SDL_DestroyTexture(Texture_Hold);
 					Texture_Hold = NULL;
 
@@ -592,9 +570,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				SDL_DestroyTexture(foreground);
 				foreground = NULL;
 
-				//Free variables
-				freeVars(pushAddress_VAR(NULL, NULL));
-
 				//Free arrays
 				free(completedRows);
 				completedRows = NULL;
@@ -615,6 +590,27 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	//----------------------------------------------------------------------------------
 
 	//LOGIC ------------------------------------------------------------------------------
+
+	//If nextPiece does not exist, generate a new one
+	if (nextPiece == NULL)
+	{
+
+		if (size == 0)
+			nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
+		else
+			nextPiece = generateGamePiece(size);
+
+		//And create a new texture for it as well
+		if (Texture_Next == NULL)
+		{
+			
+			Texture_Next = createPieceTexture(*nextPiece);
+			SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, 
+				nextText_Height);
+
+		}
+
+	}
 
 	//Gravity
 	if (currentPiece != NULL && !*gameOver && !*paused)
@@ -694,14 +690,11 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			currentPiece = nextPiece;
 			adjustNewPiece(currentPiece, X);
 
+			//NextPiece no longer exists
+			nextPiece = NULL;
+
 			SDL_DestroyTexture(Texture_Next);
 			Texture_Next = NULL;
-
-			//Generate new piece
-			if (size == 0)
-				nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
-			else
-				nextPiece = generateGamePiece(size);
 
 			//Reset Y
 			*Y = 0;
@@ -1053,6 +1046,14 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece,
 								unsigned short** returnRows)
 {
 
+	//Duct-tape fix for a rare glitch that can sometimes happen when holding near the top
+	//of the play area
+		//Basically, if Y is out-of-bounds, just move it back in bounds.
+	if (Y < 0)
+		Y = 0;
+	else if (Y > HEIGHT_IN_CHARS - 2)
+		Y = HEIGHT_IN_CHARS - 2;
+
 	unsigned short numCompleted = 0;
 
 	//Count the number of lines completed
@@ -1180,7 +1181,7 @@ void move(char keyPress, unsigned short *X, piece Piece)
 
 piece* getFirstPiece(piece* firstPiece)
 {
-
+	
 	piece* currentPiece;
 	currentPiece = malloc(sizeof(*currentPiece));
 	if (currentPiece != NULL)

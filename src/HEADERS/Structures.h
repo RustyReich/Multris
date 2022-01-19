@@ -13,8 +13,8 @@
 typedef struct varVector
 {
 
-    void** adrs;
     void** ptrs;
+    unsigned short* types;
 
     int count;
 
