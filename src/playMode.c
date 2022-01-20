@@ -29,9 +29,6 @@ void mirrorPieceOverY(piece* Piece);
 
 //audio.c
 void playSound(sound* Sound);
-sound* loadSound(char* file);
-void delSound(sound** Sound);
-void setVolume(sound** Sound, unsigned short volume);
 
 //file.c
 void saveTop(unsigned int score);
@@ -39,8 +36,7 @@ unsigned int loadTop();
 unsigned short getOption(unsigned short line);
 
 //memory.c
-varVector** pushAddress(void** ptr, unsigned short type);
-void freeVars(varVector** vector);
+void freeVars();
 void declare_unsigned_short(void** ptr, unsigned short value);
 void declare_double(void** ptr, double value);
 void declare_int(void** ptr, int value);
@@ -48,6 +44,7 @@ void declare_char(void** ptr, char value);
 void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
 void declare_Piece(piece** ptr, piece* Piece);
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
 
 piece* getFirstPiece(piece*);
 void move(char, unsigned short*, piece);
@@ -72,9 +69,9 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
 
 	//Texutures
-	static SDL_Texture* Texture_Current;
-	static SDL_Texture* Texture_Next;
-	static SDL_Texture* Texture_Hold;
+	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
+	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece);
+	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece);
 		static int* nextText_Width;
 		if (nextText_Width == NULL)
 			nextText_Width = malloc(sizeof(*nextText_Width));
@@ -92,8 +89,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	static SDL_Texture* Texture_Lines;
 	static SDL_Texture* Texture_Paused;
 	static SDL_Texture* foreground;
-	if (Texture_Current == NULL)
-		Texture_Current = createPieceTexture(*currentPiece);
 	if (Texture_Score == NULL)
 	{
 
@@ -342,7 +337,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 				//NextPiece no longer exists
 				nextPiece = NULL;
-
 				//Destory nextPiece
 				SDL_DestroyTexture(Texture_Next);
 				Texture_Next = NULL;
@@ -535,20 +529,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				//Free all memory taken by PLAYMODE -----------------------------------
 
 				//Free variables
-				freeVars(pushAddress(NULL, TYPE_NA));
-
-				SDL_DestroyTexture(Texture_Next);
-				Texture_Next = NULL;
-				SDL_DestroyTexture(Texture_Current);
-				Texture_Current = NULL;
-
-				if (holdPiece != NULL)
-				{
-
-					SDL_DestroyTexture(Texture_Hold);
-					Texture_Hold = NULL;
-
-				}
+				freeVars();
 
 				free(nextText_Width);
 				nextText_Width = NULL;

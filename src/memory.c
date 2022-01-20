@@ -1,8 +1,16 @@
 #include "HEADERS/MGF.h"
 
+#define TYPE_NA		0
+#define VARIABLE	1
+#define PIECE		2
+#define TEXTURE     3
+
 //generate.c
 void delPiece(piece** Piece);
 void copyPiece(piece* piece1, piece* piece2);
+
+//draw.c
+SDL_Texture* createPieceTexture(piece Piece);
 
 //Function for pushing a variable or object onto an array of varVector structures 
 //designed to make freeing variables at the end of a game_state easier
@@ -211,9 +219,28 @@ void declare_Piece(piece** ptr, piece* Piece)
 
 }
 
-//Function for freeing memory of all variables declared during the current game_state
-void freeVars(varVector** vector)
+//Function for declaring a Piece Texture on the varVector array
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece)
 {
+
+    if (*ptr == NULL)
+    {
+
+        if (Piece != NULL)
+            *ptr = createPieceTexture(*Piece);
+
+        if (!inVector((void**)ptr))
+            pushAddress((void**)ptr, TEXTURE);
+
+    }
+
+}
+
+//Function for freeing memory of all variables declared during the current game_state
+void freeVars()
+{
+    
+    varVector** vector = pushAddress(NULL, TYPE_NA);
 
     for (int i = 0; i < (*vector)->count; i++)
     {
@@ -229,6 +256,8 @@ void freeVars(varVector** vector)
                 free(*(void**)((*vector)->ptrs[i]));
             else if ((*vector)->types[i] == PIECE)
                 delPiece((piece**)&*(void**)((*vector)->ptrs[i]));
+            else if ((*vector)->types[i] == TEXTURE)
+                SDL_DestroyTexture(*(SDL_Texture**)((*vector)->ptrs[i]));
             
         }
 

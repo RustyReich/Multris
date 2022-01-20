@@ -4,6 +4,9 @@
 
 #include "HEADERS/MGF.h"
 
+#define INITIAL_INTERNAL_WIDTH	600
+#define INITIAL_INTERNAL_HEIGHT	600
+
 //audio.c
 sound* loadSound(char* file);
 
@@ -139,9 +142,9 @@ void initInstance(gameInstance** instance)
     //Initialize window
         //Initialize in top left of screen
         //Window will be half the width and half the height of the screen
-    (*instance)->window = SDL_CreateWindow("Multris Sprite Editor v1.0.0", 0, 0, 
-        (*instance)->DM.w / 2, (*instance)->DM.h / 2, SDL_WINDOW_OPENGL | 
-            SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
+    (*instance)->window = SDL_CreateWindow("Multris", 0, 0, (*instance)->DM.w / 2, 
+            (*instance)->DM.h / 2, 
+            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
 
     //Save window size
     SDL_GetWindowSize((*instance)->window, &(*instance)->minimizedWindow_W,

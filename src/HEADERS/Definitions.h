@@ -5,9 +5,6 @@
 #define SPRITE_WIDTH  12
 #define SPRITE_HEIGHT 12
 
-#define INITIAL_INTERNAL_WIDTH	600
-#define INITIAL_INTERNAL_HEIGHT	600
-
 #define BLOCK_SPRITE_ID_1 	0
 #define BLOCK_SPRITE_ID_2	1
 #define WALL_SPRITE_ID		2
@@ -33,14 +30,6 @@
 #define PAUSE_SOUND_ID		5
 #define ROTATE_SOUND_ID		6
 
-//Speed is in cells per second
-		//Calculated using values from NES version of Tetris
-#define INITIAL_SPEED	(double)(60.0988 / 48)
-
-#define TYPE_NA		0
-#define VARIABLE	1
-#define PIECE		2
-
 #define GRAY	0
 #define WHITE	1
 #define YELLOW	2
@@ -51,6 +40,10 @@
 #define BLUE	7
 #define RED		8
 #define BLACK	9
+
+//Speed is in cells per second
+		//Calculated using values from NES version of Tetris
+#define INITIAL_SPEED	(double)(60.0988 / 48)
 
 #define ASPECT_RATIO				1
 #define HEIGHT_IN_CHARS				50
