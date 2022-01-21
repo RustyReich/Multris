@@ -339,9 +339,37 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			//Return the mode 
 			*returnMode = *mode;
 
-			//Delete all title screen elements from memory if an option is selected that leaves or RESETS the title screen
+			//Delete all title screen elements from memory if an option is selected that 
+			//leaves or RESETS the title screen
 			if (*returnMode < OPTIONS + 2 || *returnMode == OPTIONS + 5)
 			{
+
+				//Only copy first piece if we are not resetting
+				if (*returnMode != OPTIONS)
+				{
+
+					//Copy Piece into firstPiece
+					*firstPiece = Piece;
+					//Copy over all blocks
+					copyBlocks(Piece, *firstPiece);
+
+				}
+				else
+					delPiece(&Piece);	//Otherwise, delete the piece
+
+				//Delete movingPieces if resetting
+				if (*returnMode < OPTIONS + 2)
+				{
+
+					Piece = NULL;
+
+					//free movingPieces
+					for (unsigned short i = 0; i < 5; i++)
+						delPiece(&movingPieces[i]);
+					free(movingPieces);
+					movingPieces = NULL;
+
+				}
 
 				//Free Textures
 				SDL_DestroyTexture(Texture_Title);
@@ -388,6 +416,8 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				saveOption(1, !getOption(1));
 				updateOptions(Texture_Options, *mode);
 
+				GHOST_MODE_ENABLED = getOption(1);
+
 			}
 			else if (*returnMode == OPTIONS + 3)
 			{
@@ -398,33 +428,6 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 				//update the fullscreen mode
 				UPDATE_FULLSCREEN_MODE = 1;
-
-			}
-
-			//Only copy first piece if we are not resetting, meaning not in OPTIONS
-			if (*returnMode < OPTIONS)
-			{
-
-				//Copy Piece into firstPiece
-				*firstPiece = Piece;
-				//Copy over all blocks
-				copyBlocks(Piece, *firstPiece);
-
-			}
-			else
-				delPiece(&Piece);	//Otherwise, delete the piece
-
-			//Delete movingPieces if resetting
-			if (*returnMode < OPTIONS + 2)
-			{
-
-				Piece = NULL;
-
-				//free movingPieces
-				for (unsigned short i = 0; i < 5; i++)
-					delPiece(&movingPieces[i]);
-				free(movingPieces);
-				movingPieces = NULL;
 
 			}
 

@@ -7,3 +7,4 @@ extern gameInstance *globalInstance;
 //Global variables
 extern unsigned short BLOCK_SPRITE_ID;
 extern bool UPDATE_FULLSCREEN_MODE;
+extern bool GHOST_MODE_ENABLED;

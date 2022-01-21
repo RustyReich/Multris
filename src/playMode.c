@@ -72,18 +72,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece);
 	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece);
-		static int* nextText_Width;
-		if (nextText_Width == NULL)
-			nextText_Width = malloc(sizeof(*nextText_Width));
-		static int* nextText_Height;
-		if (nextText_Height == NULL)
-			nextText_Height = malloc(sizeof(*nextText_Height));
-		static int* holdText_Width;
-		if (holdText_Width == NULL)
-			holdText_Width = malloc(sizeof(*holdText_Width));
-		static int* holdText_Height;
-		if (holdText_Height == NULL)
-			holdText_Height = malloc(sizeof(*holdText_Height));
 	static SDL_Texture* Texture_Score;
 	static SDL_Texture* Texture_Level;
 	static SDL_Texture* Texture_Lines;
@@ -145,10 +133,14 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	static unsigned int* Score; declare(Score, 0);
 	static unsigned short* Level; declare(Level, 0);
 	static unsigned short* linesAtCurrentLevel; declare(linesAtCurrentLevel, 0);
-	static bool* ghostEnabled; declare(ghostEnabled, getOption(1));
+	static bool* ghostEnabled; declare(ghostEnabled, GHOST_MODE_ENABLED);
 	static unsigned short* ghostY; declare(ghostY, HEIGHT_IN_CHARS-2-currentPiece->height);
 	static Uint32* moveStart; declare(moveStart, 0);
 	static bool* moveStartBool; declare(moveStartBool, false);
+	static int* nextText_Width; declare(nextText_Width, 0);
+	static int* nextText_Height; declare(nextText_Height, 0);
+	static int* holdText_Width; declare(holdText_Width, 0);
+	static int* holdText_Height; declare(holdText_Height, 0);
 
 	//Arrays
 	static unsigned short* completedRows;

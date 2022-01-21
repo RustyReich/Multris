@@ -96,7 +96,8 @@ void mainLoop()
 
 	}
 
-	//Hold the first piece that is generated in the title screen and will be the first piece played
+	//Hold the first piece that is generated in the title screen and will be the first 
+	//WWpiece played
 	static piece* firstPiece;
 
 	//Stores the current game state

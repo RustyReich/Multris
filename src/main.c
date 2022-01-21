@@ -26,6 +26,7 @@ void updateControls();
 //Initialize global variables
 unsigned short BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
 bool UPDATE_FULLSCREEN_MODE = true;
+bool GHOST_MODE_ENABLED = true;
 
 //Global Instance
 gameInstance *globalInstance;
@@ -79,6 +80,9 @@ int main(int argc, char* argv[])
 
 		//Load volume from options file
 		globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
+
+		//Load GHOST_MODE_ENABLED
+		GHOST_MODE_ENABLED = getOption(1);
 
 	}
 
