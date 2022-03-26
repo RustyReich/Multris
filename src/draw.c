@@ -321,6 +321,18 @@ int getStringLength(char* str, float multiplier)
 
 }
 
+//Return the length, in pixels, of an Int
+int getIntStringLength(int num, float multiplier)
+{
+
+	//Convert integer to string
+	char str[getIntLength(num)];
+	SDL_itoa(num, str, 10);
+
+	return getStringLength(str, multiplier);
+
+}
+
 //Clear a texture with the current renderer's draw color
 void clearTexture(SDL_Texture* texture)
 {

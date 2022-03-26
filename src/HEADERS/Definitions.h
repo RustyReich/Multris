@@ -41,21 +41,21 @@
 #define RED		8
 #define BLACK	9
 
+#define MAX_PIECE_SIZE 8
+#define OPTIONS	9
+
+#define BASE_PLAYFIELD_WIDTH 	2.5
+#define BASE_PLAYFIELD_HEIGHT	5
+
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris
 #define INITIAL_SPEED	(double)(60.0988 / 48)
-
-#define ASPECT_RATIO				1
-#define HEIGHT_IN_CHARS				50
-#define WIDTH_OF_PLAYSPACE			34
-#define WINDOW_BOX_DIMENSION		600
 
 #define TITLE_SCREEN	0
 #define PLAY_SCREEN		1
 #define CONTROLS_SCREEN	2
 #define RESET			3
 
-#define MAX_PIECE_SIZE		9
 #define NUM_OF_TITLE_PIECES 19
 
 #define NONE	0
@@ -74,8 +74,6 @@
 #define MOVEMENT_TIME	50
 
 #define HOLD_TEXTURE_MULTI 0.75
-
-#define OPTIONS	10
 
 #define WINDOWED	0
 #define FULLSCREEN 	1

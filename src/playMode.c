@@ -22,6 +22,7 @@ void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y,
 	float multiplier, Uint8 color);
 void clearTexture(SDL_Texture* texture);
 SDL_Texture* createPieceTexture(piece Piece);
+int getStringLength(char* str, float multiplier);
 
 //rotate.c
 void rotatePiece(piece *Piece, unsigned short direction);
@@ -47,28 +48,77 @@ void declare_Piece(piece** ptr, piece* Piece);
 void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
 
 piece* getFirstPiece(piece*);
-void move(char, unsigned short*, piece);
-bool isColliding(piece, unsigned short, double*, unsigned short, bool*);
-void adjustNewPiece(piece*, unsigned short*);
-unsigned short completedLine(bool*, unsigned short, piece, unsigned short**);
-bool lineIsComplete(bool*, unsigned short);
-void removeLine(unsigned short, bool*, SDL_Texture*);
-bool playLineAnimation(SDL_Texture*, unsigned short, bool*, bool*, unsigned short*);
+void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth);
+bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direction, 
+					bool* mapData, unsigned short mapWidth, unsigned short mapHeight);
+void adjustNewPiece(piece* Piece, unsigned short* X, unsigned short mapWidth);
+unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece, 
+								unsigned short** returnRows, unsigned short mapWidth,
+								unsigned short mapHeight);
+bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth);
+void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground,
+				unsigned short mapWidth);
+bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
+	bool *clearingLine, bool *mapData, unsigned short* numCompleted, unsigned short mapWidth,
+	unsigned short mapHeight);
 void updateScore(unsigned int, SDL_Texture*);
 void updateLevel(unsigned short, SDL_Texture*);
 void updateLines(unsigned short, SDL_Texture*);
-bool playOverAnimation(SDL_Texture*, unsigned int);
-unsigned short calcGhostY(piece*, unsigned short, unsigned short, bool*);
+bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned short mapWidth,
+						unsigned short mapHeight);
+unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY, 
+							bool* mapData, unsigned short mapWidth, unsigned short mapHeight);
 
-unsigned short playMode(piece* firstPiece, unsigned short size)
+unsigned short playMode(piece* firstPiece, unsigned short mode)
 {
-	
+
+	//Calc mapWidth and mapHeight
+	static unsigned short* mapWidth;
+	static unsigned short* mapHeight;
+	if (mode == 0)
+	{
+
+		declare(mapWidth, (int)round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE));
+		declare(mapHeight, (int)round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE));
+
+	}
+	else
+	{
+
+		declare(mapWidth, (int)round(BASE_PLAYFIELD_WIDTH * mode));
+		declare(mapHeight, (int)round(BASE_PLAYFIELD_HEIGHT * mode));
+
+	}
+
 	//Game pieces
 	static piece* currentPiece; declare_Piece(&currentPiece, firstPiece);
 	static piece* holdPiece; declare_Piece(&holdPiece, NULL);
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
+	
+	//Variables
+	static unsigned short* X; declare(X, 0);
+	static double *Y; declare(Y, 0.0);
+	static double *speed; declare(speed, INITIAL_SPEED);
+	static bool *softDrop; declare(softDrop, false);
+	static bool* gameOver; declare(gameOver, false);
+	static bool* clearingLine; declare(clearingLine, false);
+	static bool* paused; declare(paused, false);
+	static bool* overAnimation; declare(overAnimation, false);
+	static bool* justHeld; declare(justHeld, false);
+	static unsigned short* numCompleted; declare(numCompleted, 0);
+	static unsigned int* Score; declare(Score, 0);
+	static unsigned short* Level; declare(Level, 0);
+	static unsigned short* linesAtCurrentLevel; declare(linesAtCurrentLevel, 0);
+	static bool* ghostEnabled; declare(ghostEnabled, GHOST_MODE_ENABLED);
+	static unsigned short* ghostY; declare(ghostY, *mapHeight - currentPiece->height);
+	static Uint32* moveStart; declare(moveStart, 0);
+	static bool* moveStartBool; declare(moveStartBool, false);
+	static int* nextText_Width; declare(nextText_Width, 0);
+	static int* nextText_Height; declare(nextText_Height, 0);
+	static int* holdText_Width; declare(holdText_Width, 0);
+	static int* holdText_Height; declare(holdText_Height, 0);
 
-	//Texutures
+		//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece);
 	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece);
@@ -98,9 +148,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	if (Texture_Lines == NULL)
 	{
 
-		Texture_Lines = createTexture(3 * FONT_WIDTH + 2 * STRING_GAP, 
-			FONT_HEIGHT);
-		printToTexture("5", Texture_Lines, FONT_WIDTH, 0, 1, ORANGE);
+		Texture_Lines = createTexture(FONT_WIDTH, FONT_HEIGHT);
+		printToTexture("5", Texture_Lines, 0, 0, 1, ORANGE);
 
 	}
 	if (Texture_Paused == NULL)
@@ -114,33 +163,9 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	if (foreground == NULL)
 	{
 		
-		foreground = createTexture(FONT_WIDTH * WIDTH_OF_PLAYSPACE,
-			FONT_HEIGHT * (HEIGHT_IN_CHARS - 2));
+		foreground = createTexture(FONT_WIDTH * *mapWidth, FONT_HEIGHT * *mapHeight);
 
 	}
-
-	//Variables
-	static unsigned short* X; declare(X, 0);
-	static double *Y; declare(Y, 0.0);
-	static double *speed; declare(speed, INITIAL_SPEED);
-	static bool *softDrop; declare(softDrop, false);
-	static bool* gameOver; declare(gameOver, false);
-	static bool* clearingLine; declare(clearingLine, false);
-	static bool* paused; declare(paused, false);
-	static bool* overAnimation; declare(overAnimation, false);
-	static bool* justHeld; declare(justHeld, false);
-	static unsigned short* numCompleted; declare(numCompleted, 0);
-	static unsigned int* Score; declare(Score, 0);
-	static unsigned short* Level; declare(Level, 0);
-	static unsigned short* linesAtCurrentLevel; declare(linesAtCurrentLevel, 0);
-	static bool* ghostEnabled; declare(ghostEnabled, GHOST_MODE_ENABLED);
-	static unsigned short* ghostY; declare(ghostY, HEIGHT_IN_CHARS-2-currentPiece->height);
-	static Uint32* moveStart; declare(moveStart, 0);
-	static bool* moveStartBool; declare(moveStartBool, false);
-	static int* nextText_Width; declare(nextText_Width, 0);
-	static int* nextText_Height; declare(nextText_Height, 0);
-	static int* holdText_Width; declare(holdText_Width, 0);
-	static int* holdText_Height; declare(holdText_Height, 0);
 
 	//Arrays
 	static unsigned short* completedRows;
@@ -150,11 +175,11 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	{
 
 		mapData = 
-			(bool*)malloc((HEIGHT_IN_CHARS - 2) * WIDTH_OF_PLAYSPACE * sizeof(*mapData));
+			(bool*)malloc(*mapHeight * *mapWidth * sizeof(*mapData));
 		if (mapData != NULL)
-			for (unsigned short i = 0; i < HEIGHT_IN_CHARS - 2; i++)
-				for (unsigned short j = 0; j < WIDTH_OF_PLAYSPACE; j++)
-					*(mapData + i * WIDTH_OF_PLAYSPACE + j) = false;
+			for (unsigned short i = 0; i < *mapHeight; i++)
+				for (unsigned short j = 0; j < *mapWidth; j++)
+					*(mapData + i * *mapWidth + j) = false;
 
 	}
 
@@ -185,30 +210,31 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			{
 
 				if (globalInstance->controls[LEFT_BUTTON_ID].onHold && 
-					!isColliding(*currentPiece, *X, Y, LEFT, mapData))
+					!isColliding(*currentPiece, *X, Y, LEFT, mapData, *mapWidth, *mapHeight))
 				{
 
 					//Only play sound if can actually move
 					if (*X != 0)
 						playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-					move(LEFT, X, *currentPiece);
+					move(LEFT, X, *currentPiece, *mapWidth);
 
 					//Recalculate ghostY
 					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, 
-											mapData);
+											mapData, *mapWidth, *mapHeight);
 
 				}
 				else if (globalInstance->controls[RIGHT_BUTTON_ID].onHold && 
-							!isColliding(*currentPiece, *X, Y, RIGHT, mapData))
+							!isColliding(*currentPiece, *X, Y, RIGHT, mapData, *mapWidth,
+											*mapHeight))
 				{
 
-					if (*X + currentPiece->width < WIDTH_OF_PLAYSPACE)
+					if (*X + currentPiece->width < *mapWidth)
 						playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-					move(RIGHT, X, *currentPiece);
+					move(RIGHT, X, *currentPiece, *mapWidth);
 
 					//Recalculate ghostY
 					*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, 
-											mapData);
+											mapData, *mapWidth, *mapHeight);
 
 				}
 
@@ -232,14 +258,14 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 		//Rotate CCW
 		if (globalInstance->controls[ROTATE_CCW_BUTTON_ID].onPress && 
-			*X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
-			*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
+			*X + currentPiece->height <= *mapWidth &&
+			*Y + currentPiece->width <= *mapHeight)
 		{
 
 			rotatePiece(currentPiece, CCW);
 			//If rotation puts the piece inside another piece, just rotate back the 
 			//opposite way
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData, *mapWidth, *mapHeight))
 				rotatePiece(currentPiece, CW);
 			else
 			{
@@ -250,7 +276,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				Texture_Current = NULL;
 
 				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+										*mapHeight);
 
 			}
 
@@ -258,12 +285,11 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 		//Rotate CW
 		if (globalInstance->controls[ROTATE_CW_BUTTON_ID].onPress && 
-			*X + currentPiece->height <= WIDTH_OF_PLAYSPACE &&
-			*Y + currentPiece->width <= HEIGHT_IN_CHARS - 2)
+			*X + currentPiece->height <= *mapWidth && *Y + currentPiece->width <= *mapHeight)
 		{
 
 			rotatePiece(currentPiece, CW);
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData, *mapWidth, *mapHeight))
 				rotatePiece(currentPiece, CCW);
 			else
 			{
@@ -273,7 +299,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				Texture_Current = NULL;
 
 				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+										*mapHeight);
 
 			}
 
@@ -285,7 +312,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 			mirrorPieceOverY(currentPiece);
 			//If mirroring puts the piece inside another piece, just mirror it back
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData, *mapWidth, *mapHeight))
 				mirrorPieceOverY(currentPiece);
 			else
 			{
@@ -295,7 +322,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+										*mapHeight);
 
 			}
 
@@ -325,7 +353,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 				//Move nextPiece to currentPiece
 				currentPiece = nextPiece;
-				adjustNewPiece(currentPiece, X);
+				adjustNewPiece(currentPiece, X, *mapWidth);
 
 				//NextPiece no longer exists
 				nextPiece = NULL;
@@ -337,7 +365,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				*Y = 0;
 
 				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+										*mapHeight);
 
 			}
 			else //Swap holdPiece and currentPiece
@@ -370,7 +399,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				currentPiece->blocks = 
 					malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
 				copyPiece(tempPiece, currentPiece);
-				adjustNewPiece(currentPiece, X);
+				adjustNewPiece(currentPiece, X, *mapWidth);
 
 				//Delete tempPeice
 				delPiece(&tempPiece);
@@ -379,7 +408,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				*Y = 0;
 
 				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+										*mapHeight);
 
 			}
 
@@ -418,15 +448,26 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	// RENDERING -------------------------------------------------------------
 
 	//Draw various textures that don't move
-	drawTexture(Texture_Next, (int)(FONT_WIDTH * 42.5) - *nextText_Width / 2, 
-		(int)(FONT_HEIGHT * 29.5) - *nextText_Height / 2, 1.0);
-	drawTexture(Texture_Hold, (int)(FONT_WIDTH * 42.5) - (*holdText_Width / 2) 
-		* HOLD_TEXTURE_MULTI, (int)(FONT_HEIGHT * 41.5) - (*holdText_Height / 
-		2) * HOLD_TEXTURE_MULTI, HOLD_TEXTURE_MULTI);
-	drawTexture(Texture_Score, FONT_WIDTH * 39, FONT_HEIGHT * 6 + STRING_GAP, 
-		1.0);
-	drawTexture(Texture_Level, FONT_WIDTH * 46, FONT_HEIGHT * 10, 1.0);
-	drawTexture(Texture_Lines, FONT_WIDTH * 41, FONT_HEIGHT * 18, 1.0);
+	drawTexture(Texture_Next, 
+				318 - (*nextText_Width / 2),
+				282 - (*nextText_Height / 2), 
+				1.0);
+	drawTexture(Texture_Hold,
+				318 - (*holdText_Width * HOLD_TEXTURE_MULTI / 2), 
+				403 - (*holdText_Height * HOLD_TEXTURE_MULTI / 2), 
+				HOLD_TEXTURE_MULTI);
+	drawTexture(Texture_Score, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
+				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("000000", 1.0)), 
+				FONT_HEIGHT * 2 + (FONT_WIDTH + STRING_GAP) * 4 - 10, 1.0);
+	drawTexture(Texture_Level, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
+				SPRITE_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("0", 1.0)), 
+				FONT_HEIGHT * 9 + (SPRITE_HEIGHT + STRING_GAP) - 7, 1.0);
+	drawTexture(Texture_Lines, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
+				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("5", 1.0)), 
+				FONT_HEIGHT * 15 + (SPRITE_HEIGHT + STRING_GAP) - 5, 1.0);
 
 	//Draw the foreground
 	drawTexture(foreground, FONT_WIDTH, FONT_HEIGHT, 1.0);
@@ -453,7 +494,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		//Center the text
 	if (*paused)
 		drawTexture(Texture_Paused, 
-			FONT_WIDTH + FONT_WIDTH * WIDTH_OF_PLAYSPACE / 2 - 3 * 
+			FONT_WIDTH + FONT_WIDTH * *mapWidth / 2 - 3 * 
 			(FONT_WIDTH + STRING_GAP), FONT_HEIGHT * (23 - 0.5), 1.0);
 
 	//------------------------------------------------------------------------------
@@ -467,7 +508,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		unsigned short prevNumCompleted = *numCompleted;
 		
 		if (playLineAnimation(foreground, *completedRows, clearingLine,
-			mapData, numCompleted) == true)
+			mapData, numCompleted, *mapWidth, *mapHeight) == true)
 			playSound(globalInstance->sounds[COMPLETE_SOUND_ID]);
 
 		//Remove first element in completedRows array
@@ -492,7 +533,8 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		}
 
 		//Recalculate ghostY
-		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+								*mapHeight);
 		
 	}
 
@@ -503,12 +545,12 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 		if (*overAnimation == false)
 		{
 
-			*overAnimation = playOverAnimation(foreground, *Score);
+			*overAnimation = playOverAnimation(foreground, *Score, *mapWidth, *mapHeight);
 
 			//Only save the top score if the player is playing in MULTRIS mode
 				//Save score once overAnimation is finished playing
 			if (*overAnimation == true)
-				if (*Score > loadTop() && size == 0)
+				if (*Score > loadTop() && mode == 0)
 					saveTop(*Score);
 
 		}
@@ -522,15 +564,6 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 
 				//Free variables
 				freeVars();
-
-				free(nextText_Width);
-				nextText_Width = NULL;
-				free(nextText_Height);
-				nextText_Height = NULL;
-				free(holdText_Width);
-				holdText_Width = NULL;
-				free(holdText_Height);
-				holdText_Height = NULL;
 
 				SDL_DestroyTexture(Texture_Score);
 				Texture_Score = NULL;
@@ -568,10 +601,10 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	if (nextPiece == NULL)
 	{
 
-		if (size == 0)
+		if (mode == 0)
 			nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
 		else
-			nextPiece = generateGamePiece(size);
+			nextPiece = generateGamePiece(mode);
 
 		//And create a new texture for it as well
 		if (Texture_Next == NULL)
@@ -590,7 +623,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 	{
 		
 		//Piece is falling
-		if (!isColliding(*currentPiece, *X, Y, DOWN, mapData))
+		if (!isColliding(*currentPiece, *X, Y, DOWN, mapData, *mapWidth, *mapHeight))
 		{
 
 			//Don't drop piece while the clearingLine animation is in progress
@@ -617,13 +650,13 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			if (mapData != NULL)
 				for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 					*(mapData + ((int)*Y + (currentPiece->blocks[i].Y - currentPiece->minY))
-					* WIDTH_OF_PLAYSPACE + (*X + (currentPiece->blocks[i].X - 
+					* *mapWidth + (*X + (currentPiece->blocks[i].X - 
 					currentPiece->minX))) = true;
 
 			//Check if the player just completed a line
 			if (numCompleted != NULL)
 				*numCompleted = completedLine(mapData, (unsigned short)*Y, *currentPiece, 
-												&completedRows);
+												&completedRows, *mapWidth, *mapHeight);
 			if (*numCompleted > 0)
 			{
 
@@ -661,7 +694,7 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 			Texture_Current = NULL;
 
 			currentPiece = nextPiece;
-			adjustNewPiece(currentPiece, X);
+			adjustNewPiece(currentPiece, X, *mapWidth);
 
 			//NextPiece no longer exists
 			nextPiece = NULL;
@@ -677,10 +710,11 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 				*justHeld = false;
 
 			//Recalculate ghostY
-			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData);
+			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, *mapWidth,
+									*mapHeight);
 
 			//Player lost
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData))
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData, *mapWidth, *mapHeight))
 			{
 
 				playSound(globalInstance->sounds[OVER_SOUND_ID]);
@@ -697,19 +731,20 @@ unsigned short playMode(piece* firstPiece, unsigned short size)
 }
 
 unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY, 
-							bool* mapData)
+							bool* mapData, unsigned short mapWidth, unsigned short mapHeight)
 {
 
 	double Y = startY;
 
-	while (isColliding(*Piece, X, &Y, DOWN, mapData) == false)
+	while (isColliding(*Piece, X, &Y, DOWN, mapData, mapWidth, mapHeight) == false)
 		Y = Y + 1;
 
 	return (unsigned short)Y;
 
 }
 
-bool playOverAnimation(SDL_Texture* foreground, unsigned int score)
+bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned short mapWidth,
+						unsigned short mapHeight)
 {
 
 	//Return if the animation is done playing or not
@@ -735,7 +770,8 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score)
 
 			*time_now = SDL_GetTicks();
 
-			//When enough time has lapsed since the last frame in the animation, play another frame
+			//When enough time has lapsed since the last frame in the animation, play 
+			//another frame
 			if ((*time_now - *time_start) > OVER_TIME)
 			{
 
@@ -751,19 +787,19 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score)
 
 				}
 				
-				//With every frame of animation, we draw a row of randomly colored BLOCKS to the screen
-					//We fill the playable area with these blocks one row at a time
+				//With every frame of animation, we draw a row of randomly colored BLOCKS to 
+				//the screen We fill the playable area with these blocks one row at a time
 				if (row != NULL)
 				{
 
 					//Fill the current row with randomly colored BLOCKSs
-					for (unsigned short i = 0; i < WIDTH_OF_PLAYSPACE; i++)
+					for (unsigned short i = 0; i < mapWidth; i++)
 						drawToTexture(BLOCK_SPRITE_ID, foreground, 
 							SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1,
 							(rand() % (RED - YELLOW + 1)) + YELLOW);
 
 					//Check if we are on the last row
-					if (*row < HEIGHT_IN_CHARS - 2)
+					if (*row < mapHeight)
 						*row += 1;
 					else
 					{
@@ -866,7 +902,8 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 }
 
 bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
-	bool *clearingLine, bool *mapData, unsigned short* numCompleted)
+	bool *clearingLine, bool *mapData, unsigned short* numCompleted, unsigned short mapWidth,
+	unsigned short mapHeight)
 {
 
 	bool playSound = false;
@@ -901,36 +938,28 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 				{
 
 					column = malloc(sizeof(*column));
-					if (column != NULL)
-					{
+					*column = 0;
 
-						//Except on the first frame, we only erase one block
-						*column = 0;
-						drawToTexture(BLOCK_SPRITE_ID, foreground, 
-							(WIDTH_OF_PLAYSPACE / 2) * SPRITE_WIDTH,
-							row * SPRITE_HEIGHT, 1, BLACK);
-
-						playSound = true;
-
-					}
+					playSound = true;
 
 				}
 				else if (column != NULL)
 				{
 
-					//By increasing *column, we're basically increaing the radius of the chasm of blocks we are
-					//removing
-					*column = *column + 1;
 					//Because we remove a block on each side of the chasm
 						//The blocks getting removed are +-*column blocks away from the center
 					drawToTexture(BLOCK_SPRITE_ID, foreground,
-						(WIDTH_OF_PLAYSPACE / 2 - *column) * SPRITE_WIDTH, 
+						(mapWidth / 2 - *column) * SPRITE_WIDTH, 
 						row * SPRITE_HEIGHT, 1, BLACK);
 					drawToTexture(BLOCK_SPRITE_ID, foreground,
-						(WIDTH_OF_PLAYSPACE / 2 + *column) * SPRITE_WIDTH, 
+						(mapWidth / 2 + *column) * SPRITE_WIDTH, 
 						row * SPRITE_HEIGHT, 1, BLACK);
 
-					if (*column > WIDTH_OF_PLAYSPACE / 2)
+					//By increasing *column, we're basically increaing the radius of the 
+					//chasm of blocks we are removing
+					*column = *column + 1;
+
+					if (*column > mapWidth / 2)
 					{
 
 						free(column);
@@ -940,7 +969,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 						if (*numCompleted == 0)
 							*clearingLine = false;
 
-						removeLine(row, mapData, foreground);
+						removeLine(row, mapData, foreground, mapWidth);
 
 					}
 
@@ -963,15 +992,16 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 
 }
 
-void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground)
+void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground,
+				unsigned short mapWidth)
 {
 
 	//All blocks in memory for the clearedLine are set to empty
-	for (unsigned short j = 0; j < WIDTH_OF_PLAYSPACE; j++)
-		*(mapData + row * WIDTH_OF_PLAYSPACE + j) = false;
+	for (unsigned short j = 0; j < mapWidth; j++)
+		*(mapData + row * mapWidth + j) = false;
 
 	SDL_Rect srcRect
-		= { .x = 0, .y = 0, .w = WIDTH_OF_PLAYSPACE * SPRITE_WIDTH, 
+		= { .x = 0, .y = 0, .w = mapWidth * SPRITE_WIDTH, 
 			.h = row * SPRITE_HEIGHT };
 	
 	//Copy portion of the foreground above the clearedLine
@@ -994,18 +1024,18 @@ void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground)
 
 	//Shift all mapData above clearedLine down by 1
 	for (unsigned short i = row; i > 0; i--)
-		for (unsigned short j = 0; j < WIDTH_OF_PLAYSPACE; j++)
-			*(mapData + i * WIDTH_OF_PLAYSPACE + j) = 
-				*(mapData + (i - 1) * WIDTH_OF_PLAYSPACE + j);
+		for (unsigned short j = 0; j < mapWidth; j++)
+			*(mapData + i * mapWidth + j) = 
+				*(mapData + (i - 1) * mapWidth + j);
 
 }
 
-bool lineIsComplete(bool* mapData, unsigned short row)
+bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth)
 {
 
 	//Just go through every block in the given row. If any of them are not filled, return false
-	for (unsigned short j = 0; j < WIDTH_OF_PLAYSPACE; j++)
-		if (*(mapData + row * WIDTH_OF_PLAYSPACE + j) == false)
+	for (unsigned short j = 0; j < mapWidth; j++)
+		if (*(mapData + row * mapWidth + j) == false)
 			return false;
 
 	//Otherwise, the line must be totally filled and thus complete, so return true
@@ -1016,7 +1046,8 @@ bool lineIsComplete(bool* mapData, unsigned short row)
 //This function gets both the number of lines that have just been completed, as well as 
 //the row numbers of each one that was completed
 unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece, 
-								unsigned short** returnRows)
+								unsigned short** returnRows, unsigned short mapWidth,
+								unsigned short mapHeight)
 {
 
 	//Duct-tape fix for a rare glitch that can sometimes happen when holding near the top
@@ -1024,14 +1055,14 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece,
 		//Basically, if Y is out-of-bounds, just move it back in bounds.
 	if (Y < 0)
 		Y = 0;
-	else if (Y > HEIGHT_IN_CHARS - 2)
-		Y = HEIGHT_IN_CHARS - 2;
+	else if (Y > mapHeight)
+		Y = mapHeight;
 
 	unsigned short numCompleted = 0;
 
 	//Count the number of lines completed
 	for (unsigned short i = 0; i < Piece.height; i++)
-		if (lineIsComplete(mapData, Y + i) == true)
+		if (lineIsComplete(mapData, Y + i, mapWidth) == true)
 			numCompleted = numCompleted + 1;
 
 	if (numCompleted > 0)
@@ -1045,7 +1076,7 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece,
 		for (unsigned short i = 0; i < Piece.height; i++)
 		{
 
-			if (lineIsComplete(mapData, Y + i) == true)
+			if (lineIsComplete(mapData, Y + i, mapWidth) == true)
 			{
 
 				if (*returnRows + currentReturnRow != NULL)
@@ -1064,16 +1095,17 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece,
 }
 
 //This prevents pieces from spawning partially in the wall
-void adjustNewPiece(piece* Piece, unsigned short* X)
+void adjustNewPiece(piece* Piece, unsigned short* X, unsigned short mapWidth)
 {
 
-	if (*X + Piece->width > WIDTH_OF_PLAYSPACE)
-		*X = *X - ((*X + Piece->width) - WIDTH_OF_PLAYSPACE);
+	if (*X + Piece->width > mapWidth)
+		*X = *X - ((*X + Piece->width) - mapWidth);
 
 }
 
 //Check if a piece is colliding with another piece in various circumstances
-bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direction, bool* mapData)
+bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direction, 
+					bool* mapData, unsigned short mapWidth, unsigned short mapHeight)
 {
 
 	if (direction == DOWN)
@@ -1084,8 +1116,8 @@ bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direct
 			//map Data
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* WIDTH_OF_PLAYSPACE + (X + (Piece.blocks[i].X - Piece.minX))) == true ||
-				(int)*Y + Piece.height > HEIGHT_IN_CHARS - 2)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX))) == true ||
+				(int)*Y + Piece.height > mapHeight)
 			{
 
 				//If one of the block is already occupied in mapData, move the piece back up
@@ -1101,7 +1133,7 @@ bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direct
 		//Check any blocks in mapData exist to the LEFT of any blocks in the currentPiece
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* WIDTH_OF_PLAYSPACE + (X + (Piece.blocks[i].X - Piece.minX) - 1)) == true)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX) - 1)) == true)
 				return true;
 
 	}
@@ -1111,7 +1143,7 @@ bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direct
 		//Check any blocks in mapData exist to the RIGHT of any blocks in the currentPiece
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* WIDTH_OF_PLAYSPACE + (X + (Piece.blocks[i].X - Piece.minX) + 1)) == true)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX) + 1)) == true)
 				return true;
 
 	}
@@ -1122,7 +1154,7 @@ bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direct
 			//currentPiece is not trying to move in this instance
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* WIDTH_OF_PLAYSPACE + (X + (Piece.blocks[i].X - Piece.minX))) == true)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX))) == true)
 				return true;
 
 	}
@@ -1131,7 +1163,7 @@ bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direct
 
 }
 
-void move(char keyPress, unsigned short *X, piece Piece)
+void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth)
 {
 	
 	//Only allow movement within bounds
@@ -1145,7 +1177,7 @@ void move(char keyPress, unsigned short *X, piece Piece)
 	else if (keyPress == RIGHT)
 	{
 
-		if (*X + Piece.width < WIDTH_OF_PLAYSPACE)
+		if (*X + Piece.width < mapWidth)
 			*X = *X + 1;
 
 	}

@@ -20,6 +20,7 @@ void clearTexture(SDL_Texture* texture);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 SDL_Texture* createTexture(int width, int height);
 SDL_Texture* createPieceTexture(piece Piece);
+int getStringLength(char* str, float multiplier);
 
 //generate.c
 piece* generateGamePiece(unsigned short size);
@@ -39,6 +40,9 @@ void saveOption(unsigned short line, unsigned short value);
 bool fileExists(char* fileName);
 unsigned short getOption(unsigned short line);
 
+//instance.c
+void updateVolume();
+
 piece** getMovingPieces(piece**);
 bool updateTitle(SDL_Texture* texture, piece** movingPieces);
 void updateModes(SDL_Texture* texture, unsigned short currentMode);
@@ -46,11 +50,6 @@ void updateOptions(SDL_Texture* texture, unsigned short mode);
 
 unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 {
-
-	//Get current keyboard state
-	static Uint8* keys = NULL;
-	if (keys == NULL)
-		keys = (Uint8*)SDL_GetKeyboardState(NULL);
 
 	//Generate random game piece
 	static piece* Piece;
@@ -111,8 +110,8 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 		free(pieceY);
 		pieceY = NULL;
 
-		//Get the pieces of the title that will be falling independently of everything else once it hits the
-		//bottom of the screen
+		//Get the pieces of the title that will be falling independently of everything else 
+		//once it hits the bottom of the screen
 		movingPieces = getMovingPieces(titlePieces);
 
 		//free titlePieces
@@ -172,15 +171,13 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 		Texture_Modes = createTexture(FONT_WIDTH * 35, 
 			FONT_HEIGHT * 6 + STRING_GAP);
 
-		printToTexture("MODE:", Texture_Modes, 0, 
-			2 * (FONT_WIDTH + STRING_GAP), 1, WHITE);
 		printToTexture("MULTRIS", Texture_Modes, 
-			8 * FONT_WIDTH, 2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+			FONT_WIDTH + STRING_GAP, 2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 		printToTexture("NUMERICAL", Texture_Modes, 
-			8 * FONT_WIDTH, 3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+			FONT_WIDTH + STRING_GAP, 3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 		printToTexture("OPTIONS", Texture_Modes, 
-			8 * FONT_WIDTH, 4 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture(">", Texture_Modes, 6 * FONT_WIDTH, 
+			FONT_WIDTH + STRING_GAP, 4 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+		printToTexture(">", Texture_Modes, 0, 
 			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 
 
@@ -193,71 +190,53 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			5 * (FONT_HEIGHT + STRING_GAP));
 
 		printToTexture(">", Texture_Options, 0, 0, 1, WHITE);
-		printToTexture("BLOCK SPRITE:", Texture_Options, 
-			2 * (FONT_WIDTH + STRING_GAP), 0, 1, WHITE);
+		printToTexture("BLOCK:", Texture_Options, 
+			(FONT_WIDTH + STRING_GAP), 0, 1, WHITE);
 		printToTexture("GHOST:", Texture_Options, 
-			2 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, WHITE);
+			(FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, WHITE);
 		printToTexture("FULLSCREEN:", Texture_Options, 
-			2 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 1, 
+			(FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 1, 
 			WHITE);
 		printToTexture("VOLUME:", Texture_Options, 
-			2 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
+			(FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
 			WHITE);
-		printToTexture("^", Texture_Options, 15 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", Texture_Options, 12 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 		printToTexture("CONTROLS", Texture_Options, 
-			2 * (FONT_WIDTH + STRING_GAP), 4 * (FONT_HEIGHT + STRING_GAP), 1, 
+			(FONT_WIDTH + STRING_GAP), 4 * (FONT_HEIGHT + STRING_GAP), 1, 
 			WHITE);
 
 		//Print current GHOST option
 		if (getOption(1) == 0)
 			printToTexture("OFF", Texture_Options,
 				8 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, 
-				WHITE);
+				RED);
 		else if (getOption(1) == 1)
 			printToTexture("ON", Texture_Options, 
 				8 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, 
-				WHITE);
+				GREEN);
 
 		//Print the current FULLSCREEN options
 		if (getOption(2) == 0)
 			printToTexture("OFF", Texture_Options, 
 				13 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 
-				1, WHITE);
+				1, RED);
 		else if (getOption(2) == 1)
 			printToTexture("ON", Texture_Options, 
 				13 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP),
-				1, WHITE);
+				1, GREEN);
 
 		//Print the current VOLUME option
-		intToTexture((int)((float)globalInstance->global_volume / 100.0 * 9), 
+		intToTexture(getOption(3), 
 			Texture_Options, 9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 
-			1, WHITE);
+			1, YELLOW);
 
 		//Draw BLOCK_CHAR options
 		unsigned short color = (rand() % (RED - YELLOW + 1)) + YELLOW;
 		drawToTexture(BLOCK_SPRITE_ID_1, Texture_Options, 
-			15 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
+			12 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
 		drawToTexture(BLOCK_SPRITE_ID_2, Texture_Options,
-			17 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
-
-	}
-
-	//Sounds
-	static sound* Sound_Move;
-	static sound* Sound_Rotate;
-	if (Sound_Move == NULL)
-	{
-
-		Sound_Move = loadSound("AUDIO/move.wav");
-		setVolume(&Sound_Move, 0);
-
-	}
-	if (Sound_Rotate == NULL)
-	{
-
-		Sound_Rotate = loadSound("AUDIO/rotate.wav");
-		setVolume(&Sound_Rotate, 0);
+			14 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
 
 	}
 
@@ -283,22 +262,33 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 	//Rendering -------------------------------------------
 
-	drawTexture(Texture_Title, FONT_WIDTH * 2, FONT_HEIGHT * (int)*Y, 1.0);
-	drawTexture(Texture_Next, (int)(FONT_WIDTH * 42.5) - *nextText_Width / 2,
-		(int)(FONT_HEIGHT * 29.5) - *nextText_Height / 2, 1.0);
-	drawTexture(Texture_Score, FONT_WIDTH * 39, FONT_HEIGHT * 6 + STRING_GAP, 
-		1.0);
-	drawTexture(Texture_Level, FONT_WIDTH * 46, FONT_HEIGHT * 10, 1.0);
-	drawTexture(Texture_Lines, FONT_WIDTH * 42, FONT_HEIGHT * 18, 1.0);
-	drawTexture(Texture_Modes, FONT_WIDTH * 2, FONT_HEIGHT * 5, 1.0);
+	//drawTexture(Texture_Title, FONT_WIDTH * 2, FONT_HEIGHT * (int)*Y, 1.0);
+	drawTexture(Texture_Next, 
+				318 - (*nextText_Width / 2),
+				282 - (*nextText_Height / 2), 
+				1.0);
+	drawTexture(Texture_Score, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
+				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("000000", 1.0)), 
+				FONT_HEIGHT * 2 + (FONT_WIDTH + STRING_GAP) * 4 - 10, 1.0);
+	drawTexture(Texture_Level, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
+				SPRITE_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("0", 1.0)), 
+				FONT_HEIGHT * 9 + (SPRITE_HEIGHT + STRING_GAP) - 7, 1.0);
+	drawTexture(Texture_Lines, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
+				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("5", 1.0)), 
+				FONT_HEIGHT * 15 + (SPRITE_HEIGHT + STRING_GAP) - 5, 1.0);
+	drawTexture(Texture_Modes, FONT_WIDTH + STRING_GAP, FONT_HEIGHT + STRING_GAP, 1.0);
 
 	if (*mode >= OPTIONS)
-		drawTexture(Texture_Options, 134, 103, 1.0);
+		drawTexture(Texture_Options, 2 * (FONT_WIDTH + STRING_GAP), 
+					4 * (FONT_WIDTH + STRING_GAP), 1.0);
 
 	//-----------------------------------------------------
 
 	//Title dropping
-	if (*Y < HEIGHT_IN_CHARS - 6)
+	if (*Y < BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE)
 		*Y += INITIAL_SPEED * globalInstance->frame_time;
 	else
 	{
@@ -324,17 +314,13 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 	else
 	{
 
-		//If player presses ESCAPE in the menu, close the game
-		if (keys[SDL_SCANCODE_ESCAPE])
-			globalInstance->running = false;
-
 		//Exit Menu if enter key is pressed
 			//This means clearing all of the memory used by the Title screen
-		if (keys[SDL_SCANCODE_RETURN] && *inputLock == false)
+		if (globalInstance->controls[SELECT_BUTTON_ID].onPress && *inputLock == false)
 		{
 
 			//Play ROTATE sound
-			playSound(Sound_Rotate);
+			playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
 
 			//Return the mode 
 			*returnMode = *mode;
@@ -346,14 +332,8 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 				//Only copy first piece if we are not resetting
 				if (*returnMode != OPTIONS)
-				{
-
 					//Copy Piece into firstPiece
 					*firstPiece = Piece;
-					//Copy over all blocks
-					copyBlocks(Piece, *firstPiece);
-
-				}
 				else
 					delPiece(&Piece);	//Otherwise, delete the piece
 
@@ -362,7 +342,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				{
 
 					Piece = NULL;
-
+				
 					//free movingPieces
 					for (unsigned short i = 0; i < 5; i++)
 						delPiece(&movingPieces[i]);
@@ -386,13 +366,6 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				Texture_Modes = NULL;
 				SDL_DestroyTexture(Texture_Options);
 				Texture_Options = NULL;
-
-				//Free sounds
-				delSound(&Sound_Move);
-				delSound(&Sound_Rotate);
-
-				//Reset keys array pointer
-				keys = NULL;
 
 				//Free single variables
 				free(Y);
@@ -432,7 +405,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			}
 
 			//Change the block sprite if thats what the player did
-			if (*returnMode == MAX_PIECE_SIZE + 1)
+			if (*returnMode == OPTIONS)
 			{
 
 				BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
@@ -442,7 +415,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				return RESET;
 
 			}
-			else if (*returnMode == MAX_PIECE_SIZE + 2)
+			else if (*returnMode == OPTIONS + 1)
 			{
 
 				BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_2;
@@ -459,22 +432,23 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			if (inputLock != NULL)
 				*inputLock = true;
 
-		}	//Mode 0 = default mode, Mode 1-9 = Numerical mode, Mode 10+ = OPTIONS
-		else if (keys[SDL_SCANCODE_DOWN] && *inputLock == false && mode != NULL)
+		}	//Mode 0 = default mode, Mode 1-8 = Numerical mode, Mode 9+ = OPTIONS
+		else if (globalInstance->keys[SDL_SCANCODE_DOWN] && *inputLock == false && 
+				mode != NULL)
 		{
 
 			if (*mode == 0)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode = 1;
 				updateModes(Texture_Modes, *mode);
 
 			}
-			else if (*mode == 1)
+			else if (*mode >= 1 && *mode <= 8)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode = OPTIONS;
 				updateModes(Texture_Modes, *mode);
 				updateOptions(Texture_Options, *mode);
@@ -483,7 +457,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS || *mode == OPTIONS + 1)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode = OPTIONS + 2;
 				updateOptions(Texture_Options, *mode);
 
@@ -491,7 +465,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 2)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode += 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -499,7 +473,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 3)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode += 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -507,7 +481,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 4)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode += 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -516,13 +490,14 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			*inputLock = true;
 
 		}
-		else if (keys[SDL_SCANCODE_UP] && *inputLock == false && mode != NULL)
+		else if (globalInstance->keys[SDL_SCANCODE_UP] && *inputLock == false && 
+				mode != NULL)
 		{
 
 			if (*mode > 0 && *mode <= MAX_PIECE_SIZE)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode = 0;
 				updateModes(Texture_Modes, *mode);
 
@@ -530,7 +505,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS || *mode == OPTIONS + 1)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode = 1;
 				updateModes(Texture_Modes, *mode);
 
@@ -538,7 +513,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 2)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode = OPTIONS;
 				updateOptions(Texture_Options, *mode);
 
@@ -546,7 +521,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 3)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode -= 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -554,7 +529,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 4)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode -= 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -562,7 +537,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 5)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode -= 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -571,13 +546,14 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			*inputLock = true;
 
 		}
-		else if (keys[SDL_SCANCODE_LEFT] && *inputLock == false && mode != NULL)
+		else if (globalInstance->keys[SDL_SCANCODE_LEFT] && *inputLock == false && 
+				mode != NULL)
 		{
 
 			if (*mode > 1 && *mode <= MAX_PIECE_SIZE)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode -= 1;
 				updateModes(Texture_Modes, *mode);
 
@@ -585,7 +561,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 1)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode -= 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -596,22 +572,14 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				if (globalInstance->global_volume > 0)
 				{
 
-					globalInstance->global_volume -= 1;
+					//Lower volume in OPTIONS file
+					saveOption(3, getOption(3) - 1);
+					//Update volume in globalInstance, converting it to a percentage
+					globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
+					//Now update volumes of the actual sounds
+					updateVolume();
 
-					//Reload sounds
-					delSound(&Sound_Move);
-					Sound_Move = loadSound("AUDIO/move.wav");
-					delSound(&Sound_Rotate);
-					Sound_Rotate = loadSound("AUDIO/rotate.wav");
-
-					//Set volumes
-					setVolume(&Sound_Move, 0);
-					setVolume(&Sound_Rotate, 0);
-
-					playSound(Sound_Move);
-
-					//Save volume
-					saveOption(3, globalInstance->global_volume);
+					playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 
 				}
 
@@ -622,13 +590,14 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			*inputLock = true;
 
 		}
-		else if (keys[SDL_SCANCODE_RIGHT] && *inputLock == false && mode != NULL)
+		else if (globalInstance->keys[SDL_SCANCODE_RIGHT] && *inputLock == false && 
+				mode != NULL)
 		{
 
 			if (*mode < MAX_PIECE_SIZE && *mode > 0)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode += 1;
 				updateModes(Texture_Modes, *mode);
 
@@ -636,7 +605,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS)
 			{
 
-				playSound(Sound_Move);
+				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 				*mode += 1;
 				updateOptions(Texture_Options, *mode);
 
@@ -644,26 +613,17 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			else if (*mode == OPTIONS + 4)
 			{
 
-				if (globalInstance->global_volume < 9)
+				if (globalInstance->global_volume < 100)
 				{
 
-					globalInstance->global_volume += 1;
+					//Raise volume in OPTIONS file
+					saveOption(3, getOption(3) + 1);
+					//Update volume in globalInstance, converting it to a percentage
+					globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
+					//Now update volumes of the actual sounds
+					updateVolume();
 
-					//Reload sounds
-					delSound(&Sound_Move);
-					Sound_Move = loadSound("AUDIO/move.wav");
-					delSound(&Sound_Rotate);
-					Sound_Rotate = loadSound("AUDIO/rotate.wav");
-
-					//Set volumes
-					setVolume(&Sound_Move, globalInstance->global_volume * 10);
-					setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
-
-					playSound(Sound_Move);
-
-					//Save volume
-					saveOption(3, 
-						round(((float)globalInstance->global_volume / 100.0 * 9)));
+					playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 
 				}
 
@@ -674,8 +634,11 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			*inputLock = true;
 
 		}
-		else if (!keys[SDL_SCANCODE_UP] && !keys[SDL_SCANCODE_DOWN] && !keys[SDL_SCANCODE_LEFT] && !keys[SDL_SCANCODE_RIGHT] &&
-					!keys[SDL_SCANCODE_RETURN])
+		else if (!globalInstance->keys[SDL_SCANCODE_UP] && 
+				!globalInstance->keys[SDL_SCANCODE_DOWN] && 
+				!globalInstance->keys[SDL_SCANCODE_LEFT] && 
+				!globalInstance->keys[SDL_SCANCODE_RIGHT] &&
+				!globalInstance->keys[SDL_SCANCODE_RETURN])
 			*inputLock = false;
 
 	}
@@ -691,11 +654,11 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 	{
 
 		//Erase "^" and ">"
-		printToTexture("^", texture, 17 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", texture, 14 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
 		printToTexture(">", texture, 0, FONT_HEIGHT + STRING_GAP, 1, BLACK);
 		//Reprint
-		printToTexture("^", texture, 15 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", texture, 12 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 		printToTexture(">", texture, 0, 0, 1, WHITE);
 
@@ -704,11 +667,11 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 	{
 
 		//Erase "^" and ">" by printing it in black
-		printToTexture("^", texture, 15 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", texture, 12 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
 		printToTexture(">", texture, 0, FONT_HEIGHT + STRING_GAP, 1, BLACK);
 		//Reprint
-		printToTexture("^", texture, 17 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", texture, 14 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 		printToTexture(">", texture, 0, 0, 1, WHITE);
 
@@ -717,9 +680,9 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 	{
 
 		//Erase "^" and ">"
-		printToTexture("^", texture, 15 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", texture, 12 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		printToTexture("^", texture, 17 * (FONT_WIDTH + STRING_GAP), 
+		printToTexture("^", texture, 14 * (FONT_WIDTH + STRING_GAP), 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
 		printToTexture(">", texture, 0, 0, 1, BLACK);
 		printToTexture(">", texture, 0, 2 * (FONT_WIDTH + STRING_GAP), 1, BLACK);
@@ -733,7 +696,7 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 				FONT_HEIGHT + STRING_GAP, 1, BLACK);
 			//Print OFF
 			printToTexture("OFF", texture, 8 * (FONT_WIDTH + STRING_GAP), 
-				FONT_HEIGHT + STRING_GAP, 1, WHITE);
+				FONT_HEIGHT + STRING_GAP, 1, RED);
 
 		}
 		else if (getOption(1) == 1)
@@ -744,7 +707,7 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 				FONT_HEIGHT + STRING_GAP, 1, BLACK);
 			//Print ON
 			printToTexture("ON", texture, 8 * (FONT_WIDTH + STRING_GAP), 
-				FONT_HEIGHT + STRING_GAP, 1, WHITE);
+				FONT_HEIGHT + STRING_GAP, 1, GREEN);
 
 		}
 
@@ -767,7 +730,7 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 				2 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
 			//Print OFF
 			printToTexture("OFF", texture, 13 * (FONT_WIDTH + STRING_GAP), 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+				2 * (FONT_HEIGHT + STRING_GAP), 1, RED);
 
 		}
 		else if (getOption(2) == 1)
@@ -778,7 +741,7 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 				2 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
 			//Print ON
 			printToTexture("ON", texture, 13 * (FONT_HEIGHT + STRING_GAP), 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+				2 * (FONT_HEIGHT + STRING_GAP), 1, GREEN);
 
 		}
 
@@ -790,18 +753,18 @@ void updateOptions(SDL_Texture* texture, unsigned short mode)
 
 		//Erasures
 		printToTexture(">", texture, 0, 2 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		intToTexture(globalInstance->global_volume + 1, texture, 
+		intToTexture(getOption(3) + 1, texture, 
 			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
 			BLACK);
-		intToTexture(globalInstance->global_volume - 1, texture, 
+		intToTexture(getOption(3) - 1, texture, 
 			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
 			BLACK);
 		printToTexture(">", texture, 0, 4 * (FONT_WIDTH + STRING_GAP), 1, BLACK);
 
 		//Print current volume
-		intToTexture((int)((float)globalInstance->global_volume / 100.0 * 9), texture, 
+		intToTexture((int)(getOption(3)), texture, 
 			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			WHITE);
+			YELLOW);
 
 		printToTexture(">", texture, 0, 3 * (FONT_WIDTH + STRING_GAP), 1, WHITE);
 
@@ -827,57 +790,56 @@ void updateModes(SDL_Texture* texture, unsigned short currentMode)
 	clearTexture(texture);
 
 	//Redraw the modes texture, changing it depending on what the current mode is
-	printToTexture("MODE:", texture, 0, 2 * (FONT_HEIGHT + STRING_GAP), 1.0, 
-		WHITE);
-	printToTexture(">", texture, 6 * FONT_WIDTH, 2* (FONT_HEIGHT + STRING_GAP), 
+	printToTexture(">", texture, 0, 2* (FONT_HEIGHT + STRING_GAP), 
 		1.0, WHITE);
 
 	if (currentMode == 0)
 	{
 
-		printToTexture("MULTRIS", texture, 8 * FONT_WIDTH, 
+		printToTexture("MULTRIS", texture, FONT_WIDTH + STRING_GAP, 
 			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("NUMERICAL", texture, 8 * FONT_WIDTH, 
+		printToTexture("NUMERICAL", texture, FONT_WIDTH + STRING_GAP, 
 			3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", texture, 8 * FONT_WIDTH, 
+		printToTexture("OPTIONS", texture, FONT_WIDTH + STRING_GAP, 
 			4 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 
 	}
 	else if (currentMode > 0 && currentMode <= MAX_PIECE_SIZE)
 	{
 
-		printToTexture("MULTRIS", texture, 8 * FONT_WIDTH, 
+		printToTexture("MULTRIS", texture, FONT_WIDTH + STRING_GAP, 
 			FONT_HEIGHT + STRING_GAP, 1, WHITE);
-		printToTexture("NUMERICAL", texture, 8 * FONT_WIDTH, 
+		printToTexture("NUMERICAL", texture, FONT_WIDTH + STRING_GAP, 
 			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", texture, 8 * FONT_WIDTH, 
+		printToTexture("OPTIONS", texture, FONT_WIDTH + STRING_GAP, 
 			3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("^", texture, 22 * FONT_WIDTH + 2 * STRING_GAP, 
+		printToTexture("^", texture, 15 * FONT_WIDTH + 2 * STRING_GAP, 
 			4 * FONT_HEIGHT, 1, WHITE);
 
 		if (currentMode == 1)
-			printToTexture("  1 2", texture, 20 * FONT_WIDTH, 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+			printToTexture("  1 2", texture, 13 * FONT_WIDTH, 
+							2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 		else if (currentMode < MAX_PIECE_SIZE)
 		{
 
-			char string[6] = { '0' + currentMode - 1, ' ', '0' + currentMode, ' ', '0' + currentMode + 1, '\0' };
-			printToTexture(string, texture, 20 * FONT_WIDTH, 
+			char string[6] = { '0' + currentMode - 1, ' ', '0' + currentMode, ' ', 
+								'0' + currentMode + 1, '\0' };
+			printToTexture(string, texture, 13 * FONT_WIDTH, 
 				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 
 		}
 		else
-			printToTexture("8 9  ", texture, 20 * FONT_WIDTH, 
+			printToTexture("7 8  ", texture, 13 * FONT_WIDTH, 
 				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 
 	}
 	else if (currentMode >= OPTIONS)
 	{
 
-		printToTexture("MULTRIS", texture, 8 * FONT_WIDTH, 0, 1, WHITE);
-		printToTexture("NUMERICAL", texture, 8 * FONT_WIDTH, 
+		printToTexture("MULTRIS", texture, FONT_WIDTH + STRING_GAP, 0, 1, WHITE);
+		printToTexture("NUMERICAL", texture, FONT_WIDTH + STRING_GAP, 
 			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", texture, 8 * FONT_WIDTH, 
+		printToTexture("OPTIONS", texture, FONT_WIDTH + STRING_GAP, 
 			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 
 	}
@@ -998,35 +960,4 @@ piece** getMovingPieces(piece** titlePieces)
 
 	return movingPieces;
 
-}
-
-//Draw the screen borders to the background texture
-void drawBorders(SDL_Texture* background)
-{
-
-	//Draw all borders
-	drawRectangle(WALL_SPRITE_ID, background, 0, 0, 50, 1, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, 0, SPRITE_HEIGHT, 1, 49, GRAY, 
-		true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH, SPRITE_HEIGHT * 49, 
-		49, 1, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 36, 
-		SPRITE_HEIGHT * 35, 13, 1, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 36, 
-		SPRITE_HEIGHT * 45, 13, 1, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 36, 
-		SPRITE_HEIGHT * 36, 1, 9, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 48, 
-		SPRITE_HEIGHT * 36, 1, 9, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 49, 
-		SPRITE_HEIGHT, 1, 48, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 35, 
-		SPRITE_HEIGHT, 1, 48, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 36, 
-		SPRITE_HEIGHT * 8, 13, 1, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 36, 
-		SPRITE_HEIGHT * 12, 13, 1, GRAY, true);
-	drawRectangle(WALL_SPRITE_ID, background, SPRITE_WIDTH * 36, 
-		SPRITE_HEIGHT * 20, 13, 2, GRAY, true);
-		
 }

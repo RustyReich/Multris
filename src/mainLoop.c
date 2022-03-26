@@ -13,13 +13,13 @@ SDL_Texture* createTexture(int width, int height);
 void clearTexture(SDL_Texture* texture);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 int getStringLength(char* str, float multiplier);
+int getIntStringLength(int num, float multiplier);
 
 //map.c
 unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode);
-void drawBorders(SDL_Texture* background);
 
 //playMode.c
-unsigned short playMode(piece* firstPiece, unsigned short size);
+unsigned short playMode(piece* firstPiece, unsigned short mode);
 
 //file.c
 unsigned int loadTop();
@@ -31,12 +31,22 @@ piece* generateGamePiece(unsigned short size);
 //controls.c
 unsigned short controlsScreen();
 
+//layout.c
+void drawPlayField(SDL_Texture* background, unsigned short size);
+void drawScoreBox(SDL_Texture* background, unsigned short size);
+void drawLevelBox(SDL_Texture* background, unsigned short size);
+void drawUntilBox(SDL_Texture* background, unsigned short size);
+void drawNextBox(SDL_Texture* background, unsigned short size);
+void drawHoldBox(SDL_Texture* background, unsigned short size);
+void drawFPSBox(SDL_Texture* background, unsigned short size);
+
 //The main game loop
 void mainLoop()
 {
 
 	//Texture storing everything on screen that never changes
 		//This includes things like the border walls, strings, etc.
+		
 	static SDL_Texture* Texture_Background = NULL;
 	if (Texture_Background == NULL)
 	{
@@ -49,52 +59,20 @@ void mainLoop()
 
 		Texture_Background = createTexture(renderWidth, renderHeight);
 
-		//Draw borders
-		drawBorders(Texture_Background);
-
-		//Print all strings
-		printToTexture("TOP", Texture_Background, FONT_WIDTH * 39, 
-			FONT_HEIGHT * 2, 1, WHITE);
-		//print the top score
-		char* top;
-		unsigned short zeroLength = 6 - getIntLength(loadTop());
-		top = malloc(zeroLength * sizeof(*top));
-		*(top + zeroLength) = '\0';
-		for (unsigned short i = 0; i < zeroLength; i++)
-			*(top + i) = '0';
-		printToTexture(top, Texture_Background, FONT_WIDTH * 39, 
-			FONT_HEIGHT * 3 + STRING_GAP, 1, WHITE);
-		free(top);
-		intToTexture(loadTop(), Texture_Background, 
-			FONT_WIDTH * 39 + zeroLength * (FONT_WIDTH + STRING_GAP), 
-			FONT_HEIGHT * 3 + STRING_GAP, 1, WHITE);
-
-		printToTexture("SCORE", Texture_Background, FONT_WIDTH * 39, 
-			FONT_HEIGHT * 5, 1, WHITE);
-		printToTexture("NEXT", Texture_Background, FONT_WIDTH * 40, 
-			FONT_HEIGHT * 23, 1, WHITE);
-		printToTexture("HOLD", Texture_Background, FONT_WIDTH * 40, 
-			FONT_HEIGHT * 37, 1, WHITE);
-		printToTexture("LEVEL:", Texture_Background, FONT_WIDTH * 39, 
-			FONT_HEIGHT * 10, 1, WHITE);
-		printToTexture("LINES", Texture_Background, (int)(FONT_WIDTH * 39.5), 
-			FONT_HEIGHT * 14, 1, WHITE);
-		printToTexture("UNTIL", Texture_Background, (int)(FONT_WIDTH * 39.5), 
-			FONT_HEIGHT * 15 + STRING_GAP, 1, WHITE);
-		printToTexture("LEVELUP", Texture_Background, (int)(FONT_WIDTH * 38.5), 
-			FONT_HEIGHT * 16 + 2 * STRING_GAP, 1, WHITE);
-		printToTexture("FPS:", Texture_Background, FONT_WIDTH * 39, 
-			FONT_HEIGHT * 47, 1, WHITE);
+		//Draw layout
+		drawPlayField(Texture_Background, MAX_PIECE_SIZE);
+		drawScoreBox(Texture_Background, MAX_PIECE_SIZE);
+		drawLevelBox(Texture_Background, MAX_PIECE_SIZE);
+		drawUntilBox(Texture_Background, MAX_PIECE_SIZE);
+		drawNextBox(Texture_Background, MAX_PIECE_SIZE);
+		drawHoldBox(Texture_Background, MAX_PIECE_SIZE);
+		drawFPSBox(Texture_Background, MAX_PIECE_SIZE);
 
 	}
 	
 	static SDL_Texture* Texture_FPS;
 	if (Texture_FPS == NULL)
-	{
-
 		Texture_FPS = createTexture(getStringLength("0000", 1.0), FONT_HEIGHT);
-
-	}
 
 	//Hold the first piece that is generated in the title screen and will be the first 
 	//WWpiece played
@@ -114,6 +92,13 @@ void mainLoop()
 		intToTexture(globalInstance->FPS, Texture_FPS, 0, 0, 1.0, YELLOW);
 
 	}
+
+	// RENDERING --------------------------------------------------------------
+	drawTexture(Texture_Background, 0, 0, 1.0);
+	drawTexture(Texture_FPS, 
+				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 7) - 6 -
+				getIntStringLength(globalInstance->FPS, 1.0) / 2, 
+				FONT_HEIGHT * 39 + STRING_GAP * 3, 1.0);
 
 	//Exit game if user presses EXIT_BUTTON
 	if (globalInstance->controls[EXIT_BUTTON_ID].onPress)
@@ -154,13 +139,9 @@ void mainLoop()
 		SDL_DestroyTexture(Texture_Background);
 		Texture_Background = NULL;
 
+		//Return to the TITLE_SCREEN when the game is reset
 		game_state = TITLE_SCREEN;
 
 	}
-
-	// RENDERING --------------------------------------------------------------
-	drawTexture(Texture_Background, 0, 0, 1.0);
-	drawTexture(Texture_FPS, FONT_WIDTH * 43 + STRING_GAP, FONT_HEIGHT * 47, 
-		1.0);
 
 }

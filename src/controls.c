@@ -63,9 +63,13 @@ unsigned short controlsScreen()
     if (Texture_Controls == NULL)
     {
 
+        //Get playspace area
+        unsigned short mapWidth = round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE);
+        unsigned short mapHeight = round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE);
+
         //Make the texture the size of the play area
-        Texture_Controls = createTexture(FONT_WIDTH * WIDTH_OF_PLAYSPACE, 
-            FONT_HEIGHT * (HEIGHT_IN_CHARS - 2));
+        Texture_Controls = createTexture(FONT_WIDTH * mapWidth, 
+            FONT_HEIGHT * mapHeight);
 
         //Print controls to texture
         printToTexture("LEFT RIGHT ARROWS : MOVE", Texture_Controls, 

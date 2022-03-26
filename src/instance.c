@@ -4,8 +4,8 @@
 
 #include "HEADERS/MGF.h"
 
-#define INITIAL_INTERNAL_WIDTH	600
-#define INITIAL_INTERNAL_HEIGHT	600
+#define INITIAL_INTERNAL_WIDTH	384
+#define INITIAL_INTERNAL_HEIGHT	504
 
 //audio.c
 sound* loadSound(char* file);
@@ -92,7 +92,7 @@ void scaleRenderer()
     int renderWidth;
     int renderHeight;
     SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, 
-        &renderHeight); 
+        &renderHeight);
 
     SDL_Rect rect = { .x = 0, .y = 0, .w = renderWidth, .h = renderHeight};
     float scale = 1;
@@ -220,6 +220,9 @@ void updateVolume()
         //Copy volume adjusted buffer to sounds[i]->buffer
         for (int j = 0 ; j < globalInstance->masterSounds[i]->length; j++)
             globalInstance->sounds[i]->buffer[j] = dstStream[j];
+
+        //Free dstStream memory
+        free(dstStream);
 
     }
 
