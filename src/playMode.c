@@ -23,6 +23,7 @@ void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y,
 void clearTexture(SDL_Texture* texture);
 SDL_Texture* createPieceTexture(piece Piece);
 int getStringLength(char* str, float multiplier);
+int getIntStringLength(int num, float multiplier);
 
 //rotate.c
 void rotatePiece(piece *Piece, unsigned short direction);
@@ -63,7 +64,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 	unsigned short mapHeight);
 void updateScore(unsigned int, SDL_Texture*);
 void updateLevel(unsigned short, SDL_Texture*);
-void updateLines(unsigned short, SDL_Texture*);
+void updateLines(unsigned short lines, SDL_Texture** linesTexture);
 bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned short mapWidth,
 						unsigned short mapHeight);
 unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY, 
@@ -465,9 +466,9 @@ unsigned short playMode(piece* firstPiece, unsigned short mode)
 				SPRITE_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("0", 1.0)), 
 				FONT_HEIGHT * 9 + (SPRITE_HEIGHT + STRING_GAP) - 7, 1.0);
 	drawTexture(Texture_Lines, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
-				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("5", 1.0)), 
-				FONT_HEIGHT * 15 + (SPRITE_HEIGHT + STRING_GAP) - 5, 1.0);
+				318 - getIntStringLength(*linesAtCurrentLevel, 1.0) / 2, 
+				189, 
+				1.0);
 
 	//Draw the foreground
 	drawTexture(foreground, FONT_WIDTH, FONT_HEIGHT, 1.0);
@@ -685,7 +686,7 @@ unsigned short playMode(piece* firstPiece, unsigned short mode)
 
 				}
 				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, 
-					Texture_Lines);
+					&Texture_Lines);
 
 			}
 
@@ -850,18 +851,18 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 
 }
 
-void updateLines(unsigned short lines, SDL_Texture* linesTexture)
+void updateLines(unsigned short lines, SDL_Texture** linesTexture)
 {
 
-	//Get the number of digits in the lines number
-	unsigned short length = getIntLength(lines);
+	//Erase linesTexture
+	clearTexture(*linesTexture);
+	SDL_DestroyTexture(*linesTexture);
 
-	//Clear lines texture
-	clearTexture(linesTexture);
+	//Recreate linesTexture
+	*linesTexture = createTexture(getIntStringLength(lines, 1.0), FONT_HEIGHT);
 
 	//Draw new level to levelTexture
-	intToTexture(lines, linesTexture, 
-		(int)(FONT_WIDTH * (1.5 - (float)length / 2)), 0, 1, ORANGE);
+	intToTexture(lines, *linesTexture, 0, 0, 1, ORANGE);
 
 }
 
@@ -1206,7 +1207,8 @@ piece* getFirstPiece(piece* firstPiece)
 
 			//Copy over all blocks from firstPiece into currentPiece
 			if (currentPiece->numOfBlocks > 0)
-				currentPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*currentPiece->blocks));
+				currentPiece->blocks = malloc(currentPiece->numOfBlocks * 
+												sizeof(*currentPiece->blocks));
 			for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 			{
 				if (currentPiece->blocks != NULL)
