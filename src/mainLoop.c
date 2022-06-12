@@ -19,7 +19,7 @@ int getIntStringLength(int num, float multiplier);
 unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode);
 
 //playMode.c
-unsigned short playMode(piece* firstPiece, unsigned short mode);
+unsigned short playMode(piece* firstPiece);
 
 //file.c
 unsigned int loadTop();
@@ -39,6 +39,8 @@ void drawUntilBox(SDL_Texture* background, unsigned short size);
 void drawNextBox(SDL_Texture* background, unsigned short size);
 void drawHoldBox(SDL_Texture* background, unsigned short size);
 void drawFPSBox(SDL_Texture* background, unsigned short size);
+int calcMapWidth();
+int calcMapHeight();
 
 //The main game loop
 void mainLoop()
@@ -105,12 +107,21 @@ void mainLoop()
 		globalInstance->running = false;
 
 	if (game_state == TITLE_SCREEN)
+	{
+
 		game_state = drawTitle(&firstPiece, &mode);
+		MODE = mode;
+
+	}
 	else if (game_state == PLAY_SCREEN)
 	{
 
+		//The first loop into playMode
 		if (firstPiece != NULL)
 		{
+
+			MAP_WIDTH = calcMapWidth();
+			MAP_HEIGHT = calcMapHeight();
 
 			if (mode != 0)
 			{
@@ -119,14 +130,14 @@ void mainLoop()
 				firstPiece = generateGamePiece(mode);
 
 			}
-			game_state = playMode(firstPiece, mode);
+			game_state = playMode(firstPiece);
 
 			//We can delete the firstPiece after passing it to playMode
 			delPiece(&firstPiece);
 
 		}
 		else     //The firstPiece has been deleted since it is no longer needed
-			game_state = playMode(NULL, mode);	//So we just pass NULL in its place
+			game_state = playMode(NULL);	//So we just pass NULL in its place
 
 	}
 	else if (game_state == CONTROLS_SCREEN)

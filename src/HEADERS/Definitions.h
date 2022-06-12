@@ -42,10 +42,17 @@
 #define BLACK	9
 
 #define MAX_PIECE_SIZE 8
+
 #define OPTIONS	9
 
 #define BASE_PLAYFIELD_WIDTH 	2.5
 #define BASE_PLAYFIELD_HEIGHT	5
+
+#define SCORE_TEXT		0
+#define LEVEL_TEXT		1
+#define LINES_TEXT		2
+#define PAUSED_TEXT		3
+#define FOREGROUND_TEXT	4
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris

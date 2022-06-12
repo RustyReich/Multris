@@ -12,6 +12,13 @@ void copyPiece(piece* piece1, piece* piece2);
 //draw.c
 SDL_Texture* createPieceTexture(piece Piece);
 
+//layouc.c
+SDL_Texture* create_Score_Text();
+SDL_Texture* create_Level_Text();
+SDL_Texture* create_Lines_Text();
+SDL_Texture* create_Pause_Text();
+SDL_Texture* create_Foreground_Text();
+
 //Function for pushing a variable or object onto an array of varVector structures 
 //designed to make freeing variables at the end of a game_state easier
 varVector** pushAddress(void** ptr, unsigned short type)
@@ -29,7 +36,7 @@ varVector** pushAddress(void** ptr, unsigned short type)
         return &vector;
     else
     {
-        
+
         if (vector->ptrs == NULL)
         {
 
@@ -231,6 +238,51 @@ void declare_Piece_Text(SDL_Texture** ptr, piece* Piece)
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
+
+    }
+
+}
+
+//Function for declaring a HUD Texture on the varVector array
+void declare_HUD_Text(SDL_Texture** ptr, int type)
+{
+
+    if (*ptr == NULL)
+    {
+
+        if (type == SCORE_TEXT)
+            *ptr = create_Score_Text();
+        else if (type == LEVEL_TEXT)
+            *ptr = create_Level_Text();
+        else if (type == LINES_TEXT)
+            *ptr = create_Lines_Text();
+        else if (type == PAUSED_TEXT)
+            *ptr = create_Pause_Text();
+        else if (type == FOREGROUND_TEXT)
+            *ptr = create_Foreground_Text();
+
+        if(!inVector((void**)ptr))
+            pushAddress((void**)ptr, TEXTURE);
+
+    }
+
+}
+
+//Declare the map data matrix
+void declare_map_matrix(bool** ptr)
+{
+
+    if (*ptr == NULL)
+    {
+
+        *ptr = (bool*)(malloc(MAP_HEIGHT * MAP_WIDTH * sizeof(**ptr)));
+        if (*ptr != NULL)
+            for (unsigned short i = 0; i < MAP_HEIGHT; i++)
+                for (unsigned short j = 0; j < MAP_WIDTH; j++)
+                    *(*ptr + i * MAP_WIDTH + j) = false;
+
+        if (!inVector((void**)ptr))
+            pushAddress((void**)ptr, VARIABLE);
 
     }
 

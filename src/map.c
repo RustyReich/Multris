@@ -61,6 +61,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 	if (titlePieces == NULL)
 		titlePieces = makeTitlePieces();
 	static piece** movingPieces;
+	
 	//The coordinates of each title card piece
 	static unsigned short* pieceX;
 	static unsigned short* pieceY;

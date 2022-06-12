@@ -23,16 +23,27 @@ void updateVolume();
 //controls.c
 void updateControls();
 
+//layout.c
+int calcMapWidth();
+int calcMapHeight();
+
 //Initialize global variables
 unsigned short BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
 bool UPDATE_FULLSCREEN_MODE = true;
 bool GHOST_MODE_ENABLED = true;
+int MODE = 0;
+int MAP_WIDTH = 0;
+int MAP_HEIGHT = 0;
 
 //Global Instance
 gameInstance *globalInstance;
 
 int main(int argc, char* argv[])
 {
+
+	//Set MAP_WIDTH and MAP_HEIGHT
+	MAP_WIDTH = calcMapWidth();
+	MAP_HEIGHT = calcMapHeight();
 
 	//Set seed for random number generator
 	srand((int)time(NULL));

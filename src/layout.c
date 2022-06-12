@@ -357,3 +357,91 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 	SDL_SetRenderTarget(globalInstance->renderer, currentTarget);
 
 }
+
+//Calculate the current mapWidth
+int calcMapWidth()
+{
+
+	if (MODE == 0)
+		return (int)round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE);
+	else
+		return (int)round(BASE_PLAYFIELD_WIDTH * MODE);
+
+}
+
+//Calculate the current mapHeight
+int calcMapHeight()
+{
+
+	if (MODE == 0)
+		return (int)round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE);
+	else
+		return (int)round(BASE_PLAYFIELD_HEIGHT * MODE);
+
+}
+
+SDL_Texture* create_Score_Text()
+{
+
+	SDL_Texture* texture;
+
+	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), 
+		FONT_HEIGHT);
+
+	printToTexture("000000", texture, 0, 0, 1, WHITE);
+
+	return texture;
+
+}
+
+SDL_Texture* create_Level_Text()
+{
+
+	SDL_Texture* texture;
+
+	texture = createTexture(2 * (FONT_WIDTH + STRING_GAP), 
+		FONT_HEIGHT);
+
+	printToTexture("0", texture, 0, 0, 1, RED);
+
+	return texture;
+
+}
+
+SDL_Texture* create_Lines_Text()
+{
+
+	SDL_Texture* texture;
+
+	
+	texture = createTexture(FONT_WIDTH, FONT_HEIGHT);
+	printToTexture("5", texture, 0, 0, 1, ORANGE);
+
+	return texture;
+
+}
+
+SDL_Texture* create_Pause_Text()
+{
+
+	SDL_Texture* texture;
+
+	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), 
+		FONT_HEIGHT);
+	printToTexture("PAUSED", texture, 0, 0, 1, WHITE);
+
+	return texture;
+
+}
+
+SDL_Texture* create_Foreground_Text()
+{
+
+
+	SDL_Texture* texture;
+
+	texture = createTexture(FONT_WIDTH * MAP_WIDTH, FONT_HEIGHT * MAP_HEIGHT);
+
+	return texture;
+
+}
