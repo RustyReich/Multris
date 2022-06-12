@@ -497,12 +497,7 @@ unsigned short playMode(piece* firstPiece)
 
 				//Free all memory taken by PLAYMODE -----------------------------------
 
-				//Free variables
 				freeVars();
-
-				//Free arrays
-				free(mapData);
-				mapData = NULL;
 
 				//--------------------------------------------------------
 
