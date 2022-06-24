@@ -8,6 +8,8 @@ A modified version of the classic puzzle game, with randomly generated polyomino
 
 [Building From Source](#Building_From_Source)
 
+[Pre-Compiled Downloads](#Pre_Compiled_Downloads)
+
 <a name="Showcase"/>
 
 ## Showcase
@@ -81,7 +83,9 @@ make -f Makefile_Linux
 
 ###### The executable will be in `/Multris/build`
 
-##### Pre-Compiled Downloads
+<a name="Pre_Compiled_Downloads"/>
+
+## Pre-Compiled Downloads
 Since version 1.0.7, Pre-Compiled builds are only available for purchase on [Steam](https://store.steampowered.com/app/1768350/Multris/)
 
 Older versions (1.0.0 - 1.0.6) are available for free on [Itch.io](https://rustymonster.itch.io/multris)
