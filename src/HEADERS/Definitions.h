@@ -53,6 +53,17 @@
 #define LINES_TEXT		2
 #define PAUSED_TEXT		3
 #define FOREGROUND_TEXT	4
+#define TITLE_TEXT		5
+
+#define DEFAULT_OVER_TIME	55
+
+#define NUM_MOVING_TITLE_PIECES	14
+
+#define TYPE_NA		        0
+#define VARIABLE	        1
+#define PIECE		        2
+#define TEXTURE             3
+#define MOVING_TITLE_PIECES 4
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris
@@ -62,8 +73,6 @@
 #define PLAY_SCREEN		1
 #define CONTROLS_SCREEN	2
 #define RESET			3
-
-#define NUM_OF_TITLE_PIECES 19
 
 #define NONE	0
 #define UP		0
@@ -75,7 +84,6 @@
 #define CCW	1
 
 #define CLEARING_TIME	20
-#define OVER_TIME		42
 
 #define MOVEMENT_WAIT	500
 #define MOVEMENT_TIME	50

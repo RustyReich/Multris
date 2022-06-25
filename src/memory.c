@@ -1,10 +1,5 @@
 #include "HEADERS/MGF.h"
 
-#define TYPE_NA		0
-#define VARIABLE	1
-#define PIECE		2
-#define TEXTURE     3
-
 //generate.c
 void delPiece(piece** Piece);
 void copyPiece(piece* piece1, piece* piece2);
@@ -18,6 +13,9 @@ SDL_Texture* create_Level_Text();
 SDL_Texture* create_Lines_Text();
 SDL_Texture* create_Pause_Text();
 SDL_Texture* create_Foreground_Text();
+SDL_Texture* create_Title_Text();
+piece** getMovingPieces(piece** titlePieces);
+piece** makeTitlePieces();
 
 //Function for pushing a variable or object onto an array of varVector structures 
 //designed to make freeing variables at the end of a game_state easier
@@ -260,6 +258,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Pause_Text();
         else if (type == FOREGROUND_TEXT)
             *ptr = create_Foreground_Text();
+        else if (type == TITLE_TEXT)
+            *ptr = create_Title_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
@@ -288,6 +288,21 @@ void declare_map_matrix(bool** ptr)
 
 }
 
+void declare_moving_title_pieces(piece*** ptr)
+{
+
+    if (*ptr == NULL)
+    {
+
+        *ptr = getMovingPieces(makeTitlePieces());
+
+        if (!inVector((void**)ptr))
+            pushAddress((void**)ptr, MOVING_TITLE_PIECES);
+
+    }
+
+}
+
 //Function for freeing memory of all variables declared during the current game_state
 void freeVars()
 {
@@ -310,6 +325,14 @@ void freeVars()
                 delPiece((piece**)&*(void**)((*vector)->ptrs[i]));
             else if ((*vector)->types[i] == TEXTURE)
                 SDL_DestroyTexture(*(SDL_Texture**)((*vector)->ptrs[i]));
+            else if ((*vector)->types[i] == MOVING_TITLE_PIECES)
+            {
+
+                for (unsigned short j = 0; j < NUM_MOVING_TITLE_PIECES; j++)
+                    delPiece(&((piece**)*(void**)(*vector)->ptrs[i])[j]);
+                free((piece**)*(void**)(*vector)->ptrs[i]);
+
+            }
             
         }
 

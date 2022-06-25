@@ -686,9 +686,13 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 
 			*time_now = SDL_GetTicks();
 
+			int max_size = MAX_PIECE_SIZE;
+			if (MODE != 0)
+				max_size = MODE;
+
 			//When enough time has lapsed since the last frame in the animation, play 
 			//another frame
-			if ((*time_now - *time_start) > OVER_TIME)
+			if ((*time_now - *time_start) > DEFAULT_OVER_TIME * (MAX_PIECE_SIZE / max_size))
 			{
 
 				SDL_SetRenderTarget(globalInstance->renderer, foreground);
@@ -726,23 +730,40 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 						free(row);
 						row = NULL;
 
-						//Print "GAME OVER"
-						printToTexture("GAME", foreground, 
-							(unsigned short)(FONT_WIDTH * 3.5), 
-							(unsigned short)(FONT_HEIGHT * 10), 6, BLACK);
-						printToTexture("OVER", foreground, 
-							(unsigned short)(FONT_WIDTH * 3.5),
-							(unsigned short)(FONT_HEIGHT * 17), 6, BLACK);
+						//Calculate multiplier for "GAME OVER"
+						float multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / 
+										(float)getStringLength("GAME", 1);
+						multi = multi * 0.9;
+
+						//Calculate X and Y value to print "GAME" at
+						int x = 0.5 * 
+								(MAP_WIDTH * SPRITE_WIDTH - getStringLength("GAME", multi));
+						int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - SPRITE_HEIGHT) - 
+								multi * FONT_HEIGHT);
+						//Print "GAME"
+						printToTexture("GAME", foreground, x, y, multi, BLACK);
+
+						//Calculate Y value for "OVER" and print it
+						y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT + SPRITE_HEIGHT));
+						printToTexture("OVER", foreground, x, y, multi, BLACK);
+
+						//Calculate multi for "Score:"
+						multi = multi / 3.0;
+
+						//Calculate X and Y value for "Score:"
+						int scoreLength = getStringLength("Score:", multi) + 
+											getIntStringLength(score, multi);
+						x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - scoreLength);
+						y = y + (multi * 3) * FONT_HEIGHT + SPRITE_HEIGHT;
 
 						//Print the score
-						printToTexture("Score:", foreground,
-							(unsigned short)(FONT_WIDTH * (10.5 - 
-							getIntLength(score))),
-							(unsigned short)(FONT_HEIGHT * 24), 2, BLACK);
-						intToTexture(score, foreground,
-							(unsigned short)(FONT_WIDTH * (23.5 - 
-							getIntLength(score))),
-							(unsigned short)(FONT_HEIGHT * 24), 2, BLACK);
+						printToTexture("Score:", foreground, x, y, multi, BLACK);
+
+						//Calculate X for score number
+						x = x + getStringLength("Score:", multi);
+
+						//Print the score number
+						intToTexture(score, foreground, x, y, multi, BLACK);
 
 					}
 

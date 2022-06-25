@@ -77,8 +77,10 @@ void mainLoop()
 		Texture_FPS = createTexture(getStringLength("0000", 1.0), FONT_HEIGHT);
 
 	//Hold the first piece that is generated in the title screen and will be the first 
-	//WWpiece played
+	//piece played
 	static piece* firstPiece;
+	if (firstPiece == NULL)
+		firstPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
 
 	//Stores the current game state
 	static unsigned short game_state = TITLE_SCREEN;

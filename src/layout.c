@@ -1,7 +1,12 @@
 #include <stdbool.h>
 #include <math.h>
+#include <time.h>
 
 #include "HEADERS/MGF.h"
+
+#define TITLE_TEXTURE_HEIGHT	84
+#define TITLE_TEXTURE_WIDTH		240
+#define NUM_OF_TITLE_PIECES		19
 
 //draw.c
 void drawRectangle(int spriteID, SDL_Texture* dstTexture, unsigned short X, 
@@ -15,9 +20,19 @@ unsigned short getIntLength(int num);
 int getStringLength(char* str, float multiplier);
 SDL_Texture* createTexture(int width, int height);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
+void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
 
 //file.c
 unsigned int loadTop();
+
+//generate.c
+void delPiece(piece** Piece);
+unsigned short calcWidth(piece* Piece);
+unsigned short calcHeight(piece* Piece);
+void copyPiece(piece* piece1, piece* piece2);
+
+//memory.c
+varVector** pushAddress(void** ptr, unsigned short type);
 
 //Draw the playfield
 void drawPlayField(SDL_Texture* background, unsigned short size)
@@ -443,5 +458,415 @@ SDL_Texture* create_Foreground_Text()
 	texture = createTexture(FONT_WIDTH * MAP_WIDTH, FONT_HEIGHT * MAP_HEIGHT);
 
 	return texture;
+
+}
+
+
+//All the title pieces are hard-coded
+piece** makeTitlePieces()
+{
+
+	//The seed for the random generation of the title will be the same for the duration of
+	//the current game instance
+		//This means that the colors of the title will not change unless the game is restarted
+			//This is to simplify the way in which the movingPieces in the title are
+			//updated
+	static time_t title_time;
+	static bool first_run = true;
+	if (first_run == true)
+	{
+
+		title_time = time(NULL);
+		first_run = false;
+
+	}
+	srand((int)title_time);
+
+	piece** titlePieces = calloc(NUM_OF_TITLE_PIECES, sizeof(piece));
+
+	piece* currentPiece = NULL;
+
+	unsigned short sizes[] = { 3, 1, 1, 2, 3, 3, 1, 2, 2, 1, 1, 3, 1, 3, 2, 1, 3, 4, 1 };
+
+	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
+	{
+
+		currentPiece = malloc(sizeof(*currentPiece));
+		currentPiece->numOfBlocks = sizes[i];
+		currentPiece->blocks = malloc(currentPiece->numOfBlocks*sizeof(*currentPiece->blocks));
+
+		if (currentPiece != NULL && currentPiece->blocks != NULL)
+		{
+
+			currentPiece->color = (rand() % (RED - YELLOW + 1) + YELLOW);
+
+			if (i == 0)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+				currentPiece->blocks[2].X = 0;
+				currentPiece->blocks[2].Y = 2;
+
+			}
+			else if (i == 1)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 2)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 3)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+
+			}
+			else if (i == 4)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+				currentPiece->blocks[2].X = 0;
+				currentPiece->blocks[2].Y = 2;
+
+			}
+			else if (i == 5)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 1;
+				currentPiece->blocks[1].Y = 0;
+				currentPiece->blocks[2].X = 1;
+				currentPiece->blocks[2].Y = -1;
+			
+			}
+			else if (i == 6)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 7)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+
+			}
+			else if (i == 8)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 1;
+				currentPiece->blocks[1].Y = 0;
+
+			}
+			else if (i == 9)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 10)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 11)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+				currentPiece->blocks[2].X = 0;
+				currentPiece->blocks[2].Y = 2;
+
+			}
+			else if (i == 12)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 13)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+				currentPiece->blocks[2].X = 0;
+				currentPiece->blocks[2].Y = 2;
+
+			}
+			else if (i == 14)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+
+			}
+			else if (i == 15)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+			else if (i == 16)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 0;
+				currentPiece->blocks[1].Y = 1;
+				currentPiece->blocks[2].X = 0;
+				currentPiece->blocks[2].Y = 2;
+
+			}
+			else if (i == 17)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+				currentPiece->blocks[1].X = 1;
+				currentPiece->blocks[1].Y = 0;
+				currentPiece->blocks[2].X = 1;
+				currentPiece->blocks[2].Y = -1;
+				currentPiece->blocks[3].X = 1;
+				currentPiece->blocks[3].Y = -2;
+
+			}
+			else if (i == 18)
+			{
+
+				currentPiece->blocks[0].X = 0;
+				currentPiece->blocks[0].Y = 0;
+
+			}
+
+			//Calculate the width and height of the current piece
+			currentPiece->width = calcWidth(currentPiece);
+			currentPiece->height = calcHeight(currentPiece);
+
+			if (titlePieces != NULL)
+				titlePieces[i] = currentPiece;
+
+		}
+
+	}
+
+	//Reset random seed to current time
+	srand((int)time(NULL));
+
+	return titlePieces;
+
+}
+
+//Function for creating the Title card texture
+SDL_Texture* create_Title_Text()
+{
+
+	SDL_Texture* texture;
+
+	texture = createTexture(TITLE_TEXTURE_WIDTH, TITLE_TEXTURE_HEIGHT);
+
+	//The coordinates of each title card piece
+	unsigned short pieceX[] = {0,1,2,2,4,5,6,8,8,10,7,8,9,11,12,13,15,17,19};
+	unsigned short pieceY[] = {0,1,0,1,0,1,0,0,2,2,4,4,4,4,4,6,4,4,4};
+
+	//Create title card pieces
+	piece** titlePieces = makeTitlePieces();
+
+	//Draw the title card
+	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
+		drawPiece(*titlePieces[i], texture, FONT_WIDTH * pieceX[i], FONT_HEIGHT * pieceY[i]);
+
+	//free titlePieces
+	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
+		delPiece(&titlePieces[i]);
+	free(titlePieces);
+	titlePieces = NULL;
+
+	return texture;
+
+}
+
+
+//Return the pieces in the title that will continue falling once the title reaches the 
+//bottom of the screen.
+	//Also free all pieces in the array passed to the function
+piece** getMovingPieces(piece** titlePieces)
+{
+
+	piece** movingPieces = malloc(5 * sizeof(**movingPieces));
+	
+	if (movingPieces != NULL)
+	{
+		
+		//Allocate memory for the block array of each moving piece
+			//titlepieces[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [12], [14],
+			//and [18] are the pieces that must continue falling even after the rest of the
+			//title has finished
+		for (unsigned short i = 0; i < 14; i++)
+			movingPieces[i] = malloc(sizeof(*movingPieces[i]));
+		movingPieces[0]->blocks = 
+					malloc(titlePieces[0]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[1]->blocks = 
+					malloc(titlePieces[1]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[2]->blocks = 
+					malloc(titlePieces[2]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[3]->blocks = 
+					malloc(titlePieces[3]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[4]->blocks = 
+					malloc(titlePieces[4]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[5]->blocks = 
+					malloc(titlePieces[5]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[6]->blocks = 
+					malloc(titlePieces[6]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[7]->blocks = 
+					malloc(titlePieces[7]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[8]->blocks = 
+					malloc(titlePieces[8]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[9]->blocks = 
+					malloc(titlePieces[9]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[10]->blocks = 
+					malloc(titlePieces[10]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[11]->blocks = 
+					malloc(titlePieces[12]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[12]->blocks = 
+					malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[13]->blocks = 
+					malloc(titlePieces[18]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+
+		//Copy the pieces over for each movingPiece
+		copyPiece(titlePieces[0], movingPieces[0]);
+		copyPiece(titlePieces[1], movingPieces[1]);
+		copyPiece(titlePieces[2], movingPieces[2]);
+		copyPiece(titlePieces[3], movingPieces[3]);
+		copyPiece(titlePieces[4], movingPieces[4]);
+		copyPiece(titlePieces[5], movingPieces[5]);
+		copyPiece(titlePieces[6], movingPieces[6]);
+		copyPiece(titlePieces[7], movingPieces[7]);
+		copyPiece(titlePieces[8], movingPieces[8]);
+		copyPiece(titlePieces[9], movingPieces[9]);
+		copyPiece(titlePieces[10], movingPieces[10]);
+		copyPiece(titlePieces[12], movingPieces[11]);
+		copyPiece(titlePieces[14], movingPieces[12]);
+		copyPiece(titlePieces[18], movingPieces[13]);
+		
+	}
+
+	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
+		delPiece(&titlePieces[i]);
+	free(titlePieces);
+	titlePieces = NULL;
+
+	return movingPieces;
+
+}
+
+//This function is for when the title has hit the floor, but a few pieces of it should still 
+//continue falling
+bool updateTitle(SDL_Texture* texture, piece** movingPieces)
+{
+	
+	//Return if the "update" animation is finished playing
+	bool updateOver = false;
+
+	//X values of each piece that moves after the rest of the title has finished dropping
+	unsigned short X[] = {0,1,2,2,4,5,6,8,8,10,7,9,12,19};
+	//The Y value that each movingPiece should stop at
+	unsigned short endY[] = {4,6,4,5,4,5,4,1,3,6,6,6,5,6};
+	static double* Y;
+	if (Y == NULL)
+	{
+
+		//Push the address of Y onto varVector so that it will be freed when the title screen
+		//is exited
+        pushAddress((void**)&Y, VARIABLE);
+
+		//Initialize the starting Y values of each movingPiece
+		Y = malloc(NUM_MOVING_TITLE_PIECES * sizeof(Y[0]));
+		memcpy(Y,(double[]){0,1,0,1,0,1,0,0,2,2,4,4,4,4},NUM_MOVING_TITLE_PIECES*sizeof(Y[0]));
+
+	}
+
+	//Save colors of every pieces
+	unsigned short color[NUM_MOVING_TITLE_PIECES];
+	for (unsigned short i = 0; i < NUM_MOVING_TITLE_PIECES; i++)
+		color[i] = movingPieces[i]->color;
+
+	//Erase all the pieces that are moving this frame
+	for (unsigned short i = 0; i < NUM_MOVING_TITLE_PIECES; i++)
+	{
+
+		//Check if the piece is dropping down 1 cell during this frame
+		if ((int)(*(Y + i) + INITIAL_SPEED * globalInstance->frame_time) > (int)(*(Y + i)))
+		{
+
+			//If it is, set its color to black
+				//We set the color to black so that we can redraw the same piece on top of
+				//itself. effectively erasing it since it is being drawn over with a black
+				//copy of itself
+			movingPieces[i]->color = BLACK;
+
+			//Now redraw it
+			drawPiece(*movingPieces[i],texture,SPRITE_WIDTH*X[i],SPRITE_HEIGHT*(int)*(Y+i));
+
+			//And then restore the color of the piece
+			movingPieces[i]->color = color[i];
+
+		}
+
+		//Drop the piece
+		if (*(Y + i) <= endY[i])
+			*(Y + i) += INITIAL_SPEED * globalInstance->frame_time;	
+
+	}
+
+	//Now, redraw all the pieces that moved this frame
+	for (unsigned short i = 0; i < NUM_MOVING_TITLE_PIECES; i++)
+	{
+
+		//Again, we only redraw it if it actually changed cells over this frame
+		if ((int)(*(Y + i) - INITIAL_SPEED * globalInstance->frame_time) < (int)(*(Y + i)))
+			drawPiece(*movingPieces[i],texture,SPRITE_WIDTH*X[i],SPRITE_HEIGHT*(int)*(Y+i));
+
+	}
+
+	//movingPiece[1] has the farthest distance to fall, so once its finished falling we
+	//know that the animation is complete
+	if (Y[1] >= endY[1])
+		updateOver = true;
+
+	return updateOver;
 
 }
