@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include "HEADERS/MGF.h"
 
@@ -461,6 +462,171 @@ SDL_Texture* create_Foreground_Text()
 
 }
 
+SDL_Texture* create_Cursor_Text()
+{
+
+	SDL_Texture* texture;
+	
+	texture = createTexture(FONT_WIDTH, FONT_HEIGHT);
+	printToTexture(">", texture, 0, 0, 1.0, WHITE);
+
+	return texture;
+
+}
+
+//Create a UI list given an arbitrary number of strings
+UI_list* _create_list(const char* strings, ...)
+{
+
+	//Return NULL, without allocating any memory, if no strings are given
+	if (strings == NULL)
+		return NULL;
+
+	//Allocate memory for list and underlying UI element
+	UI_list* list = calloc(1, sizeof(UI_list));
+	list->ui = calloc(1, sizeof(UI));
+
+	//Store each argument into entry_texts array
+	va_list valist;
+	va_start(valist, strings);
+	const char* current_string = strings;
+	list->num_entries = 0;
+	while (true)
+    {
+
+        if (current_string == NULL)
+            break;
+        else
+		{
+
+			//Resize entry_texts array
+			if (list->num_entries == 0)
+				list->entry_texts = calloc(list->num_entries + 1, sizeof(char*));
+			else
+				list->entry_texts = 
+						realloc(list->entry_texts, (list->num_entries + 2) * sizeof(char*));
+
+			//Copy current_string into the entry_texts array
+				//Append a termination character to the end of it
+			int len = SDL_strlen(current_string);
+			list->entry_texts[list->num_entries] = calloc(len + 1, sizeof(char));
+			for (int i = 0; i < len; i++)
+				list->entry_texts[list->num_entries][i] = current_string[i];
+			list->entry_texts[list->num_entries][len] = '\0';
+
+			list->num_entries++;
+
+		}
+
+        current_string = va_arg(valist, const char*);
+
+    }
+	va_end(valist);
+
+	//Find the longest string
+	char* longest = list->entry_texts[0];
+	for (int i = 1; i < list->num_entries; i++)
+		if (SDL_strlen(list->entry_texts[i]) > SDL_strlen(longest))
+			longest = list->entry_texts[i];
+
+	//Create texture for list
+	int width = getStringLength(longest, 1.0);
+	int height = FONT_HEIGHT * list->num_entries + (list->num_entries - 1) * STRING_GAP;
+	list->ui->texture = createTexture(width, height);
+
+	//Print each entry_text to the list texture
+	SDL_Texture* texture = list->ui->texture;
+	for (int i = 0; i < list->num_entries; i++)
+	{
+
+		char* str = list->entry_texts[i];
+		int x = 0;
+		int y = (FONT_HEIGHT + STRING_GAP) * i;
+
+		printToTexture(str, texture, x, y, 1.0, WHITE);
+
+	}
+
+	return list;
+
+}
+
+//Create the "Modes" UI element on the title screen
+UI_list* create_Modes_List()
+{
+
+	//Initialize list
+	UI_list* list = create_list("MULTRIS", "NUMERICAL", "OPTIONS");
+
+	//First entry is selected by default
+	list->selected_entry = 0;
+
+	//Position of Modes UI element
+	list->ui->x = 28;
+	list->ui->y = 14;
+
+	//This UI element starts off active
+	list->ui->currentlyInteracting = true;
+
+	return list;
+
+}
+
+//Get the Y position, relative to the renderer, of an entry in a UI list
+	//Refers to the top left of the entry string
+	//Returns -1 if the given string is not found in the list
+int getListEntryY(UI_list* list, const char* str)
+{
+
+	for (int i = 0; i < list->num_entries; i++)
+		if (strcmp(str, list->entry_texts[i]) == 0)
+			return list->ui->y + (FONT_HEIGHT + STRING_GAP) * i;
+	return -1;
+
+}
+
+//Return the string that is currently selected in the list
+const char* getListSelectedString(UI_list* list)
+{
+
+	return list->entry_texts[list->selected_entry];
+
+}
+
+//Get the Y position, relative to the renderer, of the highlighted entry in a UI list
+int getListSelectedEntryY(UI_list* list)
+{
+
+	return getListEntryY(list, getListSelectedString(list));
+
+}
+
+//Function for deleting a UI_list object and freeing the memory it takes up
+void delete_UI_list(UI_list** list)
+{
+
+	//Free underlying UI element
+	SDL_DestroyTexture((*list)->ui->texture);
+	(*list)->ui->texture = NULL;
+	free((*list)->ui);
+	(*list)->ui = NULL;
+
+	//Free all entries
+	for (int i = 0; i < (*list)->num_entries; i++)
+	{
+
+		free((*list)->entry_texts[i]);
+		(*list)->entry_texts[i] = NULL;
+
+	}
+	free((*list)->entry_texts);
+	(*list)->entry_texts = NULL;
+
+	//Free list itself
+	free(*list);
+	*list = NULL;
+
+}
 
 //All the title pieces are hard-coded
 piece** makeTitlePieces()

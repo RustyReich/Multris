@@ -9,17 +9,19 @@
 #define BLOCK_SPRITE_ID_2	1
 #define WALL_SPRITE_ID		2
 
-#define NUM_OF_CONTROLS			10
-#define LEFT_BUTTON_ID			0
-#define RIGHT_BUTTON_ID			1
-#define SOFT_DROP_BUTTON_ID		2
-#define HARD_DROP_BUTTON_ID		3
-#define HOLD_BUTTON_ID			4
-#define ROTATE_CCW_BUTTON_ID	5
-#define ROTATE_CW_BUTTON_ID		6
-#define MIRROR_BUTTON_ID		7
-#define SELECT_BUTTON_ID		8
-#define EXIT_BUTTON_ID			9
+#define NUM_OF_CONTROLS		12
+#define LEFT_BUTTON			0
+#define RIGHT_BUTTON		1
+#define SOFT_DROP_BUTTON	2
+#define HARD_DROP_BUTTON	3
+#define HOLD_BUTTON			4
+#define ROTATE_CCW_BUTTON	5
+#define ROTATE_CW_BUTTON	6
+#define MIRROR_BUTTON		7
+#define SELECT_BUTTON		8
+#define EXIT_BUTTON			9
+#define DOWN_BUTTON			10
+#define UP_BUTTON			11
 
 #define NUM_OF_SOUNDS		7
 #define COMPLETE_SOUND_ID 	0
@@ -54,6 +56,9 @@
 #define PAUSED_TEXT		3
 #define FOREGROUND_TEXT	4
 #define TITLE_TEXT		5
+#define CURSOR_TEXT		6
+
+#define MODES_LIST	0
 
 #define DEFAULT_OVER_TIME	55
 
@@ -64,6 +69,7 @@
 #define PIECE		        2
 #define TEXTURE             3
 #define MOVING_TITLE_PIECES 4
+#define UI_LIST				5
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris

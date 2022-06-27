@@ -55,9 +55,12 @@ void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
 void declare_map_matrix(bool** ptr);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
 void declare_moving_title_pieces(piece*** ptr);
+void declare_UI_list(UI_list** ptr, int type);
 
 //layout.c
 bool updateTitle(SDL_Texture* texture, piece** movingPieces);
+int getListSelectedEntryY(UI_list* list);
+const char* getListSelectedString(UI_list* list);
 
 void updateModes(SDL_Texture* texture, unsigned short currentMode);
 void updateOptions(SDL_Texture* texture, unsigned short mode);
@@ -81,9 +84,13 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
 	static SDL_Texture* Texture_Title; declare_HUD_Text(&Texture_Title, TITLE_TEXT);
+	static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
 
 	//Arrays
 	static piece** movingPieces; declare_moving_title_pieces(&movingPieces);
+
+	//UI elements
+	static UI_list* modes; declare_UI_list(&modes, MODES_LIST);
 
 	//Some stuff to do on the firstLoop
 	if (*firstLoop == true)
@@ -97,7 +104,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 		*firstLoop = false;
 
 	}
-
+/*
 	static SDL_Texture* Texture_Modes;
 	if (Texture_Modes == NULL)
 	{
@@ -116,6 +123,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 
 	}
+
 	static SDL_Texture* Texture_Options;
 	if (Texture_Options == NULL)
 	{
@@ -173,7 +181,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			14 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
 
 	}
-
+*/
 	//Rendering -------------------------------------------
 
 	drawTexture(Texture_Title, FONT_WIDTH, FONT_HEIGHT * (int)*Y, 1.0);
@@ -193,12 +201,15 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
 				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("5", 1.0)), 
 				FONT_HEIGHT * 15 + (SPRITE_HEIGHT + STRING_GAP) - 5, 1.0);
-	drawTexture(Texture_Modes, FONT_WIDTH + STRING_GAP, FONT_HEIGHT + STRING_GAP, 1.0);
 
+	//Draw UI elements
+	drawTexture(modes->ui->texture, modes->ui->x, modes->ui->y, 1.0);
+	drawTexture(Texture_Cursor, modes->ui->x - 14, getListSelectedEntryY(modes), 1.0);
+/*
 	if (*mode >= OPTIONS)
 		drawTexture(Texture_Options, 2 * (FONT_WIDTH + STRING_GAP), 
 					4 * (FONT_WIDTH + STRING_GAP), 1.0);
-
+*/
 	//-----------------------------------------------------
 
 	//Title dropping
@@ -216,6 +227,50 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 	}
 
+	// Control Logic -------------------------------------------------------------
+
+	if (onPress(DOWN_BUTTON))
+	{
+
+		if(modes->ui->currentlyInteracting)
+			if (modes->selected_entry < modes->num_entries - 1)
+				modes->selected_entry++;
+
+	}
+
+	if (onPress(UP_BUTTON))
+	{
+
+		if (modes->ui->currentlyInteracting)
+			if(modes->selected_entry > 0)
+				modes->selected_entry--;
+
+	}
+
+	if (onPress(SELECT_BUTTON))
+	{
+
+		if (modes->ui->currentlyInteracting)
+		{
+
+			const char* str = getListSelectedString(modes);
+
+			if (strcmp(str, "MULTRIS") == 0 || strcmp(str, "NUMERICAL") == 0)
+			{
+
+				freeVars();
+				return PLAY_SCREEN;
+
+			}	
+
+		}
+			
+
+	}
+
+	// ---------------------------------------------------------------------------
+
+/*
 	if (globalInstance->controls[SELECT_BUTTON_ID].onPress && *inputLock == false)
 	{
 
@@ -245,8 +300,8 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			}
 
 			//Free Textures
-			SDL_DestroyTexture(Texture_Modes);
-			Texture_Modes = NULL;
+			//SDL_DestroyTexture(Texture_Modes);
+			//Texture_Modes = NULL;
 			SDL_DestroyTexture(Texture_Options);
 			Texture_Options = NULL;
 
@@ -311,7 +366,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 			*mode = 1;
-			updateModes(Texture_Modes, *mode);
+			//updateModes(Texture_Modes, *mode);
 
 		}
 		else if (*mode >= 1 && *mode <= 8)
@@ -319,7 +374,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 			*mode = OPTIONS;
-			updateModes(Texture_Modes, *mode);
+			//updateModes(Texture_Modes, *mode);
 			updateOptions(Texture_Options, *mode);
 
 		}
@@ -368,7 +423,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 			*mode = 0;
-			updateModes(Texture_Modes, *mode);
+			//updateModes(Texture_Modes, *mode);
 
 		}
 		else if (*mode == OPTIONS || *mode == OPTIONS + 1)
@@ -376,7 +431,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 			*mode = 1;
-			updateModes(Texture_Modes, *mode);
+			//updateModes(Texture_Modes, *mode);
 
 		}
 		else if (*mode == OPTIONS + 2)
@@ -424,7 +479,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 			*mode -= 1;
-			updateModes(Texture_Modes, *mode);
+			//updateModes(Texture_Modes, *mode);
 
 		}
 		else if (*mode == OPTIONS + 1)
@@ -468,7 +523,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 
 			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
 			*mode += 1;
-			updateModes(Texture_Modes, *mode);
+			//updateModes(Texture_Modes, *mode);
 
 		}
 		else if (*mode == OPTIONS)
@@ -509,7 +564,7 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 			!globalInstance->keys[SDL_SCANCODE_RIGHT] &&
 			!globalInstance->keys[SDL_SCANCODE_RETURN])
 		*inputLock = false;
-
+*/
 	return TITLE_SCREEN;
 
 }

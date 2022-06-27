@@ -43,16 +43,18 @@ control* initControls()
 
     //Set default controls
         //Control ID's are defined in Definitions.h
-    controls[LEFT_BUTTON_ID].button = SDL_SCANCODE_LEFT;
-    controls[RIGHT_BUTTON_ID].button = SDL_SCANCODE_RIGHT;
-    controls[SOFT_DROP_BUTTON_ID].button = SDL_SCANCODE_DOWN;
-    controls[HARD_DROP_BUTTON_ID].button = SDL_SCANCODE_UP;
-    controls[HOLD_BUTTON_ID].button = SDL_SCANCODE_SPACE;
-    controls[ROTATE_CCW_BUTTON_ID].button = SDL_SCANCODE_Z;
-    controls[ROTATE_CW_BUTTON_ID].button = SDL_SCANCODE_X;
-    controls[MIRROR_BUTTON_ID].button = SDL_SCANCODE_C;
-    controls[SELECT_BUTTON_ID].button = SDL_SCANCODE_RETURN;
-    controls[EXIT_BUTTON_ID].button = SDL_SCANCODE_ESCAPE;
+    controls[LEFT_BUTTON].button = SDL_SCANCODE_LEFT;
+    controls[RIGHT_BUTTON].button = SDL_SCANCODE_RIGHT;
+    controls[SOFT_DROP_BUTTON].button = SDL_SCANCODE_DOWN;
+    controls[HARD_DROP_BUTTON].button = SDL_SCANCODE_UP;
+    controls[HOLD_BUTTON].button = SDL_SCANCODE_SPACE;
+    controls[ROTATE_CCW_BUTTON].button = SDL_SCANCODE_Z;
+    controls[ROTATE_CW_BUTTON].button = SDL_SCANCODE_X;
+    controls[MIRROR_BUTTON].button = SDL_SCANCODE_C;
+    controls[SELECT_BUTTON].button = SDL_SCANCODE_RETURN;
+    controls[EXIT_BUTTON].button = SDL_SCANCODE_ESCAPE;
+    controls[DOWN_BUTTON].button = SDL_SCANCODE_DOWN;
+    controls[UP_BUTTON].button = SDL_SCANCODE_UP;
 
     return controls;
 

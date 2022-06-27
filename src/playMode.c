@@ -125,8 +125,7 @@ unsigned short playMode(piece* firstPiece)
 	{
 
 		//Left and right movement
-		if (globalInstance->controls[LEFT_BUTTON_ID].onHold || 
-			globalInstance->controls[RIGHT_BUTTON_ID].onHold)
+		if (onHold(LEFT_BUTTON) || onHold(RIGHT_BUTTON))
 		{
 
 			Uint32 currTicks = SDL_GetTicks();
@@ -144,7 +143,7 @@ unsigned short playMode(piece* firstPiece)
 				(MOVEMENT_WAIT + MOVEMENT_TIME))
 			{
 
-				if (globalInstance->controls[LEFT_BUTTON_ID].onHold && 
+				if (onHold(LEFT_BUTTON) && 
 					!isColliding(*currentPiece, *X, Y, LEFT, mapData, MAP_WIDTH, MAP_HEIGHT))
 				{
 
@@ -158,7 +157,7 @@ unsigned short playMode(piece* firstPiece)
 											mapData, MAP_WIDTH, MAP_HEIGHT);
 
 				}
-				else if (globalInstance->controls[RIGHT_BUTTON_ID].onHold && 
+				else if (onHold(RIGHT_BUTTON) && 
 							!isColliding(*currentPiece, *X, Y, RIGHT, mapData, MAP_WIDTH,
 											MAP_HEIGHT))
 				{
@@ -192,8 +191,7 @@ unsigned short playMode(piece* firstPiece)
 			*moveStart = 0;
 
 		//Rotate CCW
-		if (globalInstance->controls[ROTATE_CCW_BUTTON_ID].onPress && 
-			*X + currentPiece->height <= MAP_WIDTH &&
+		if (onPress(ROTATE_CCW_BUTTON) && *X + currentPiece->height <= MAP_WIDTH &&
 			*Y + currentPiece->width <= MAP_HEIGHT)
 		{
 
@@ -219,8 +217,8 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		//Rotate CW
-		if (globalInstance->controls[ROTATE_CW_BUTTON_ID].onPress && 
-			*X + currentPiece->height <= MAP_WIDTH && *Y + currentPiece->width <= MAP_HEIGHT)
+		if (onPress(ROTATE_CW_BUTTON) && *X + currentPiece->height <= MAP_WIDTH &&
+			*Y + currentPiece->width <= MAP_HEIGHT)
 		{
 
 			rotatePiece(currentPiece, CW);
@@ -242,7 +240,7 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		//Mirroring
-		if (globalInstance->controls[MIRROR_BUTTON_ID].onPress)
+		if (onPress(MIRROR_BUTTON))
 		{
 
 			mirrorPieceOverY(currentPiece);
@@ -265,7 +263,7 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		//Holding
-		if (globalInstance->controls[HOLD_BUTTON_ID].onPress && !*justHeld)
+		if (onPress(HOLD_BUTTON) && !*justHeld)
 		{
 
 			playSound(globalInstance->sounds[HOLD_SOUND_ID]);
@@ -353,11 +351,11 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		//Hard drop
-		if (globalInstance->controls[HARD_DROP_BUTTON_ID].onPress)
+		if (onPress(HARD_DROP_BUTTON))
 			*Y = *ghostY + 1;
 			
 		//Soft drop
-		if (globalInstance->controls[SOFT_DROP_BUTTON_ID].onHold)
+		if (onHold(SOFT_DROP_BUTTON))
 			*softDrop = true;
 		else
 			*softDrop = false;
@@ -368,7 +366,7 @@ unsigned short playMode(piece* firstPiece)
 	{				//not over
 
 		//Pausing
-		if (globalInstance->controls[SELECT_BUTTON_ID].onPress)
+		if (onPress(SELECT_BUTTON))
 		{
 
 			playSound(globalInstance->sounds[PAUSE_SOUND_ID]);
@@ -492,7 +490,7 @@ unsigned short playMode(piece* firstPiece)
 		else
 		{
 
-			if (globalInstance->controls[SELECT_BUTTON_ID].onPress)
+			if (onPress(SELECT_BUTTON))
 			{
 
 				//Free all memory taken by PLAYMODE -----------------------------------

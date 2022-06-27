@@ -105,7 +105,7 @@ void mainLoop()
 				FONT_HEIGHT * 39 + STRING_GAP * 3, 1.0);
 
 	//Exit game if user presses EXIT_BUTTON
-	if (globalInstance->controls[EXIT_BUTTON_ID].onPress)
+	if (globalInstance->controls[EXIT_BUTTON].onPress)
 		globalInstance->running = false;
 
 	if (game_state == TITLE_SCREEN)

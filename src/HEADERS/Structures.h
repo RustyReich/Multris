@@ -10,6 +10,29 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 
+typedef struct UI
+{
+
+    SDL_Texture* texture;
+
+    //Position of the UI element, relative to the renderer
+    int x;
+    int y;
+
+    bool currentlyInteracting;
+
+} UI;
+
+typedef struct UI_list
+{
+
+    UI* ui;
+    char** entry_texts;
+    int selected_entry;
+    int num_entries;
+
+} UI_list;
+
 typedef struct varVector
 {
 

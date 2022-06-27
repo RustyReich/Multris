@@ -16,6 +16,9 @@ SDL_Texture* create_Foreground_Text();
 SDL_Texture* create_Title_Text();
 piece** getMovingPieces(piece** titlePieces);
 piece** makeTitlePieces();
+UI_list* create_Modes_List();
+SDL_Texture* create_Cursor_Text();
+void delete_UI_list(UI_list** list);
 
 //Function for pushing a variable or object onto an array of varVector structures 
 //designed to make freeing variables at the end of a game_state easier
@@ -260,6 +263,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Foreground_Text();
         else if (type == TITLE_TEXT)
             *ptr = create_Title_Text();
+        else if (type == CURSOR_TEXT)
+            *ptr = create_Cursor_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
@@ -288,6 +293,7 @@ void declare_map_matrix(bool** ptr)
 
 }
 
+//Declare the array of moving pieces in the title
 void declare_moving_title_pieces(piece*** ptr)
 {
 
@@ -298,6 +304,23 @@ void declare_moving_title_pieces(piece*** ptr)
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, MOVING_TITLE_PIECES);
+
+    }
+
+}
+
+//Declare a UI_list
+void declare_UI_list(UI_list** ptr, int type)
+{
+
+    if (*ptr == NULL)
+    {
+
+        if (type == MODES_LIST)
+            *ptr = create_Modes_List();
+
+        if (!inVector((void**)ptr))
+            pushAddress((void**)ptr, UI_LIST);
 
     }
 
@@ -333,6 +356,8 @@ void freeVars()
                 free((piece**)*(void**)(*vector)->ptrs[i]);
 
             }
+            else if ((*vector)->types[i] == UI_LIST)
+                delete_UI_list((UI_list**)&*(void**)((*vector)->ptrs[i]));
             
         }
 

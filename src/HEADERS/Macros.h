@@ -15,3 +15,10 @@
                             bool *: declareEnd(val), \
                             unsigned int *: declareEnd(val) \
                             )(((void**)&var), (val))
+
+//Macros for controls
+#define onPress(var)    globalInstance->controls[var].onPress
+#define onHold(var)     globalInstance->controls[var].onHold     
+
+//Macros for variadic functions
+#define create_list(...) _create_list(__VA_ARGS__, NULL)
