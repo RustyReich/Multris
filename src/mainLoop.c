@@ -16,7 +16,7 @@ int getStringLength(char* str, float multiplier);
 int getIntStringLength(int num, float multiplier);
 
 //map.c
-unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode);
+unsigned short drawTitle(piece** firstPiece);
 
 //playMode.c
 unsigned short playMode(piece* firstPiece);
@@ -84,10 +84,7 @@ void mainLoop()
 
 	//Stores the current game state
 	static unsigned short game_state = TITLE_SCREEN;
-
-	//For determing what mode to launch playMode in
-	static unsigned short mode;
-
+	
 	//Display frame rate
 	if (globalInstance->frame_time != 0.0)
 	{
@@ -104,15 +101,10 @@ void mainLoop()
 				getIntStringLength(globalInstance->FPS, 1.0) / 2, 
 				FONT_HEIGHT * 39 + STRING_GAP * 3, 1.0);
 
-	//Exit game if user presses EXIT_BUTTON
-	if (globalInstance->controls[EXIT_BUTTON].onPress)
-		globalInstance->running = false;
-
 	if (game_state == TITLE_SCREEN)
 	{
 
-		game_state = drawTitle(&firstPiece, &mode);
-		MODE = mode;
+		game_state = drawTitle(&firstPiece);
 
 	}
 	else if (game_state == PLAY_SCREEN)
@@ -125,11 +117,11 @@ void mainLoop()
 			MAP_WIDTH = calcMapWidth();
 			MAP_HEIGHT = calcMapHeight();
 
-			if (mode != 0)
+			if (MODE != 0)
 			{
 
 				delPiece(&firstPiece);
-				firstPiece = generateGamePiece(mode);
+				firstPiece = generateGamePiece(MODE);
 
 			}
 			game_state = playMode(firstPiece);

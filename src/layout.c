@@ -25,6 +25,9 @@ void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned 
 
 //file.c
 unsigned int loadTop();
+unsigned short getLineCount(char* fileName);
+char* getOptionName(int line);
+int getOptionValue(const char* str);
 
 //generate.c
 void delPiece(piece** Piece);
@@ -474,6 +477,52 @@ SDL_Texture* create_Cursor_Text()
 
 }
 
+//Create the texture that displays the values of the options
+SDL_Texture* create_Values_Text()
+{
+
+	SDL_Texture* texture;
+
+	//Calculate height and width for value texture
+	int num_options = getLineCount("SAVES/options.cfg");
+	int height = num_options * FONT_HEIGHT + (num_options - 1) * STRING_GAP;
+	int width = 4 * FONT_WIDTH + 3 * STRING_GAP;
+
+	//Create texture
+	texture = createTexture(width, height);
+
+	//Print all values to texture
+	for (unsigned short i = 0; i < num_options; i++)
+	{
+
+		int y = i * (FONT_HEIGHT + STRING_GAP);
+
+		//Separate names and values with a :
+		printToTexture(":", texture, 0, y, 1.0, WHITE);
+
+		char* option_name = getOptionName(i);
+
+		//If the option is not the VOLUME option, then treat a value of 0 as OFF and 1 as ON
+		if (strcmp(option_name, "VOLUME") != 0)
+		{
+
+			if (getOptionValue(option_name) == 0)
+				printToTexture("OFF", texture, 14, y, 1.0, RED);
+			else if (getOptionValue(option_name) == 1)
+				printToTexture("ON", texture, 14, y, 1.0, GREEN);
+
+		}
+		else
+			intToTexture(getOptionValue(option_name), texture, 14, y, 1.0, WHITE);
+
+		free(option_name);
+
+	}
+
+	return texture;
+
+}
+
 //Create a UI list given an arbitrary number of strings
 UI_list* _create_list(const char* strings, ...)
 {
@@ -556,7 +605,7 @@ UI_list* create_Modes_List()
 {
 
 	//Initialize list
-	UI_list* list = create_list("MULTRIS", "NUMERICAL", "OPTIONS");
+	UI_list* list = create_list("MULTRIS", "NUMERICAL", "OPTIONS", "EXIT");
 
 	//First entry is selected by default
 	list->selected_entry = 0;
@@ -567,6 +616,61 @@ UI_list* create_Modes_List()
 
 	//This UI element starts off active
 	list->ui->currentlyInteracting = true;
+
+	return list;
+
+}
+
+//Create the "Numerical" UI element on the title screen where you choose what size of
+//polyomino to play with
+UI_list* create_Numerical_List()
+{
+
+	UI_list* list = create_list("1", "2", "3", "4", "5", "6", "7", "8");
+
+	list->selected_entry = 0;
+
+	list->ui->x = 182;
+	list->ui->y = 28;
+
+	//This list starts off inactive and only becomes active if the player has highlighted
+	//NUMERICAL mode
+	list->ui->currentlyInteracting = false;
+
+	return list;
+
+}
+
+//Create the "Options" UI element on the title screen
+UI_list* create_Options_List()
+{
+
+	//Get list of option names and append ":" to them
+	char* optionStrings[getLineCount("SAVES/options.cfg")];
+	for (unsigned short i = 0; i < getLineCount("SAVES/options.cfg"); i++)
+	{
+
+		char* name = getOptionName(i);
+		int name_len = SDL_strlen(name);
+		optionStrings[i] = calloc(name_len + 1, sizeof(char));
+		strcpy(optionStrings[i], name);
+
+		free(name);
+
+	}
+
+	UI_list* list = create_list(optionStrings[0], optionStrings[1], optionStrings[2]);
+
+	list->selected_entry = 0;
+
+	list->ui->x = 42;
+	list->ui->y = 70;
+
+	list->ui->currentlyInteracting = false;
+
+	//Free option names
+	for (unsigned short i = 0; i < getLineCount("SAVES/options.cfg"); i++)
+		free(optionStrings[i]);
 
 	return list;
 

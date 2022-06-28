@@ -19,6 +19,9 @@ piece** makeTitlePieces();
 UI_list* create_Modes_List();
 SDL_Texture* create_Cursor_Text();
 void delete_UI_list(UI_list** list);
+UI_list* create_Numerical_List();
+UI_list* create_Options_List();
+SDL_Texture* create_Values_Text();
 
 //Function for pushing a variable or object onto an array of varVector structures 
 //designed to make freeing variables at the end of a game_state easier
@@ -265,6 +268,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Title_Text();
         else if (type == CURSOR_TEXT)
             *ptr = create_Cursor_Text();
+        else if (type == VALUES_TEXT)
+            *ptr = create_Values_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
@@ -318,6 +323,10 @@ void declare_UI_list(UI_list** ptr, int type)
 
         if (type == MODES_LIST)
             *ptr = create_Modes_List();
+        else if (type == NUMERICAL_LIST)
+            *ptr = create_Numerical_List();
+        else if (type == OPTIONS_LIST)
+            *ptr = create_Options_List();
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, UI_LIST);

@@ -37,7 +37,7 @@ void setVolume(sound** Sound, unsigned short volume);
 //file.c
 void saveOption(unsigned short line, unsigned short value);
 bool fileExists(char* fileName);
-unsigned short getOption(unsigned short line);
+int getOption(const char* str);
 
 //instance.c
 void updateVolume();
@@ -62,10 +62,7 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces);
 int getListSelectedEntryY(UI_list* list);
 const char* getListSelectedString(UI_list* list);
 
-void updateModes(SDL_Texture* texture, unsigned short currentMode);
-void updateOptions(SDL_Texture* texture, unsigned short mode);
-
-unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
+unsigned short drawTitle(piece** firstPiece)
 {
 
 	//Variables
@@ -85,12 +82,15 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
 	static SDL_Texture* Texture_Title; declare_HUD_Text(&Texture_Title, TITLE_TEXT);
 	static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
+	static SDL_Texture* Texture_Values; declare_HUD_Text(&Texture_Values, VALUES_TEXT);
 
 	//Arrays
 	static piece** movingPieces; declare_moving_title_pieces(&movingPieces);
 
 	//UI elements
 	static UI_list* modes; declare_UI_list(&modes, MODES_LIST);
+	static UI_list* numerical; declare_UI_list(&numerical, NUMERICAL_LIST);
+	static UI_list* options; declare_UI_list(&options, OPTIONS_LIST);
 
 	//Some stuff to do on the firstLoop
 	if (*firstLoop == true)
@@ -104,84 +104,160 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 		*firstLoop = false;
 
 	}
-/*
-	static SDL_Texture* Texture_Modes;
-	if (Texture_Modes == NULL)
+
+	// Control Logic -------------------------------------------------------------
+
+	const char* selected_mode = getListSelectedString(modes);
+
+	if (onPress(DOWN_BUTTON))
 	{
 
-		Texture_Modes = createTexture(FONT_WIDTH * 35, 
-			FONT_HEIGHT * 6 + STRING_GAP);
+		if(modes->ui->currentlyInteracting)
+		{
 
-		printToTexture("MULTRIS", Texture_Modes, 
-			FONT_WIDTH + STRING_GAP, 2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("NUMERICAL", Texture_Modes, 
-			FONT_WIDTH + STRING_GAP, 3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", Texture_Modes, 
-			FONT_WIDTH + STRING_GAP, 4 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture(">", Texture_Modes, 0, 
-			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+			if (modes->selected_entry < modes->num_entries - 1)
+				modes->selected_entry++;
 
+		}
+		else if(numerical->ui->currentlyInteracting)
+		{
+
+			if (numerical->selected_entry < numerical->num_entries - 1)
+				numerical->selected_entry++;
+
+		}
+		else if(options->ui->currentlyInteracting)
+		{
+
+			if (options->selected_entry < options->num_entries - 1)
+				options->selected_entry++;
+
+		}
 
 	}
 
-	static SDL_Texture* Texture_Options;
-	if (Texture_Options == NULL)
+	if (onPress(UP_BUTTON))
 	{
 
-		Texture_Options = createTexture(20 * (FONT_WIDTH + STRING_GAP), 
-			5 * (FONT_HEIGHT + STRING_GAP));
+		if (modes->ui->currentlyInteracting)
+		{
 
-		printToTexture(">", Texture_Options, 0, 0, 1, WHITE);
-		printToTexture("BLOCK:", Texture_Options, 
-			(FONT_WIDTH + STRING_GAP), 0, 1, WHITE);
-		printToTexture("GHOST:", Texture_Options, 
-			(FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, WHITE);
-		printToTexture("FULLSCREEN:", Texture_Options, 
-			(FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 1, 
-			WHITE);
-		printToTexture("VOLUME:", Texture_Options, 
-			(FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			WHITE);
-		printToTexture("^", Texture_Options, 12 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("CONTROLS", Texture_Options, 
-			(FONT_WIDTH + STRING_GAP), 4 * (FONT_HEIGHT + STRING_GAP), 1, 
-			WHITE);
+			if(modes->selected_entry > 0)
+				modes->selected_entry--;
 
-		//Print current GHOST option
-		if (getOption(1) == 0)
-			printToTexture("OFF", Texture_Options,
-				8 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, 
-				RED);
-		else if (getOption(1) == 1)
-			printToTexture("ON", Texture_Options, 
-				8 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1, 
-				GREEN);
+		}
+		else if (numerical->ui->currentlyInteracting)
+		{
 
-		//Print the current FULLSCREEN options
-		if (getOption(2) == 0)
-			printToTexture("OFF", Texture_Options, 
-				13 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 
-				1, RED);
-		else if (getOption(2) == 1)
-			printToTexture("ON", Texture_Options, 
-				13 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP),
-				1, GREEN);
+			if(numerical->selected_entry > 0)
+				numerical->selected_entry--;
 
-		//Print the current VOLUME option
-		intToTexture(getOption(3), 
-			Texture_Options, 9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 
-			1, YELLOW);
+		}
+		else if (options->ui->currentlyInteracting)
+		{
 
-		//Draw BLOCK_CHAR options
-		unsigned short color = (rand() % (RED - YELLOW + 1)) + YELLOW;
-		drawToTexture(BLOCK_SPRITE_ID_1, Texture_Options, 
-			12 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
-		drawToTexture(BLOCK_SPRITE_ID_2, Texture_Options,
-			14 * (FONT_WIDTH + STRING_GAP), 0, 1, color);
+			if(options->selected_entry > 0)
+				options->selected_entry--;
+
+		}
 
 	}
-*/
+
+	if (onPress(SELECT_BUTTON))
+	{
+
+		if (modes->ui->currentlyInteracting)
+		{
+
+			if (SDL_strcmp(selected_mode, "MULTRIS") == 0)
+			{
+
+				//Enter MULTRIS gamemode
+				freeVars();
+				return PLAY_SCREEN;
+
+			}
+			else if (SDL_strcmp(selected_mode, "NUMERICAL") == 0)
+			{
+
+				modes->ui->currentlyInteracting = false;
+				numerical->ui->currentlyInteracting = true;
+
+			}
+			else if (SDL_strcmp(selected_mode, "OPTIONS") == 0)
+			{
+
+				modes->ui->currentlyInteracting = false;
+				options->ui->currentlyInteracting = true;
+
+			}
+			else if (SDL_strcmp(selected_mode, "EXIT") == 0)
+				globalInstance->running = false;
+
+		}
+		else if (numerical->ui->currentlyInteracting)
+		{
+
+			//Enter NUMERICAL gamemode with selected size
+			MODE = SDL_atoi(getListSelectedString(numerical));
+			freeVars();
+			return PLAY_SCREEN;
+
+		}
+		else if (options->ui->currentlyInteracting)
+		{
+
+			const char* selected_option = getListSelectedString(options);
+
+			if (SDL_strcmp(selected_option, "LIMIT FPS") == 0)
+			{
+
+				LIMIT_FPS = !LIMIT_FPS;
+
+			}
+
+		}
+
+	}
+
+	//Exit out of the current sub-menu if the EXIT_BUTTON is pressed
+	if (onPress(EXIT_BUTTON))
+	{
+
+		if (numerical->ui->currentlyInteracting)
+		{
+
+			numerical->ui->currentlyInteracting = false;
+			modes->ui->currentlyInteracting = true;
+
+		}
+		else if (options->ui->currentlyInteracting)
+		{
+
+			options->ui->currentlyInteracting = false;
+			modes->ui->currentlyInteracting = true;
+
+		}
+
+	}
+
+	// ---------------------------------------------------------------------------
+
+	//Title dropping
+	if ((int)(*Y + *titleText_Height / SPRITE_HEIGHT) <= BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE)
+		*Y += INITIAL_SPEED * globalInstance->frame_time;
+	else
+	{
+
+		//Once the title is done dropping, there are a some pieces in the title that should 
+		//continue dropping
+		//These pieces are called movingPieces
+			//We call updateTitle until all movingPieces finished dropping as well
+		if (*titleUpdating == false)
+			*titleUpdating = updateTitle(Texture_Title, movingPieces);
+
+	}
+
 	//Rendering -------------------------------------------
 
 	drawTexture(Texture_Title, FONT_WIDTH, FONT_HEIGHT * (int)*Y, 1.0);
@@ -203,567 +279,35 @@ unsigned short drawTitle(piece** firstPiece, unsigned short* returnMode)
 				FONT_HEIGHT * 15 + (SPRITE_HEIGHT + STRING_GAP) - 5, 1.0);
 
 	//Draw UI elements
+
+	//Modes
 	drawTexture(modes->ui->texture, modes->ui->x, modes->ui->y, 1.0);
 	drawTexture(Texture_Cursor, modes->ui->x - 14, getListSelectedEntryY(modes), 1.0);
-/*
-	if (*mode >= OPTIONS)
-		drawTexture(Texture_Options, 2 * (FONT_WIDTH + STRING_GAP), 
-					4 * (FONT_WIDTH + STRING_GAP), 1.0);
-*/
+
+	//Only draw currently active sub-menu
+	if (numerical->ui->currentlyInteracting)
+	{
+
+		drawTexture(numerical->ui->texture, numerical->ui->x, numerical->ui->y, 1.0);
+		drawTexture(Texture_Cursor, numerical->ui->x - 14, getListSelectedEntryY(numerical), 1);
+
+	}
+	else if (options->ui->currentlyInteracting)
+	{
+
+		//Draw options menu
+		drawTexture(options->ui->texture, options->ui->x, options->ui->y, 1.0);
+		drawTexture(Texture_Cursor, options->ui->x - 14, getListSelectedEntryY(options), 1);		
+	
+		//Draw options values
+		int optionsWidth;
+		SDL_QueryTexture(options->ui->texture, NULL, NULL, &optionsWidth, NULL);
+		drawTexture(Texture_Values, options->ui->x + optionsWidth, options->ui->y, 1.0);
+
+	}
+
 	//-----------------------------------------------------
 
-	//Title dropping
-	if ((int)(*Y + *titleText_Height / SPRITE_HEIGHT) <= BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE)
-		*Y += INITIAL_SPEED * globalInstance->frame_time;
-	else
-	{
-
-		//Once the title is done dropping, there are a some pieces in the title that should 
-		//continue dropping
-		//These pieces are called movingPieces
-			//We call updateTitle until all movingPieces finished dropping as well
-		if (*titleUpdating == false)
-			*titleUpdating = updateTitle(Texture_Title, movingPieces);
-
-	}
-
-	// Control Logic -------------------------------------------------------------
-
-	if (onPress(DOWN_BUTTON))
-	{
-
-		if(modes->ui->currentlyInteracting)
-			if (modes->selected_entry < modes->num_entries - 1)
-				modes->selected_entry++;
-
-	}
-
-	if (onPress(UP_BUTTON))
-	{
-
-		if (modes->ui->currentlyInteracting)
-			if(modes->selected_entry > 0)
-				modes->selected_entry--;
-
-	}
-
-	if (onPress(SELECT_BUTTON))
-	{
-
-		if (modes->ui->currentlyInteracting)
-		{
-
-			const char* str = getListSelectedString(modes);
-
-			if (strcmp(str, "MULTRIS") == 0 || strcmp(str, "NUMERICAL") == 0)
-			{
-
-				freeVars();
-				return PLAY_SCREEN;
-
-			}	
-
-		}
-			
-
-	}
-
-	// ---------------------------------------------------------------------------
-
-/*
-	if (globalInstance->controls[SELECT_BUTTON_ID].onPress && *inputLock == false)
-	{
-
-		//Play ROTATE sound
-		playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
-
-		//Return the mode 
-		*returnMode = *mode;
-
-		//Delete all title screen elements from memory if an option is selected that 
-		//leaves or RESETS the title screen
-		if (*returnMode < OPTIONS + 2 || *returnMode == OPTIONS + 5)
-		{
-
-			freeVars();				
-
-			//Delete movingPieces if resetting
-			if (*returnMode < OPTIONS + 2)
-			{
-			
-				//free movingPieces
-			//	for (unsigned short i = 0; i < 5; i++)
-			//		delPiece(&movingPieces[i]);
-			//	free(movingPieces);
-			//	movingPieces = NULL;
-
-			}
-
-			//Free Textures
-			//SDL_DestroyTexture(Texture_Modes);
-			//Texture_Modes = NULL;
-			SDL_DestroyTexture(Texture_Options);
-			Texture_Options = NULL;
-
-		}
-		else if (*returnMode == OPTIONS + 2)
-		{
-
-			//Swap GHOST option
-			saveOption(1, !getOption(1));
-			updateOptions(Texture_Options, *mode);
-
-			GHOST_MODE_ENABLED = getOption(1);
-
-		}
-		else if (*returnMode == OPTIONS + 3)
-		{
-
-			//Swap FULLSCREEN options
-			saveOption(2, !getOption(2));
-			updateOptions(Texture_Options, *mode);
-
-			//update the fullscreen mode
-			UPDATE_FULLSCREEN_MODE = 1;
-
-		}
-
-		//Change the block sprite if thats what the player did
-		if (*returnMode == OPTIONS)
-		{
-
-			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
-			//Save BLOCK_CHAR to options file
-			if (fileExists("SAVES/options.cfg"))
-				saveOption(0, 0);
-			return RESET;
-
-		}
-		else if (*returnMode == OPTIONS + 1)
-		{
-
-			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_2;
-			if (fileExists("SAVES/options.cfg"))
-				saveOption(0, 1);
-			return RESET;
-
-		}
-		else if (*returnMode == OPTIONS + 5)
-			return CONTROLS_SCREEN;
-		else if (*returnMode <= MAX_PIECE_SIZE)
-			return PLAY_SCREEN;	//If thats not what they did, then theyre trying to play
-
-		if (inputLock != NULL)
-			*inputLock = true;
-
-	}	//Mode 0 = default mode, Mode 1-8 = Numerical mode, Mode 9+ = OPTIONS
-	else if (globalInstance->keys[SDL_SCANCODE_DOWN] && *inputLock == false && 
-			mode != NULL)
-	{
-
-		if (*mode == 0)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode = 1;
-			//updateModes(Texture_Modes, *mode);
-
-		}
-		else if (*mode >= 1 && *mode <= 8)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode = OPTIONS;
-			//updateModes(Texture_Modes, *mode);
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS || *mode == OPTIONS + 1)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode = OPTIONS + 2;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 2)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode += 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 3)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode += 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 4)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode += 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-
-		*inputLock = true;
-
-	}
-	else if (globalInstance->keys[SDL_SCANCODE_UP] && *inputLock == false && 
-			mode != NULL)
-	{
-
-		if (*mode > 0 && *mode <= MAX_PIECE_SIZE)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode = 0;
-			//updateModes(Texture_Modes, *mode);
-
-		}
-		else if (*mode == OPTIONS || *mode == OPTIONS + 1)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode = 1;
-			//updateModes(Texture_Modes, *mode);
-
-		}
-		else if (*mode == OPTIONS + 2)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode = OPTIONS;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 3)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode -= 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 4)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode -= 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 5)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode -= 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-
-		*inputLock = true;
-
-	}
-	else if (globalInstance->keys[SDL_SCANCODE_LEFT] && *inputLock == false && 
-			mode != NULL)
-	{
-
-		if (*mode > 1 && *mode <= MAX_PIECE_SIZE)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode -= 1;
-			//updateModes(Texture_Modes, *mode);
-
-		}
-		else if (*mode == OPTIONS + 1)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode -= 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 4)
-		{
-
-			if (globalInstance->global_volume > 0)
-			{
-
-				//Lower volume in OPTIONS file
-				saveOption(3, getOption(3) - 1);
-				//Update volume in globalInstance, converting it to a percentage
-				globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
-				//Now update volumes of the actual sounds
-				updateVolume();
-
-				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-
-			}
-
-			updateOptions(Texture_Options, *mode);
-
-		}
-
-		*inputLock = true;
-
-	}
-	else if (globalInstance->keys[SDL_SCANCODE_RIGHT] && *inputLock == false && 
-			mode != NULL)
-	{
-
-		if (*mode < MAX_PIECE_SIZE && *mode > 0)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode += 1;
-			//updateModes(Texture_Modes, *mode);
-
-		}
-		else if (*mode == OPTIONS)
-		{
-
-			playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-			*mode += 1;
-			updateOptions(Texture_Options, *mode);
-
-		}
-		else if (*mode == OPTIONS + 4)
-		{
-
-			if (globalInstance->global_volume < 100)
-			{
-
-				//Raise volume in OPTIONS file
-				saveOption(3, getOption(3) + 1);
-				//Update volume in globalInstance, converting it to a percentage
-				globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
-				//Now update volumes of the actual sounds
-				updateVolume();
-
-				playSound(globalInstance->sounds[MOVE_SOUND_ID]);
-
-			}
-
-			updateOptions(Texture_Options, *mode);
-
-		}
-
-		*inputLock = true;
-
-	}
-	else if (!globalInstance->keys[SDL_SCANCODE_UP] && 
-			!globalInstance->keys[SDL_SCANCODE_DOWN] && 
-			!globalInstance->keys[SDL_SCANCODE_LEFT] && 
-			!globalInstance->keys[SDL_SCANCODE_RIGHT] &&
-			!globalInstance->keys[SDL_SCANCODE_RETURN])
-		*inputLock = false;
-*/
 	return TITLE_SCREEN;
-
-}
-
-void updateOptions(SDL_Texture* texture, unsigned short mode)
-{
-
-	if (mode == OPTIONS)
-	{
-
-		//Erase "^" and ">"
-		printToTexture("^", texture, 14 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		printToTexture(">", texture, 0, FONT_HEIGHT + STRING_GAP, 1, BLACK);
-		//Reprint
-		printToTexture("^", texture, 12 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture(">", texture, 0, 0, 1, WHITE);
-
-	}
-	else if (mode == OPTIONS + 1)
-	{
-
-		//Erase "^" and ">" by printing it in black
-		printToTexture("^", texture, 12 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		printToTexture(">", texture, 0, FONT_HEIGHT + STRING_GAP, 1, BLACK);
-		//Reprint
-		printToTexture("^", texture, 14 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture(">", texture, 0, 0, 1, WHITE);
-
-	}
-	else if (mode == OPTIONS + 2)
-	{
-
-		//Erase "^" and ">"
-		printToTexture("^", texture, 12 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		printToTexture("^", texture, 14 * (FONT_WIDTH + STRING_GAP), 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		printToTexture(">", texture, 0, 0, 1, BLACK);
-		printToTexture(">", texture, 0, 2 * (FONT_WIDTH + STRING_GAP), 1, BLACK);
-
-		//Print the current GHOST option
-		if (getOption(1) == 0)
-		{
-
-			//Erase ON
-			printToTexture("ON", texture, 8 * (FONT_WIDTH + STRING_GAP), 
-				FONT_HEIGHT + STRING_GAP, 1, BLACK);
-			//Print OFF
-			printToTexture("OFF", texture, 8 * (FONT_WIDTH + STRING_GAP), 
-				FONT_HEIGHT + STRING_GAP, 1, RED);
-
-		}
-		else if (getOption(1) == 1)
-		{
-
-			//Erase OFF
-			printToTexture("OFF", texture, 8 * (FONT_WIDTH + STRING_GAP), 
-				FONT_HEIGHT + STRING_GAP, 1, BLACK);
-			//Print ON
-			printToTexture("ON", texture, 8 * (FONT_WIDTH + STRING_GAP), 
-				FONT_HEIGHT + STRING_GAP, 1, GREEN);
-
-		}
-
-		printToTexture(">", texture, 0, FONT_HEIGHT + STRING_GAP, 1, WHITE);
-
-	}
-	else if (mode == OPTIONS + 3)
-	{
-
-		//Erasures
-		printToTexture(">", texture, 0, FONT_HEIGHT + STRING_GAP, 1, BLACK);
-		printToTexture(">", texture, 0, 3 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-
-		//Print the current FULLSCREEN option
-		if (getOption(2) == 0)
-		{
-
-			//Erase ON
-			printToTexture("ON", texture, 13 * (FONT_WIDTH + STRING_GAP), 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-			//Print OFF
-			printToTexture("OFF", texture, 13 * (FONT_WIDTH + STRING_GAP), 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, RED);
-
-		}
-		else if (getOption(2) == 1)
-		{
-
-			//Erase OFF
-			printToTexture("OFF", texture, 13 * (FONT_WIDTH + STRING_GAP), 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-			//Print ON
-			printToTexture("ON", texture, 13 * (FONT_HEIGHT + STRING_GAP), 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, GREEN);
-
-		}
-
-		printToTexture(">", texture, 0, 2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-
-	}
-	else if (mode == OPTIONS + 4)
-	{
-
-		//Erasures
-		printToTexture(">", texture, 0, 2 * (FONT_HEIGHT + STRING_GAP), 1, BLACK);
-		intToTexture(getOption(3) + 1, texture, 
-			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			BLACK);
-		intToTexture(getOption(3) - 1, texture, 
-			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			BLACK);
-		printToTexture(">", texture, 0, 4 * (FONT_WIDTH + STRING_GAP), 1, BLACK);
-
-		//Print current volume
-		intToTexture((int)(getOption(3)), texture, 
-			9 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			YELLOW);
-
-		printToTexture(">", texture, 0, 3 * (FONT_WIDTH + STRING_GAP), 1, WHITE);
-
-	}
-	else if (mode == OPTIONS + 5)
-	{
-
-		//Erasures
-		printToTexture(">", texture, 0, 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-			BLACK);
-
-		printToTexture(">", texture, 0, 4 * (FONT_HEIGHT + STRING_GAP), 1, 
-			WHITE);
-
-	}
-
-}
-
-void updateModes(SDL_Texture* texture, unsigned short currentMode)
-{
-
-	//Clear modes texture
-	clearTexture(texture);
-
-	//Redraw the modes texture, changing it depending on what the current mode is
-	printToTexture(">", texture, 0, 2* (FONT_HEIGHT + STRING_GAP), 
-		1.0, WHITE);
-
-	if (currentMode == 0)
-	{
-
-		printToTexture("MULTRIS", texture, FONT_WIDTH + STRING_GAP, 
-			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("NUMERICAL", texture, FONT_WIDTH + STRING_GAP, 
-			3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", texture, FONT_WIDTH + STRING_GAP, 
-			4 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-
-	}
-	else if (currentMode > 0 && currentMode <= MAX_PIECE_SIZE)
-	{
-
-		printToTexture("MULTRIS", texture, FONT_WIDTH + STRING_GAP, 
-			FONT_HEIGHT + STRING_GAP, 1, WHITE);
-		printToTexture("NUMERICAL", texture, FONT_WIDTH + STRING_GAP, 
-			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", texture, FONT_WIDTH + STRING_GAP, 
-			3 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("^", texture, 15 * FONT_WIDTH + 2 * STRING_GAP, 
-			4 * FONT_HEIGHT, 1, WHITE);
-
-		if (currentMode == 1)
-			printToTexture("  1 2", texture, 13 * FONT_WIDTH, 
-							2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		else if (currentMode < MAX_PIECE_SIZE)
-		{
-
-			char string[6] = { '0' + currentMode - 1, ' ', '0' + currentMode, ' ', 
-								'0' + currentMode + 1, '\0' };
-			printToTexture(string, texture, 13 * FONT_WIDTH, 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-
-		}
-		else
-			printToTexture("7 8  ", texture, 13 * FONT_WIDTH, 
-				2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-
-	}
-	else if (currentMode >= OPTIONS)
-	{
-
-		printToTexture("MULTRIS", texture, FONT_WIDTH + STRING_GAP, 0, 1, WHITE);
-		printToTexture("NUMERICAL", texture, FONT_WIDTH + STRING_GAP, 
-			1 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-		printToTexture("OPTIONS", texture, FONT_WIDTH + STRING_GAP, 
-			2 * (FONT_HEIGHT + STRING_GAP), 1, WHITE);
-
-	}
 
 }

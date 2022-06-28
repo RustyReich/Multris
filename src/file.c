@@ -67,7 +67,9 @@ void createOptions()
 	if (optionsFile != NULL)
 	{
 
-		fprintf(optionsFile, "1\n1\n0\n9\n");
+		fprintf(optionsFile, "FULLSCREEN=0\n");
+		fprintf(optionsFile, "VOLUME=100\n");
+		fprintf(optionsFile, "LIMIT FPS=1");
 
 		fclose(optionsFile);
 
@@ -134,15 +136,68 @@ void saveOption(unsigned short line, unsigned short value)
 	
 }
 
-unsigned short getOption(unsigned short line)
+//Return the name of the option at the specified line in the options file
+	//Returned value should be freed to avoid memory leaks
+	//Returns NULL if the specified line is larger than the number of lines in the file
+char* getOptionName(int line)
+{
+
+	if (line > getLineCount("SAVES/options.cfg"))
+		return NULL;
+
+	FILE* optionsFile = NULL;
+	char currentLine[256];
+
+	char* returnString = NULL;
+	
+	optionsFile = fopen("SAVES/options.cfg", "r");
+	if (optionsFile != NULL)
+	{
+
+		int i = 0;
+		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
+		{
+
+			if (i == line)
+			{
+
+				//Get length of name
+				int len = 0;
+				while (currentLine[len] != '=')
+					len++;
+
+				//Copy name into returnString
+				returnString = calloc(len + 1, sizeof(char));
+				returnString[len] = '\0';
+				for (unsigned short i = 0; i < len; i++)
+					returnString[i] = currentLine[i];
+
+				break;
+
+			}
+			else
+				i++;
+
+		}
+
+		fclose(optionsFile);
+
+	}
+
+	return returnString;
+
+}
+
+//Return the value for the options specifed by the given strings
+	// Returns -1 if option is not found
+int getOptionValue(const char* str)
 {
 
 	FILE* optionsFile = NULL;
 
-	char currentLine[2];
-	unsigned short count = 0;
+	char currentLine[256];
 
-	unsigned short returnValue = 0;
+	char* returnValue = NULL;
 
 	//Open file for reading
 	optionsFile = fopen("SAVES/options.cfg", "r");
@@ -152,27 +207,59 @@ unsigned short getOption(unsigned short line)
 		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
 		{
 
-			//Dont count any newlines
-			if (currentLine[0] != 10)
+			//Check if the currentLine contains the option we're looking for
+			bool matches = true;
+			for (unsigned short i = 0; i < SDL_strlen(str); i++)
 			{
 
-				//Return the value at the requested line
-				if (count == line)
-					returnValue = currentLine[0] - '0';
+				if (currentLine[i] != str[i])
+				{
 
-				count++;
+					matches = false;
+					break;
+
+				}
 				
+			}
+
+			if (matches == true)
+			{
+
+				int i = SDL_strlen(str);
+
+				//Skip all non-alphanumeric characters after the option name
+				while (!isalpha(currentLine[i]) && !isdigit(currentLine[i]))
+					i++;
+
+				//Find the start_index and length of the value string
+					//Count until a non-numeric character is reached
+				int value_start_index = i;
+				while (isdigit(currentLine[i]))
+					i++;
+				int value_length = i - value_start_index;
+
+				//Create string to store value in
+				char* value = calloc((value_length + 1), sizeof(char));
+				value[value_length] = '\0';
+
+				//Copy value from currentLine into value string
+				for (int j = value_start_index; j < i; j++)
+					value[j - value_start_index] = currentLine[j];
+
+				returnValue = value;
+
 			}
 
 		}
 
 		fclose(optionsFile);
 
-		return returnValue;
-
 	}
+
+	if (returnValue == NULL)
+		return -1;
 	else
-		return 0;
+		return SDL_atoi(returnValue);
 
 }
 

@@ -19,6 +19,7 @@ typedef struct UI
     int x;
     int y;
 
+    //Wether the curren UI element is currently being interacted with by the player
     bool currentlyInteracting;
 
 } UI;
@@ -84,7 +85,7 @@ typedef struct gameInstance
     int gameSS_H;
 
     bool running;
-
+    
     int FPS;
     double frame_time;
 

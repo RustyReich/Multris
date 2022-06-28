@@ -11,7 +11,7 @@ void mainLoop();
 //file.c
 bool fileExists(char* fileName);
 void createOptions();
-unsigned short getOption(unsigned short line);
+int getOptionValue(const char* str);
 unsigned short getLineCount(char* fileName);
 
 //instance.c
@@ -28,9 +28,8 @@ int calcMapWidth();
 int calcMapHeight();
 
 //Initialize global variables
-unsigned short BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
 bool UPDATE_FULLSCREEN_MODE = true;
-bool GHOST_MODE_ENABLED = true;
+bool LIMIT_FPS = true;
 int MODE = 0;
 int MAP_WIDTH = 0;
 int MAP_HEIGHT = 0;
@@ -64,36 +63,33 @@ int main(int argc, char* argv[])
 
 	}
 
+	//Initialize game instance
+	initInstance(&globalInstance);
+
 	//Used to check if this is the very first frame of the game
 	bool firstLoop = true;
 
 	int frames_per_DS = 0;
 
+	//Variables for estimating FPS every 100ms
 	Uint32 prevTicks = 0;
 	int deltaTicks = 0;
 
-	//Initialize game instance
-	initInstance(&globalInstance);
+	//Variables for limiting FPS
+	Uint32 ticksLastFrame = SDL_GetTicks();
+	//targetFrameTime will be that of a montior with double the refresh rate of the
+	//current monitor
+	double targetFrameTime = (double)1 / (double)(globalInstance->DM.refresh_rate * 2);
 
-	//Create options file if it doesn't exist or has the wrong number of lines
-	if (!fileExists("SAVES/options.cfg") || getLineCount("SAVES/options.cfg") != 
-		NUM_OF_OPTIONS)
+	//Create options file if it doesn't exist
+	if (!fileExists("SAVES/options.cfg"))
 			createOptions();
 
+	//Load some options from the option file
 	if (fileExists("SAVES/options.cfg"))
 	{
 
-		//Load the BLOCK_CHAR from options file
-		if (getOption(0) == 0)
-			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_1;
-		else if (getOption(0) == 1)
-			BLOCK_SPRITE_ID = BLOCK_SPRITE_ID_2;
-
-		//Load volume from options file
-		globalInstance->global_volume = ((float)getOption(3) / 9) * 100;
-
-		//Load GHOST_MODE_ENABLED
-		GHOST_MODE_ENABLED = getOption(1);
+		LIMIT_FPS = getOptionValue("LIMIT FPS");
 
 	}
 
@@ -169,7 +165,21 @@ int main(int argc, char* argv[])
         //-----------------------------------------------------------------------
 
 		//Main game loop
-		mainLoop();
+		if (LIMIT_FPS)
+		{
+
+			//Logic for limitting the FPS
+				//Basically just sleeps every frame if not enough time passed between frames
+			int deltaMS = SDL_GetTicks() - ticksLastFrame;
+			if (deltaMS < targetFrameTime * 1000)
+				SDL_Delay(targetFrameTime * 1000 - deltaMS);
+			ticksLastFrame = SDL_GetTicks();
+
+			mainLoop();
+
+		}
+		else
+			mainLoop();
 
 		//Render the current frame
 		SDL_RenderPresent(globalInstance->renderer);
@@ -180,7 +190,7 @@ int main(int argc, char* argv[])
 		if (UPDATE_FULLSCREEN_MODE)
 		{
 
-			setWindowMode(getOption(2));
+			setWindowMode(getOptionValue("FULLSCREEN"));
 
 			//We are not loger updating the fullscreen mode
 			UPDATE_FULLSCREEN_MODE = false;

@@ -5,8 +5,7 @@
 #define SPRITE_WIDTH  12
 #define SPRITE_HEIGHT 12
 
-#define BLOCK_SPRITE_ID_1 	0
-#define BLOCK_SPRITE_ID_2	1
+#define BLOCK_SPRITE_ID 	1
 #define WALL_SPRITE_ID		2
 
 #define NUM_OF_CONTROLS		12
@@ -57,8 +56,11 @@
 #define FOREGROUND_TEXT	4
 #define TITLE_TEXT		5
 #define CURSOR_TEXT		6
+#define VALUES_TEXT		7
 
-#define MODES_LIST	0
+#define MODES_LIST		0
+#define NUMERICAL_LIST	1
+#define OPTIONS_LIST	2
 
 #define DEFAULT_OVER_TIME	55
 
@@ -98,5 +100,3 @@
 
 #define WINDOWED	0
 #define FULLSCREEN 	1
-
-#define NUM_OF_OPTIONS 4

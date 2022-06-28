@@ -94,7 +94,6 @@ unsigned short playMode(piece* firstPiece)
 	static unsigned int* Score; declare(Score, 0);
 	static unsigned short* Level; declare(Level, 0);
 	static unsigned short* linesAtCurrentLevel; declare(linesAtCurrentLevel, 0);
-	static bool* ghostEnabled; declare(ghostEnabled, GHOST_MODE_ENABLED);
 	static unsigned short* ghostY; declare(ghostY, MAP_HEIGHT - currentPiece->height);
 	static Uint32* moveStart; declare(moveStart, 0);
 	static bool* moveStartBool; declare(moveStartBool, false);
@@ -405,19 +404,14 @@ unsigned short playMode(piece* firstPiece)
 	//Draw the foreground
 	drawTexture(foreground, FONT_WIDTH, FONT_HEIGHT, 1.0);
 
-	//Draw ghost if enabled
-	if (*ghostEnabled)
-	{
-
-		//Make Texture_Current opaque
-		SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
-		//Draw Texture_Current at ghostY
-		drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
-			FONT_HEIGHT * ((int)*ghostY + 1), 1.0);
-		//Reset Texture_Current opacity
-		SDL_SetTextureAlphaMod(Texture_Current, 255);
-
-	}
+	//Draw ghost if
+	//Make Texture_Current opaque
+	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
+	//Draw Texture_Current at ghostY
+	drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
+		FONT_HEIGHT * ((int)*ghostY + 1), 1.0);
+	//Reset Texture_Current opacity
+	SDL_SetTextureAlphaMod(Texture_Current, 255);
 
 	//Draw current piece
 	drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
