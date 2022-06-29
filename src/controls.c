@@ -104,13 +104,6 @@ unsigned short controlsScreen()
 
     //Sounds
     static sound* Sound_Rotate;
-    if (Sound_Rotate == NULL)
-    {
-
-        Sound_Rotate = loadSound("AUDIO/rotate.wav");
-        setVolume(&Sound_Rotate, globalInstance->global_volume * 10);
-
-    }
 
     //Rendering --------------------------------------------------------
 

@@ -30,7 +30,7 @@ void rotatePiece(piece *Piece, unsigned short direction);
 void mirrorPieceOverY(piece* Piece);
 
 //audio.c
-void playSound(sound* Sound);
+void _playSound(int id);
 
 //file.c
 void saveTop(unsigned int score);
@@ -148,7 +148,7 @@ unsigned short playMode(piece* firstPiece)
 
 					//Only play sound if can actually move
 					if (*X != 0)
-						playSound(globalInstance->sounds[MOVE_SOUND_ID]);
+						playSound(MOVE_SOUND);
 					move(LEFT, X, *currentPiece, MAP_WIDTH);
 
 					//Recalculate ghostY
@@ -162,7 +162,7 @@ unsigned short playMode(piece* firstPiece)
 				{
 
 					if (*X + currentPiece->width < MAP_WIDTH)
-						playSound(globalInstance->sounds[MOVE_SOUND_ID]);
+						playSound(MOVE_SOUND);
 					move(RIGHT, X, *currentPiece, MAP_WIDTH);
 
 					//Recalculate ghostY
@@ -203,7 +203,7 @@ unsigned short playMode(piece* firstPiece)
 			{
 
 				//Only play sound if it actually rotated
-				playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
+				playSound(ROTATE_SOUND);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
@@ -226,7 +226,7 @@ unsigned short playMode(piece* firstPiece)
 			else
 			{
 
-				playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
+				playSound(ROTATE_SOUND);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
@@ -250,7 +250,7 @@ unsigned short playMode(piece* firstPiece)
 			{
 
 				//Only play sound if actually mirrored
-				playSound(globalInstance->sounds[ROTATE_SOUND_ID]);
+				playSound(ROTATE_SOUND);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
@@ -265,7 +265,7 @@ unsigned short playMode(piece* firstPiece)
 		if (onPress(HOLD_BUTTON) && !*justHeld)
 		{
 
-			playSound(globalInstance->sounds[HOLD_SOUND_ID]);
+			playSound(HOLD_SOUND);
 
 			if (holdPiece == NULL)
 			{
@@ -368,7 +368,7 @@ unsigned short playMode(piece* firstPiece)
 		if (onPress(SELECT_BUTTON))
 		{
 
-			playSound(globalInstance->sounds[PAUSE_SOUND_ID]);
+			playSound(PAUSE_SOUND);
 			*paused = !*paused;
 
 		}
@@ -436,7 +436,7 @@ unsigned short playMode(piece* firstPiece)
 		
 		if (playLineAnimation(foreground, *completedRows, clearingLine,
 			mapData, numCompleted, MAP_WIDTH, MAP_HEIGHT) == true)
-			playSound(globalInstance->sounds[COMPLETE_SOUND_ID]);
+			playSound(COMPLETE_SOUND);
 
 		//Remove first element in completedRows array
 			//Also resize completedRows array
@@ -549,7 +549,7 @@ unsigned short playMode(piece* firstPiece)
 		else     //Piece is placed
 		{
 
-			playSound(globalInstance->sounds[LAND_SOUND_ID]);
+			playSound(LAND_SOUND);
 
 			drawPiece(*currentPiece, foreground, *X * SPRITE_WIDTH, 
 				(int)*Y * SPRITE_HEIGHT);
@@ -625,7 +625,7 @@ unsigned short playMode(piece* firstPiece)
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
 			{
 
-				playSound(globalInstance->sounds[OVER_SOUND_ID]);
+				playSound(OVER_SOUND);
 				*gameOver = true;
 
 			}

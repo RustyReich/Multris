@@ -22,6 +22,7 @@ int getStringLength(char* str, float multiplier);
 SDL_Texture* createTexture(int width, int height);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
+void clearTexture(SDL_Texture* texture);
 
 //file.c
 unsigned int loadTop();
@@ -477,6 +478,52 @@ SDL_Texture* create_Cursor_Text()
 
 }
 
+//Create the texture for the two cursors that show the player that they can use the LEFT
+//and RIGHT buttons to "slide" the volume
+SDL_Texture* create_volSlide_Text()
+{
+
+	SDL_Texture* texture;
+
+	int width = 6 * FONT_WIDTH + 5 * STRING_GAP;
+	int height = FONT_HEIGHT;
+	texture = createTexture(width, height);
+
+	printToTexture("<", texture, 0, 0, 1.0, YELLOW);
+	printToTexture(">", texture, width - FONT_WIDTH, 0, 1.0, YELLOW);
+
+	return texture;
+
+}
+
+//Function for redrawing the values texture
+void updateValuesText(SDL_Texture* texture)
+{
+
+	clearTexture(texture);
+
+	//Print ":" after each modifiable option
+	printToTexture(":", texture, 0, 0, 1.0, WHITE);
+	printToTexture(":", texture, 0, 14, 1.0, WHITE);
+	printToTexture(":", texture, 0, 28, 1.0, WHITE);
+
+	//Print FULLSCREEN value
+	if (FULLSCREEN_MODE == 0)
+		printToTexture("OFF", texture, 14, 0, 1.0, RED);
+	else
+		printToTexture("ON", texture, 14, 0, 1.0, GREEN);
+
+	//Print VOLUME value
+	intToTexture(VOLUME, texture, 14, 14, 1.0, CYAN);
+
+	//Print LIMIT_FPS value
+	if (LIMIT_FPS == 0)
+		printToTexture("OFF", texture, 14, 28, 1.0, RED);
+	else
+		printToTexture("ON", texture, 14, 28, 1.0, GREEN);
+
+}
+
 //Create the texture that displays the values of the options
 SDL_Texture* create_Values_Text()
 {
@@ -492,32 +539,7 @@ SDL_Texture* create_Values_Text()
 	texture = createTexture(width, height);
 
 	//Print all values to texture
-	for (unsigned short i = 0; i < num_options; i++)
-	{
-
-		int y = i * (FONT_HEIGHT + STRING_GAP);
-
-		//Separate names and values with a :
-		printToTexture(":", texture, 0, y, 1.0, WHITE);
-
-		char* option_name = getOptionName(i);
-
-		//If the option is not the VOLUME option, then treat a value of 0 as OFF and 1 as ON
-		if (strcmp(option_name, "VOLUME") != 0)
-		{
-
-			if (getOptionValue(option_name) == 0)
-				printToTexture("OFF", texture, 14, y, 1.0, RED);
-			else if (getOptionValue(option_name) == 1)
-				printToTexture("ON", texture, 14, y, 1.0, GREEN);
-
-		}
-		else
-			intToTexture(getOptionValue(option_name), texture, 14, y, 1.0, WHITE);
-
-		free(option_name);
-
-	}
+	updateValuesText(texture);
 
 	return texture;
 

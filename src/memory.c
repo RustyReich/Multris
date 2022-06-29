@@ -22,6 +22,7 @@ void delete_UI_list(UI_list** list);
 UI_list* create_Numerical_List();
 UI_list* create_Options_List();
 SDL_Texture* create_Values_Text();
+SDL_Texture* create_volSlide_Text();
 
 //Function for pushing a variable or object onto an array of varVector structures 
 //designed to make freeing variables at the end of a game_state easier
@@ -270,6 +271,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Cursor_Text();
         else if (type == VALUES_TEXT)
             *ptr = create_Values_Text();
+        else if (type == VOLSLIDE_TEXT)
+            *ptr = create_volSlide_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);

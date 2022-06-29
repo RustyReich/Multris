@@ -13,6 +13,7 @@ bool fileExists(char* fileName);
 void createOptions();
 int getOptionValue(const char* str);
 unsigned short getLineCount(char* fileName);
+bool brokenOptions();
 
 //instance.c
 void initInstance(gameInstance** instance);
@@ -29,7 +30,11 @@ int calcMapHeight();
 
 //Initialize global variables
 bool UPDATE_FULLSCREEN_MODE = true;
+
+bool FULLSCREEN_MODE = false;
+unsigned short VOLUME = 10;
 bool LIMIT_FPS = true;
+
 int MODE = 0;
 int MAP_WIDTH = 0;
 int MAP_HEIGHT = 0;
@@ -81,14 +86,16 @@ int main(int argc, char* argv[])
 	//current monitor
 	double targetFrameTime = (double)1 / (double)(globalInstance->DM.refresh_rate * 2);
 
-	//Create options file if it doesn't exist
-	if (!fileExists("SAVES/options.cfg"))
+	//Create options file if it doesn't exist or it is broken
+	if (!fileExists("SAVES/options.cfg") || brokenOptions())
 			createOptions();
 
 	//Load some options from the option file
 	if (fileExists("SAVES/options.cfg"))
 	{
 
+		FULLSCREEN_MODE = getOptionValue("FULLSCREEN");
+		VOLUME = getOptionValue("VOLUME");
 		LIMIT_FPS = getOptionValue("LIMIT FPS");
 
 	}
@@ -190,7 +197,7 @@ int main(int argc, char* argv[])
 		if (UPDATE_FULLSCREEN_MODE)
 		{
 
-			setWindowMode(getOptionValue("FULLSCREEN"));
+			setWindowMode(FULLSCREEN_MODE);
 
 			//We are not loger updating the fullscreen mode
 			UPDATE_FULLSCREEN_MODE = false;

@@ -23,13 +23,13 @@
 #define UP_BUTTON			11
 
 #define NUM_OF_SOUNDS		7
-#define COMPLETE_SOUND_ID 	0
-#define HOLD_SOUND_ID		1
-#define LAND_SOUND_ID		2
-#define MOVE_SOUND_ID		3
-#define OVER_SOUND_ID		4
-#define PAUSE_SOUND_ID		5
-#define ROTATE_SOUND_ID		6
+#define COMPLETE_SOUND 	0
+#define HOLD_SOUND		1
+#define LAND_SOUND		2
+#define MOVE_SOUND		3
+#define OVER_SOUND		4
+#define PAUSE_SOUND		5
+#define ROTATE_SOUND	6
 
 #define GRAY	0
 #define WHITE	1
@@ -57,6 +57,7 @@
 #define TITLE_TEXT		5
 #define CURSOR_TEXT		6
 #define VALUES_TEXT		7
+#define VOLSLIDE_TEXT	8
 
 #define MODES_LIST		0
 #define NUMERICAL_LIST	1
@@ -72,6 +73,9 @@
 #define TEXTURE             3
 #define MOVING_TITLE_PIECES 4
 #define UI_LIST				5
+
+#define MOVEMENT_WAIT	500
+#define MOVEMENT_TIME	50
 
 //Speed is in cells per second
 		//Calculated using values from NES version of Tetris
@@ -93,10 +97,4 @@
 
 #define CLEARING_TIME	20
 
-#define MOVEMENT_WAIT	500
-#define MOVEMENT_TIME	50
-
 #define HOLD_TEXTURE_MULTI 0.75
-
-#define WINDOWED	0
-#define FULLSCREEN 	1

@@ -69,13 +69,13 @@ sound** initSounds()
         sounds[i] = calloc(1, sizeof(*sounds));
 
     //Load all sounds
-    sounds[COMPLETE_SOUND_ID] = loadSound("AUDIO/complete.wav");
-    sounds[HOLD_SOUND_ID] = loadSound("AUDIO/hold.wav");
-    sounds[LAND_SOUND_ID] = loadSound("AUDIO/land.wav");
-    sounds[MOVE_SOUND_ID] = loadSound("AUDIO/move.wav");
-    sounds[OVER_SOUND_ID] = loadSound("AUDIO/over.wav");
-    sounds[PAUSE_SOUND_ID] = loadSound("AUDIO/pause.wav");
-    sounds[ROTATE_SOUND_ID] = loadSound("AUDIO/rotate.wav");
+    sounds[COMPLETE_SOUND] = loadSound("AUDIO/complete.wav");
+    sounds[HOLD_SOUND] = loadSound("AUDIO/hold.wav");
+    sounds[LAND_SOUND] = loadSound("AUDIO/land.wav");
+    sounds[MOVE_SOUND] = loadSound("AUDIO/move.wav");
+    sounds[OVER_SOUND] = loadSound("AUDIO/over.wav");
+    sounds[PAUSE_SOUND] = loadSound("AUDIO/pause.wav");
+    sounds[ROTATE_SOUND] = loadSound("AUDIO/rotate.wav");
 
     return sounds;
 
@@ -217,7 +217,7 @@ void updateVolume()
                             globalInstance->masterSounds[i]->buffer, 
                             globalInstance->wavSpec->format,
                             globalInstance->masterSounds[i]->length,
-                            SDL_MIX_MAXVOLUME * (globalInstance->global_volume / 100.0));
+                            SDL_MIX_MAXVOLUME * (VOLUME / 100.0));
 
         //Copy volume adjusted buffer to sounds[i]->buffer
         for (int j = 0 ; j < globalInstance->masterSounds[i]->length; j++)
@@ -234,7 +234,7 @@ void updateVolume()
 void setWindowMode(unsigned short mode)
 {
 
-    if (mode == WINDOWED)
+    if (mode == 0)
     {
 
         SDL_SetWindowFullscreen(globalInstance->window, 0);
@@ -252,7 +252,7 @@ void setWindowMode(unsigned short mode)
 	    scaleRenderer();
 
     }
-    else if (mode == FULLSCREEN)
+    else if (mode == 1)
     {
 
         //Save window size

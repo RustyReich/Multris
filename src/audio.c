@@ -1,8 +1,10 @@
 #include "HEADERS/MGF.h"
 
 //Play a sound
-void playSound(sound* Sound)
+void _playSound(int id)
 {
+
+	sound* Sound = globalInstance->sounds[id];
 
 	//If the sound being played is not the one already queued into the audio buffer
 		//Technically we don't check if its the same one, we just check if its the same length

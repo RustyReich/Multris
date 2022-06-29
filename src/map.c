@@ -29,15 +29,15 @@ void copyBlocks(piece* piece1, piece* piece2);
 void copyPiece(piece* piece1, piece* piece2);
 
 //audio.c
-void playSound(sound* Sound);
+void _playSound(int id);
 sound* loadSound(char* file);
 void delSound(sound** Sound);
 void setVolume(sound** Sound, unsigned short volume);
 
 //file.c
-void saveOption(unsigned short line, unsigned short value);
 bool fileExists(char* fileName);
-int getOption(const char* str);
+void saveOption(const char* str, int value);
+int getOptionValue(const char* str);
 
 //instance.c
 void updateVolume();
@@ -61,6 +61,7 @@ void declare_UI_list(UI_list** ptr, int type);
 bool updateTitle(SDL_Texture* texture, piece** movingPieces);
 int getListSelectedEntryY(UI_list* list);
 const char* getListSelectedString(UI_list* list);
+void updateValuesText(SDL_Texture* texture);
 
 unsigned short drawTitle(piece** firstPiece)
 {
@@ -74,6 +75,9 @@ unsigned short drawTitle(piece** firstPiece)
 	static int* nextText_Height; declare(nextText_Height, 0);
 	static int* titleText_Height; declare(titleText_Height, 0);
 	static bool* firstLoop; declare(firstLoop, true);
+	static bool* editingVolume; declare(editingVolume, false);
+	static Uint32* moveStart; declare(moveStart, 0);
+	static bool* moveStartBool; declare(moveStartBool, false);
 
 	//Textures
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *firstPiece);
@@ -82,6 +86,7 @@ unsigned short drawTitle(piece** firstPiece)
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
 	static SDL_Texture* Texture_Title; declare_HUD_Text(&Texture_Title, TITLE_TEXT);
 	static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
+	static SDL_Texture* Texture_volSlide; declare_HUD_Text(&Texture_volSlide, VOLSLIDE_TEXT);
 	static SDL_Texture* Texture_Values; declare_HUD_Text(&Texture_Values, VALUES_TEXT);
 
 	//Arrays
@@ -108,6 +113,7 @@ unsigned short drawTitle(piece** firstPiece)
 	// Control Logic -------------------------------------------------------------
 
 	const char* selected_mode = getListSelectedString(modes);
+	const char* selected_option = getListSelectedString(options);
 
 	if (onPress(DOWN_BUTTON))
 	{
@@ -116,21 +122,36 @@ unsigned short drawTitle(piece** firstPiece)
 		{
 
 			if (modes->selected_entry < modes->num_entries - 1)
+			{
+
+				playSound(MOVE_SOUND);
 				modes->selected_entry++;
+
+			}
 
 		}
 		else if(numerical->ui->currentlyInteracting)
 		{
 
 			if (numerical->selected_entry < numerical->num_entries - 1)
+			{
+
+				playSound(MOVE_SOUND);
 				numerical->selected_entry++;
 
+			}
+
 		}
-		else if(options->ui->currentlyInteracting)
+		else if(options->ui->currentlyInteracting && *editingVolume == false)
 		{
 
 			if (options->selected_entry < options->num_entries - 1)
+			{
+
+				playSound(MOVE_SOUND);
 				options->selected_entry++;
+
+			}
 
 		}
 
@@ -143,28 +164,106 @@ unsigned short drawTitle(piece** firstPiece)
 		{
 
 			if(modes->selected_entry > 0)
+			{
+
+				playSound(MOVE_SOUND);
 				modes->selected_entry--;
+
+			}
 
 		}
 		else if (numerical->ui->currentlyInteracting)
 		{
 
 			if(numerical->selected_entry > 0)
+			{
+
+				playSound(MOVE_SOUND);
 				numerical->selected_entry--;
 
+			}
+
 		}
-		else if (options->ui->currentlyInteracting)
+		else if (options->ui->currentlyInteracting && *editingVolume == false)
 		{
 
 			if(options->selected_entry > 0)
+			{
+
+				playSound(MOVE_SOUND);
 				options->selected_entry--;
+
+			}
 
 		}
 
 	}
 
+	if (onHold(LEFT_BUTTON) || onHold(RIGHT_BUTTON))
+	{
+
+		Uint32 currTicks = SDL_GetTicks();
+
+		//Start the counter for holding the LEFT or RIGHT buttons
+		if (*moveStart == 0)
+		{
+
+			*moveStart = currTicks;
+			*moveStartBool = true;
+
+		}
+
+		if (*moveStartBool || (currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+		{
+
+			if (onHold(LEFT_BUTTON))
+			{
+
+				if (*editingVolume && VOLUME > 0)
+				{
+
+					VOLUME--;
+					updateValuesText(Texture_Values);
+
+					updateVolume();
+					playSound(MOVE_SOUND);
+
+				}
+
+			}
+			
+			if (onHold(RIGHT_BUTTON))
+			{
+
+				if (*editingVolume && VOLUME < 100)
+				{
+
+					VOLUME++;
+					updateValuesText(Texture_Values);
+
+					updateVolume();
+					playSound(MOVE_SOUND);
+
+				}
+
+			}
+
+			*moveStartBool = false;
+
+			if ((currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+				*moveStart = currTicks - MOVEMENT_WAIT;
+
+		}
+
+	}
+	else
+		*moveStart = 0;
+
 	if (onPress(SELECT_BUTTON))
 	{
+
+		if (*editingVolume == false)
+			playSound(ROTATE_SOUND);
 
 		if (modes->ui->currentlyInteracting)
 		{
@@ -207,14 +306,25 @@ unsigned short drawTitle(piece** firstPiece)
 		else if (options->ui->currentlyInteracting)
 		{
 
-			const char* selected_option = getListSelectedString(options);
-
 			if (SDL_strcmp(selected_option, "LIMIT FPS") == 0)
 			{
 
 				LIMIT_FPS = !LIMIT_FPS;
 
+				updateValuesText(Texture_Values);
+
 			}
+			else if (SDL_strcmp(selected_option, "FULLSCREEN") == 0)
+			{
+
+				FULLSCREEN_MODE = !FULLSCREEN_MODE;
+				UPDATE_FULLSCREEN_MODE = true;
+
+				updateValuesText(Texture_Values);
+
+			}
+			else if (SDL_strcmp(selected_option, "VOLUME") == 0)
+				*editingVolume = true;
 
 		}
 
@@ -223,6 +333,11 @@ unsigned short drawTitle(piece** firstPiece)
 	//Exit out of the current sub-menu if the EXIT_BUTTON is pressed
 	if (onPress(EXIT_BUTTON))
 	{
+
+		//We're not exiting out of any menu if were in the modes menu when we press EXIT.
+			//So only play this sound if we're not in the modes menu
+		if (modes->ui->currentlyInteracting == false)
+			playSound(LAND_SOUND);
 
 		if (numerical->ui->currentlyInteracting)
 		{
@@ -234,8 +349,20 @@ unsigned short drawTitle(piece** firstPiece)
 		else if (options->ui->currentlyInteracting)
 		{
 
-			options->ui->currentlyInteracting = false;
-			modes->ui->currentlyInteracting = true;
+			if (*editingVolume == true)
+				*editingVolume = false;
+			else
+			{
+
+				options->ui->currentlyInteracting = false;
+				modes->ui->currentlyInteracting = true;
+
+				//Save option values to optionsFile when player leaves options menu
+				saveOption("FULLSCREEN", FULLSCREEN_MODE);
+				saveOption("VOLUME", VOLUME);
+				saveOption("LIMIT FPS", LIMIT_FPS);
+
+			}
 
 		}
 
@@ -303,6 +430,11 @@ unsigned short drawTitle(piece** firstPiece)
 		int optionsWidth;
 		SDL_QueryTexture(options->ui->texture, NULL, NULL, &optionsWidth, NULL);
 		drawTexture(Texture_Values, options->ui->x + optionsWidth, options->ui->y, 1.0);
+
+		//If editing the volume, draw cursors to left and right of volume
+		if (*editingVolume)
+			drawTexture(Texture_volSlide, options->ui->x + optionsWidth - FONT_WIDTH, 
+						getListSelectedEntryY(options), 1.0);
 
 	}
 

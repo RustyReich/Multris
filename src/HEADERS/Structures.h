@@ -51,6 +51,7 @@ typedef struct control
 
     bool onPress;
     bool onHold;
+    bool onRelease;
 
 } control;
 
@@ -88,8 +89,6 @@ typedef struct gameInstance
     
     int FPS;
     double frame_time;
-
-    unsigned short global_volume;
 
     Uint8* keys;
 
