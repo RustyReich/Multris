@@ -29,7 +29,7 @@ void delPiece(piece** Piece);
 piece* generateGamePiece(unsigned short size);
 
 //controls.c
-unsigned short controlsScreen();
+unsigned short controlsScreen(piece** Piece);
 
 //layout.c
 void drawPlayField(SDL_Texture* background, unsigned short size);
@@ -135,7 +135,7 @@ void mainLoop()
 
 	}
 	else if (game_state == CONTROLS_SCREEN)
-		game_state = controlsScreen();
+		game_state = controlsScreen(&firstPiece);
 	else if (game_state == RESET)	//Reset the game to the main menu
 	{
 		

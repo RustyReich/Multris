@@ -325,6 +325,14 @@ unsigned short drawTitle(piece** firstPiece)
 			}
 			else if (SDL_strcmp(selected_option, "VOLUME") == 0)
 				*editingVolume = true;
+			else if (SDL_strcmp(selected_option, "CONTROLS") == 0)
+			{
+
+				//Go to the controls screen
+				freeVars();
+				return CONTROLS_SCREEN;
+
+			}
 
 		}
 
@@ -388,22 +396,10 @@ unsigned short drawTitle(piece** firstPiece)
 	//Rendering -------------------------------------------
 
 	drawTexture(Texture_Title, FONT_WIDTH, FONT_HEIGHT * (int)*Y, 1.0);
-	drawTexture(Texture_Next, 
-				318 - (*nextText_Width / 2),
-				282 - (*nextText_Height / 2), 
-				1.0);
-	drawTexture(Texture_Score, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
-				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("000000", 1.0)), 
-				FONT_HEIGHT * 2 + (FONT_WIDTH + STRING_GAP) * 4 - 10, 1.0);
-	drawTexture(Texture_Level, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
-				SPRITE_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("0", 1.0)), 
-				FONT_HEIGHT * 9 + (SPRITE_HEIGHT + STRING_GAP) - 7, 1.0);
-	drawTexture(Texture_Lines, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
-				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("5", 1.0)), 
-				FONT_HEIGHT * 15 + (SPRITE_HEIGHT + STRING_GAP) - 5, 1.0);
+	drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
+	drawTexture(Texture_Score, 277, 70, 1.0);
+	drawTexture(Texture_Level, 312, 115, 1.0);
+	drawTexture(Texture_Lines, 312, 189, 1.0);
 
 	//Draw UI elements
 

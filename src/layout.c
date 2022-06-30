@@ -667,21 +667,7 @@ UI_list* create_Numerical_List()
 UI_list* create_Options_List()
 {
 
-	//Get list of option names and append ":" to them
-	char* optionStrings[getLineCount("SAVES/options.cfg")];
-	for (unsigned short i = 0; i < getLineCount("SAVES/options.cfg"); i++)
-	{
-
-		char* name = getOptionName(i);
-		int name_len = SDL_strlen(name);
-		optionStrings[i] = calloc(name_len + 1, sizeof(char));
-		strcpy(optionStrings[i], name);
-
-		free(name);
-
-	}
-
-	UI_list* list = create_list(optionStrings[0], optionStrings[1], optionStrings[2]);
+	UI_list* list = create_list("FULLSCREEN", "VOLUME", "LIMIT FPS", "CONTROLS");
 
 	list->selected_entry = 0;
 
@@ -689,10 +675,6 @@ UI_list* create_Options_List()
 	list->ui->y = 70;
 
 	list->ui->currentlyInteracting = false;
-
-	//Free option names
-	for (unsigned short i = 0; i < getLineCount("SAVES/options.cfg"); i++)
-		free(optionStrings[i]);
 
 	return list;
 

@@ -14,6 +14,65 @@ sound* loadSound(char* file);
 void delSound(sound** Sound);
 void setVolume(sound** Sound, unsigned short volume);
 
+//memory.c
+void declare_HUD_Text(SDL_Texture** ptr, int type);
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
+void declare_unsigned_short(void** ptr, unsigned short value);
+void declare_double(void** ptr, double value);
+void declare_int(void** ptr, int value);
+void declare_char(void** ptr, char value);
+void declare_bool(void** ptr, bool value);
+void declare_unsigned_int(void** ptr, unsigned int value);
+void freeVars();
+
+unsigned short controlsScreen(piece** Piece)
+{
+
+    //Variables
+    static int* nextText_Width; declare(nextText_Width, 0);
+    static int* nextText_Height; declare(nextText_Height, 0);
+    static bool* firstLoop; declare(firstLoop, true);    
+
+    //Textures
+    static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
+    static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
+    static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
+    static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *Piece);
+
+    if (*firstLoop == true)
+    {
+
+        SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
+
+        *firstLoop = false;
+
+    }
+
+    // Control Logic ---------------------------------------------------
+
+    if (onPress(EXIT_BUTTON))
+    {
+
+        freeVars();
+        return RESET;
+
+    }
+
+    // -----------------------------------------------------------------
+
+    // Rendering --------------------------------------------------------
+    
+    drawTexture(Texture_Score, 277, 70, 1.0);
+    drawTexture(Texture_Level, 312, 115, 1.0);
+    drawTexture(Texture_Lines, 312, 189, 1.0);
+    drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
+
+    // ------------------------------------------------------------------
+
+    return CONTROLS_SCREEN;
+
+}
+
 void updateControls()
 {
 
@@ -47,108 +106,5 @@ void setControls()
 {
 
     //Valid buttons are SDL_SCANCODE_A to SDL_SCANCODE_NUMLOCKCLEAR
-
-}
-
-unsigned short controlsScreen()
-{
-
-    //Get current keyboard state
-	static Uint8* keys = NULL;
-	if (keys == NULL)
-		keys = (Uint8*)SDL_GetKeyboardState(NULL);
-
-    //Textures
-    static SDL_Texture* Texture_Controls;
-    if (Texture_Controls == NULL)
-    {
-
-        //Get playspace area
-        unsigned short mapWidth = round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE);
-        unsigned short mapHeight = round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE);
-
-        //Make the texture the size of the play area
-        Texture_Controls = createTexture(FONT_WIDTH * mapWidth, 
-            FONT_HEIGHT * mapHeight);
-
-        //Print controls to texture
-        printToTexture("LEFT RIGHT ARROWS : MOVE", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 1 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("DOWN ARROW : SOFT DROP", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 2 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("UP ARROW : HARD DROP", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 3 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("SPACE : HOLD", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 4 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("Z : ROTATE CCW", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 5 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("X : ROTATE CW", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 6 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("C : MIRROR PIECE", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 7 * (FONT_WIDTH + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("ENTER : SELECT PAUSE", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 8 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-        printToTexture("ESC : EXIT GAME FROM MENU", Texture_Controls, 
-            1 * (FONT_WIDTH + STRING_GAP), 9 * (FONT_HEIGHT + STRING_GAP), 1, 
-            WHITE);
-
-    }
-
-    //Sounds
-    static sound* Sound_Rotate;
-
-    //Rendering --------------------------------------------------------
-
-    drawTexture(Texture_Controls, FONT_WIDTH, FONT_HEIGHT, 1.0);
-
-    static char* inputLock;		//This prevents the user from holding down certain buttons
-	if (inputLock == NULL)
-	{
-
-		inputLock = malloc(sizeof(*inputLock));
-		if (inputLock != NULL)
-			*inputLock = true;
-    }
-    else
-    {
-
-        //Return to title screen if ENTER is pressed
-        if (keys[SDL_SCANCODE_RETURN] && *inputLock == false)
-        {
-            
-            //play ROTATE sound
-            playSound(Sound_Rotate);
-
-            //Free Textures
-            SDL_DestroyTexture(Texture_Controls);
-            Texture_Controls = NULL;
-
-            //Free sounds
-            delSound(&Sound_Rotate);
-
-            //Reset keys array pointer
-            keys = NULL;
-
-            //Free Single variables
-            free(inputLock);
-            inputLock = NULL;
-
-            return RESET;
-
-        }
-        else if (!keys[SDL_SCANCODE_RETURN])
-            *inputLock = false;
-
-    }
-
-    return CONTROLS_SCREEN;
 
 }
