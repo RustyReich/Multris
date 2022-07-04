@@ -68,7 +68,7 @@ unsigned short drawTitle(piece** firstPiece)
 
 	//Variables
 	static bool* titleUpdating; declare(titleUpdating, false);
-	static unsigned short* mode; declare(mode , 0);
+	static unsigned short* mode; declare(mode, 0);
 	static double* Y; declare(Y, (double)15);
 	static char* inputLock; declare(inputLock, true);
 	static int* nextText_Width; declare(nextText_Width, 0);

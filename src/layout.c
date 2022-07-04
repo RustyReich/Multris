@@ -545,6 +545,76 @@ SDL_Texture* create_Values_Text()
 
 }
 
+//Create the texture that displays for editing your controls
+SDL_Texture* create_Controls_Text()
+{
+
+	SDL_Texture* texture;
+
+	int width = MAX_PIECE_SIZE * BASE_PLAYFIELD_WIDTH * FONT_WIDTH;
+	int height = NUM_OF_CONTROLS * 3 * FONT_HEIGHT + (NUM_OF_CONTROLS * 3 - 1) * STRING_GAP;
+
+	texture = createTexture(width, height);
+
+	for (unsigned short i = 0; i < NUM_OF_CONTROLS; i++)
+	{
+
+		int x = 18;
+		int y = i * 3 * (FONT_HEIGHT + STRING_GAP);
+		char name[16];
+		printf("create: %d\n", y);
+		if (i == 0)
+			SDL_strlcpy(name, "LEFT", 16);
+		else if (i == 1)
+			SDL_strlcpy(name, "RIGHT", 16);
+		else if (i == 2)
+			SDL_strlcpy(name, "SOFT DROP", 16);
+		else if (i == 3)
+			SDL_strlcpy(name, "HARD DROP", 16);
+		else if (i == 4)
+			SDL_strlcpy(name, "HOLD", 16);
+		else if (i == 5)
+			SDL_strlcpy(name, "ROTATE CCW", 16);
+		else if (i == 6)
+			SDL_strlcpy(name, "ROTATE CW", 16);
+		else if (i == 7)
+			SDL_strlcpy(name, "MIRROR", 16);
+		else if (i == 8)
+			SDL_strlcpy(name, "SELECT", 16);
+		else if (i == 9)
+			SDL_strlcpy(name, "EXIT", 16);
+		else if (i == 10)
+			SDL_strlcpy(name, "DOWN", 16);
+		else if (i == 11)
+			SDL_strlcpy(name, "UP", 16);
+
+		name[SDL_strlen(name)] = '\0';
+
+		printToTexture(name, texture, x, y, 1.0, WHITE);
+
+		char underlines[SDL_strlen(name) + 1];
+		underlines[SDL_strlen(name)] = '\0';
+		for (unsigned short j = 0; j < SDL_strlen(name); j++)
+			underlines[j] = '_';
+
+		printToTexture(underlines, texture, x, y + STRING_GAP + 2, 1.0, WHITE);
+
+		char* button = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(globalInstance->controls[i].button));
+		int len = SDL_strlen(button) + 2;
+		char button_string[len + 1];
+		SDL_strlcpy(button_string, "[", len + 1);
+		SDL_strlcat(button_string, button, len + 1);
+		SDL_strlcat(button_string, "]", len + 1);
+		button_string[len] = '\0';
+
+		printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, YELLOW);
+
+	}
+
+	return texture;
+
+}
+
 //Create a UI list given an arbitrary number of strings
 UI_list* _create_list(const char* strings, ...)
 {

@@ -446,14 +446,12 @@ unsigned short playMode(piece* firstPiece)
 			unsigned short* tempRows;
 			tempRows = malloc(*numCompleted * sizeof(*tempRows));
 			for (unsigned short i = 0; i < *numCompleted; i++)
-				if (tempRows + i != NULL)
-					*(tempRows + i) = *(completedRows + i + 1);
+				*(tempRows + i) = *(completedRows + i + 1);
 
 			free(completedRows);
 			completedRows = malloc(*numCompleted * sizeof(*completedRows));
 			for (unsigned short i = 0; i < *numCompleted; i++)
-				if (completedRows + i != NULL && tempRows + i != NULL)
-					*(completedRows + i) = *(tempRows + i);
+				*(completedRows + i) = *(tempRows + i);
 
 			free(tempRows);
 
@@ -1008,8 +1006,7 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece,
 			if (lineIsComplete(mapData, Y + i, mapWidth) == true)
 			{
 
-				if (*returnRows + currentReturnRow != NULL)
-					*(*returnRows + currentReturnRow) = Y + i;
+				*(*returnRows + currentReturnRow) = Y + i;
 
 				currentReturnRow = currentReturnRow + 1;
 

@@ -58,6 +58,7 @@
 #define CURSOR_TEXT		6
 #define VALUES_TEXT		7
 #define VOLSLIDE_TEXT	8
+#define CONTROLS_TEXT	9
 
 #define MODES_LIST		0
 #define NUMERICAL_LIST	1

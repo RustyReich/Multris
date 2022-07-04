@@ -23,6 +23,7 @@ void declare_int(void** ptr, int value);
 void declare_char(void** ptr, char value);
 void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
+void declare_UI_list(UI_list** ptr, int type);
 void freeVars();
 
 unsigned short controlsScreen(piece** Piece)
@@ -31,13 +32,16 @@ unsigned short controlsScreen(piece** Piece)
     //Variables
     static int* nextText_Width; declare(nextText_Width, 0);
     static int* nextText_Height; declare(nextText_Height, 0);
-    static bool* firstLoop; declare(firstLoop, true);    
+    static bool* firstLoop; declare(firstLoop, true);  
+    static unsigned short* selected_control; declare(selected_control, 0);  
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
     static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
     static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
     static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *Piece);
+    static SDL_Texture* Texture_Controls; declare_HUD_Text(&Texture_Controls, CONTROLS_TEXT);
+    static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
 
     if (*firstLoop == true)
     {
@@ -49,6 +53,22 @@ unsigned short controlsScreen(piece** Piece)
     }
 
     // Control Logic ---------------------------------------------------
+
+    if (onPress(DOWN_BUTTON))
+    {
+
+        if (*selected_control < NUM_OF_CONTROLS - 1)
+            (*selected_control)++;
+
+    }
+
+    if (onPress(UP_BUTTON))
+    {
+
+        if (*selected_control > 0)
+            (*selected_control)--;
+
+    }
 
     if (onPress(EXIT_BUTTON))
     {
@@ -66,6 +86,8 @@ unsigned short controlsScreen(piece** Piece)
     drawTexture(Texture_Level, 312, 115, 1.0);
     drawTexture(Texture_Lines, 312, 189, 1.0);
     drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
+    drawTexture(Texture_Controls, 12, 14, 0.9);
+    drawTexture(Texture_Cursor, 14, 14 + ((*selected_control) * 3 * (FONT_HEIGHT + STRING_GAP)) * 0.9, 1.0);
 
     // ------------------------------------------------------------------
 
