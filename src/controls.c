@@ -9,7 +9,7 @@ void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y,
 	float multiplier, unsigned short color);
 
 //audio.c
-void playSound(sound* Sound);
+void _playSound(int id);
 sound* loadSound(char* file);
 void delSound(sound** Sound);
 void setVolume(sound** Sound, unsigned short volume);
@@ -26,6 +26,11 @@ void declare_unsigned_int(void** ptr, unsigned int value);
 void declare_UI_list(UI_list** ptr, int type);
 void freeVars();
 
+//layout.c
+void updateControlsText(SDL_Texture* texture, int selected_control, bool editing);
+
+int getPressedKey();
+
 unsigned short controlsScreen(piece** Piece)
 {
 
@@ -34,6 +39,8 @@ unsigned short controlsScreen(piece** Piece)
     static int* nextText_Height; declare(nextText_Height, 0);
     static bool* firstLoop; declare(firstLoop, true);  
     static unsigned short* selected_control; declare(selected_control, 0);  
+    static bool* editing_control; declare(editing_control, false);
+    static int* new_key; declare(new_key, -1);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -54,11 +61,73 @@ unsigned short controlsScreen(piece** Piece)
 
     // Control Logic ---------------------------------------------------
 
+    if (onPress(SELECT_BUTTON))
+    {
+
+        //If you press SELECT when you're not currently editing a control, you start editing the currently
+        //selected control
+        if ((*editing_control) == false)
+        {
+
+            playSound(ROTATE_SOUND);
+            *editing_control = true;
+
+            //Update controls texture, which will make the currently edited control red
+            updateControlsText(Texture_Controls, *selected_control, *editing_control);
+
+        }
+    
+    }
+    else
+    {
+
+        //If you're editing the currently selected control
+            //Make sure that SELECT is not being held down. This is to allow you to reset the current SELECT
+            //button
+        if (*editing_control && !onHold(SELECT_BUTTON))
+        {
+
+            //Get the currently pressed key
+            int key = getPressedKey();
+
+            //If they key that is currently pressed is a valid key, set it to new_key
+            if (key != -1 && *new_key == -1)
+                *new_key = key;
+
+            //Once we have a valid key, we wait until that key is no longer being pressed
+                //This means that the control is only set upon the release of that new key
+                    //This is to avoid the control being immediately activated since it's new button is pressed
+            if (*new_key != -1 && !globalInstance->keys[*new_key])
+            {
+
+                playSound(ROTATE_SOUND);
+
+                //Set button for selected_control to the new key and get out of editing_control mode
+                globalInstance->controls[*selected_control].button = *new_key;
+                *editing_control = false;
+
+                //Update the controls texture, returning the selected_control back to yellow
+                updateControlsText(Texture_Controls, *selected_control, *editing_control);
+
+                //Reset new_key to -1
+                *new_key = -1;
+
+            }
+
+        }
+
+    }
+
     if (onPress(DOWN_BUTTON))
     {
 
         if (*selected_control < NUM_OF_CONTROLS - 1)
+        {
+
+            playSound(MOVE_SOUND);
             (*selected_control)++;
+
+        }
 
     }
 
@@ -66,11 +135,16 @@ unsigned short controlsScreen(piece** Piece)
     {
 
         if (*selected_control > 0)
+        {
+
+            playSound(MOVE_SOUND);
             (*selected_control)--;
+
+        }
 
     }
 
-    if (onPress(EXIT_BUTTON))
+    if (onPress(EXIT_BUTTON) && !(*editing_control))
     {
 
         freeVars();
@@ -124,9 +198,16 @@ void updateControls()
 
 }
 
-void setControls()
+//Get the key that is currently pressed
+    //Returns -1 if no valid keys are pressed
+    //If multiple are pressed, it returns the one that comes earliest in the SCANCODE list
+int getPressedKey()
 {
 
     //Valid buttons are SDL_SCANCODE_A to SDL_SCANCODE_NUMLOCKCLEAR
+    for (int i = SDL_SCANCODE_A; i <= SDL_SCANCODE_NUMLOCKCLEAR; i++)
+        if (globalInstance->keys[i])
+            return i;
+    return -1;
 
 }

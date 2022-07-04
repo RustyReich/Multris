@@ -545,24 +545,22 @@ SDL_Texture* create_Values_Text()
 
 }
 
-//Create the texture that displays for editing your controls
-SDL_Texture* create_Controls_Text()
+//Function for redrawing the controls texture
+void updateControlsText(SDL_Texture* texture, int selected_control, bool editing)
 {
 
-	SDL_Texture* texture;
+	clearTexture(texture);
 
-	int width = MAX_PIECE_SIZE * BASE_PLAYFIELD_WIDTH * FONT_WIDTH;
-	int height = NUM_OF_CONTROLS * 3 * FONT_HEIGHT + (NUM_OF_CONTROLS * 3 - 1) * STRING_GAP;
-
-	texture = createTexture(width, height);
-
+	//Iterate throught every control
 	for (unsigned short i = 0; i < NUM_OF_CONTROLS; i++)
 	{
 
+		//Calculate position for current control
 		int x = 18;
 		int y = i * 3 * (FONT_HEIGHT + STRING_GAP);
 		char name[16];
-		printf("create: %d\n", y);
+
+		//Get the name of the control
 		if (i == 0)
 			SDL_strlcpy(name, "LEFT", 16);
 		else if (i == 1)
@@ -590,8 +588,10 @@ SDL_Texture* create_Controls_Text()
 
 		name[SDL_strlen(name)] = '\0';
 
+		//Print the name
 		printToTexture(name, texture, x, y, 1.0, WHITE);
 
+		//Underline the name
 		char underlines[SDL_strlen(name) + 1];
 		underlines[SDL_strlen(name)] = '\0';
 		for (unsigned short j = 0; j < SDL_strlen(name); j++)
@@ -599,6 +599,7 @@ SDL_Texture* create_Controls_Text()
 
 		printToTexture(underlines, texture, x, y + STRING_GAP + 2, 1.0, WHITE);
 
+		//Get the button for the control
 		char* button = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(globalInstance->controls[i].button));
 		int len = SDL_strlen(button) + 2;
 		char button_string[len + 1];
@@ -607,9 +608,29 @@ SDL_Texture* create_Controls_Text()
 		SDL_strlcat(button_string, "]", len + 1);
 		button_string[len] = '\0';
 
-		printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, YELLOW);
+		//Print the button for the control
+			//It's yellow if it's not currently being edited. It's red if it is currently being edited.
+		if (editing == true && selected_control == i)
+			printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, RED);
+		else
+			printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, YELLOW);
 
 	}
+
+}
+
+//Create the texture that displays for editing your controls
+SDL_Texture* create_Controls_Text()
+{
+
+	SDL_Texture* texture;
+
+	int width = MAX_PIECE_SIZE * BASE_PLAYFIELD_WIDTH * FONT_WIDTH;
+	int height = NUM_OF_CONTROLS * 3 * FONT_HEIGHT + (NUM_OF_CONTROLS * 3 - 1) * STRING_GAP;
+
+	texture = createTexture(width, height);
+
+	updateControlsText(texture, 0, false);
 
 	return texture;
 

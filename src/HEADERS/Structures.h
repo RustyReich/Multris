@@ -51,7 +51,6 @@ typedef struct control
 
     bool onPress;
     bool onHold;
-    bool onRelease;
 
 } control;
 
