@@ -13,6 +13,9 @@
 //draw.c
 unsigned short getIntLength(int num);
 
+//controls.c
+bool invalidKey(int key);
+
 unsigned short getLineCount(char* fileName)
 {
 
@@ -80,26 +83,69 @@ void createOptions()
 
 }
 
-//Return the name of the option at the specified line in the options file
-	//Returned value should be freed to avoid memory leaks
-	//Returns NULL if the specified line is larger than the number of lines in the file
-char* getOptionName(int line)
+void createControls()
 {
 
-	if (line > getLineCount("SAVES/options.cfg"))
+	FILE* controlsFile = NULL;
+
+	//Create SAVES folder if it does not exist
+	struct stat st = {0};
+	if (stat("SAVES", &st) == -1)
+	{
+
+		#ifdef __unix__
+			mkdir("SAVES", 0700);
+		#endif
+		#ifdef _WIN32
+			mkdir("SAVES");
+		#endif
+
+	}
+
+	//Create controls file and fill it with default data
+	controlsFile = fopen("SAVES/controls.cfg", "w");
+	if (controlsFile != NULL)
+	{
+
+		fprintf(controlsFile, "LEFT=80\n");
+		fprintf(controlsFile, "RIGHT=79\n");
+		fprintf(controlsFile, "SOFT DROP=81\n");
+		fprintf(controlsFile, "HARD DROP=82\n");
+		fprintf(controlsFile, "HOLD=44\n");
+		fprintf(controlsFile, "ROTATE CCW=29\n");
+		fprintf(controlsFile, "ROTATE CW=27\n");
+		fprintf(controlsFile, "MIRROR=6\n");
+		fprintf(controlsFile, "SELECT=40\n");
+		fprintf(controlsFile, "EXIT=41\n");
+		fprintf(controlsFile, "DOWN=81\n");
+		fprintf(controlsFile, "UP=82\n");
+
+		fclose(controlsFile);
+
+	}
+
+}
+
+//Return the name, the part before the =, of something saved in a file at the specified line in the file
+	//Returned value should be freed to avoid memory leaks
+	//Returns NULL if the specified line is larger than the number of lines in the file
+char* getNameAtLine(const char* file_path, int line)
+{
+
+	if (line > getLineCount((char*)file_path))
 		return NULL;
 
-	FILE* optionsFile = NULL;
+	FILE* file = NULL;
 	char currentLine[256];
 
 	char* returnString = NULL;
 	
-	optionsFile = fopen("SAVES/options.cfg", "r");
-	if (optionsFile != NULL)
+	file = fopen(file_path, "r");
+	if (file != NULL)
 	{
 
 		int i = 0;
-		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
+		while (fgets(currentLine, sizeof(currentLine), file) != NULL)
 		{
 
 			if (i == line)
@@ -124,7 +170,7 @@ char* getOptionName(int line)
 
 		}
 
-		fclose(optionsFile);
+		fclose(file);
 
 	}
 
@@ -132,31 +178,31 @@ char* getOptionName(int line)
 
 }
 
-//Return the value for the options specifed by the given strings
-	// Returns -1 if option is not found
-int getOptionValue(const char* str)
+//Return the value for the specified name in the specified file
+	//Returns -1 on error
+int getFileValue(const char* file_path, const char* name)
 {
 
-	FILE* optionsFile = NULL;
+	FILE* file = NULL;
 
 	char currentLine[256];
 
 	char* returnValue = NULL;
 
 	//Open file for reading
-	optionsFile = fopen("SAVES/options.cfg", "r");
-	if (optionsFile != NULL)
+	file = fopen(file_path, "r");
+	if (file != NULL)
 	{
 
-		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
+		while (fgets(currentLine, sizeof(currentLine), file) != NULL)
 		{
 
-			//Check if the currentLine contains the option we're looking for
+			//Check if the currentLine contains the name we're looking for
 			bool matches = true;
-			for (unsigned short i = 0; i < SDL_strlen(str); i++)
+			for (unsigned short i = 0; i < SDL_strlen(name); i++)
 			{
 
-				if (currentLine[i] != str[i])
+				if (currentLine[i] != name[i])
 				{
 
 					matches = false;
@@ -169,9 +215,9 @@ int getOptionValue(const char* str)
 			if (matches == true)
 			{
 
-				int i = SDL_strlen(str);
+				int i = SDL_strlen(name);
 
-				//Skip all spaces and equal signs after the option name
+				//Skip all spaces and equal signs after the name
 				while (currentLine[i] == ' ' || currentLine[i] == '=')
 					i++;
 
@@ -197,7 +243,7 @@ int getOptionValue(const char* str)
 
 		}
 
-		fclose(optionsFile);
+		fclose(file);
 
 	}
 
@@ -230,9 +276,9 @@ bool brokenOptions()
 	if (getLineCount("SAVES/options.cfg") != 3)
 		return true;
 
-	int fullscreen_value = getOptionValue("FULLSCREEN");
-	int volume_value = getOptionValue("VOLUME");
-	int fps_value = getOptionValue("LIMIT FPS");
+	int fullscreen_value = getFileValue("SAVES/options.cfg", "FULLSCREEN");
+	int volume_value = getFileValue("SAVES/options.cfg", "VOLUME");
+	int fps_value = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 
 	if (fullscreen_value != 0 && fullscreen_value != 1)
 		return true;
@@ -245,34 +291,71 @@ bool brokenOptions()
 
 }
 
-//Function for saving the value specified by value to the option specified by str
-void saveOption(const char* str, int value)
+//Check if there is the wrong number of lines in the controls file or if any of the controls are set to
+//invalid keys
+bool brokenControls()
+{
+
+	if (getLineCount("SAVES/controls.cfg") != NUM_OF_CONTROLS)
+		return true;
+
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "LEFT")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "RIGHT")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "SOFT DROP")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "HARD DROP")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "HOLD")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "ROTATE CCW")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "ROTATE CW")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "MIRROR")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "SELECT")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "EXIT")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "DOWN")))
+		return true;
+	if (invalidKey(getFileValue("SAVES/controls.cfg", "UP")))
+		return true;
+
+	return false;
+
+}
+
+//Function for a value to a name in a file
+void saveToFile(const char* file_path, const char* str, int value)
 {
 	
-	FILE* optionsFile = NULL;
+	FILE* file = NULL;
 
 	char currentLine[256];
 	unsigned short count = 0;
 
-	unsigned short lineCount = getLineCount("SAVES/options.cfg");
+	unsigned short lineCount = getLineCount((char*)file_path);
 
 	char** fileLines = calloc(lineCount, sizeof(char*));
 	
-	optionsFile = fopen("SAVES/options.cfg", "r");
-	if (optionsFile != NULL && fileLines != NULL)
+	file = fopen(file_path, "r");
+	if (file != NULL && fileLines != NULL)
 	{
 
-		while (fgets(currentLine, sizeof(currentLine), optionsFile) != NULL)
+		while (fgets(currentLine, sizeof(currentLine), file) != NULL)
 		{
 		
 			//Dont count any newlines
 			if (currentLine[0] != '\n')
 			{
 
-				//Get the name of the option at the current line
-				char* currName = getOptionName(count);
+				//Get the name at the current line
+				char* currName = getNameAtLine(file_path, count);
 
-				if (strcmp(currName, str) == 0)	//If it is the option we're editing
+				if (strcmp(currName, str) == 0)	//If it is the name we're editing
 				{
 
 					//Allocate memory for rewriting the line
@@ -289,7 +372,7 @@ void saveOption(const char* str, int value)
 					strcat(fileLines[count], valueAsString);
 
 				}
-				else	//If its not the option we're looking for, just store it as-is in
+				else	//If its not the name we're looking for, just store it as-is in
 				{		//in fileLines
 
 					//Remove newline at end of currentLine
@@ -298,7 +381,7 @@ void saveOption(const char* str, int value)
 					else if (currentLine[SDL_strlen(currentLine) - 1] == '\n')
 						currentLine[SDL_strlen(currentLine) - 1] = '\0';
 
-					//Copy currentLine intuo fileLines array
+					//Copy currentLine into fileLines array
 					fileLines[count] = calloc(SDL_strlen(currentLine) + 1, sizeof(char));
 					strcpy(fileLines[count], currentLine);
 
@@ -312,19 +395,19 @@ void saveOption(const char* str, int value)
 			
 		}
 
-		fclose(optionsFile);
+		fclose(file);
 
 	}
 	
 	//Rewrite all the lines back to the file
-	optionsFile = fopen("SAVES/options.cfg", "w");
-	if (optionsFile != NULL && fileLines != NULL)
+	file = fopen(file_path, "w");
+	if (file != NULL && fileLines != NULL)
 	{
 		
 		for (unsigned short i = 0; i < lineCount; i++)
-			fprintf(optionsFile, "%s\n", fileLines[i]);
+			fprintf(file, "%s\n", fileLines[i]);
 
-		fclose(optionsFile);
+		fclose(file);
 
 	}
 

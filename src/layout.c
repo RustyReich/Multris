@@ -603,6 +603,7 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 		char* button = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(globalInstance->controls[i].button));
 		int len = SDL_strlen(button) + 2;
 		char button_string[len + 1];
+		//Surround the button name with brackets
 		SDL_strlcpy(button_string, "[", len + 1);
 		SDL_strlcat(button_string, button, len + 1);
 		SDL_strlcat(button_string, "]", len + 1);

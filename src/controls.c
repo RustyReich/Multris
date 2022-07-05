@@ -29,7 +29,29 @@ void freeVars();
 //layout.c
 void updateControlsText(SDL_Texture* texture, int selected_control, bool editing);
 
+//file.c
+void saveToFile(const char* file_path, const char* str, int value);
+
 int getPressedKey();
+
+//Lookup table for control names
+static const char* control_name[] =
+{
+
+    [0]     = "LEFT",
+    [1]     = "RIGHT",
+    [2]     = "SOFT DROP",
+    [3]     = "HARD DROP",
+    [4]     = "HOLD",
+    [5]     = "ROTATE CCW",
+    [6]     = "ROTATE CW",
+    [7]     = "MIRROR",
+    [8]     = "SELECT",
+    [9]     = "EXIT",
+    [10]    = "DOWN",
+    [11]    = "UP",
+
+};
 
 unsigned short controlsScreen(piece** Piece)
 {
@@ -106,6 +128,9 @@ unsigned short controlsScreen(piece** Piece)
                 globalInstance->controls[*selected_control].button = *new_key;
                 *editing_control = false;
 
+                //Save this control
+                saveToFile("SAVES/controls.cfg", control_name[*selected_control], *new_key);
+
                 //Update the controls texture, returning the selected_control back to yellow
                 updateControlsText(Texture_Controls, *selected_control, *editing_control);
 
@@ -118,7 +143,7 @@ unsigned short controlsScreen(piece** Piece)
 
     }
 
-    if (onPress(DOWN_BUTTON))
+    if (onPress(DOWN_BUTTON) && !(*editing_control))
     {
 
         if (*selected_control < NUM_OF_CONTROLS - 1)
@@ -131,7 +156,7 @@ unsigned short controlsScreen(piece** Piece)
 
     }
 
-    if (onPress(UP_BUTTON))
+    if (onPress(UP_BUTTON) && !(*editing_control))
     {
 
         if (*selected_control > 0)
@@ -209,5 +234,13 @@ int getPressedKey()
         if (globalInstance->keys[i])
             return i;
     return -1;
+
+}
+
+//Check if the specified key ID is out of range of valid keys
+bool invalidKey(int key)
+{
+
+    return (key < SDL_SCANCODE_A || key > SDL_SCANCODE_NUMLOCKCLEAR);
 
 }

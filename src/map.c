@@ -36,8 +36,8 @@ void setVolume(sound** Sound, unsigned short volume);
 
 //file.c
 bool fileExists(char* fileName);
-void saveOption(const char* str, int value);
-int getOptionValue(const char* str);
+void saveToFile(const char* file_path, const char* str, int value);
+int getFileValue(const char* file_path, const char* name);
 
 //instance.c
 void updateVolume();
@@ -366,9 +366,9 @@ unsigned short drawTitle(piece** firstPiece)
 				modes->ui->currentlyInteracting = true;
 
 				//Save option values to optionsFile when player leaves options menu
-				saveOption("FULLSCREEN", FULLSCREEN_MODE);
-				saveOption("VOLUME", VOLUME);
-				saveOption("LIMIT FPS", LIMIT_FPS);
+				saveToFile("SAVES/options.cfg", "FULLSCREEN", FULLSCREEN_MODE);
+				saveToFile("SAVES/options.cfg", "VOLUME", VOLUME);
+				saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
 
 			}
 

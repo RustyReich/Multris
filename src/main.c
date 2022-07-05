@@ -11,9 +11,11 @@ void mainLoop();
 //file.c
 bool fileExists(char* fileName);
 void createOptions();
-int getOptionValue(const char* str);
+int getFileValue(const char* file_path, const char* name);
 unsigned short getLineCount(char* fileName);
 bool brokenOptions();
+void createControls();
+bool brokenControls();
 
 //instance.c
 void initInstance(gameInstance** instance);
@@ -90,13 +92,36 @@ int main(int argc, char* argv[])
 	if (!fileExists("SAVES/options.cfg") || brokenOptions())
 			createOptions();
 
+	//Create controls file if it doesn't exist or it is broken
+	if (!fileExists("SAVES/controls.cfg") || brokenControls())
+		createControls();
+
+	//Load controls from controls file
+	if (fileExists("SAVES/controls.cfg"))
+	{
+
+	    globalInstance->controls[LEFT_BUTTON].button = getFileValue("SAVES/controls.cfg", "LEFT");
+		globalInstance->controls[RIGHT_BUTTON].button = getFileValue("SAVES/controls.cfg", "RIGHT");
+		globalInstance->controls[SOFT_DROP_BUTTON].button = getFileValue("SAVES/controls.cfg", "SOFT DROP");
+		globalInstance->controls[HARD_DROP_BUTTON].button = getFileValue("SAVES/controls.cfg", "HARD DROP");
+		globalInstance->controls[HOLD_BUTTON].button = getFileValue("SAVES/controls.cfg", "HOLD");
+		globalInstance->controls[ROTATE_CCW_BUTTON].button = getFileValue("SAVES/controls.cfg", "ROTATE CCW");
+		globalInstance->controls[ROTATE_CW_BUTTON].button = getFileValue("SAVES/controls.cfg", "ROTATE CW");
+		globalInstance->controls[MIRROR_BUTTON].button = getFileValue("SAVES/controls.cfg", "MIRROR");
+		globalInstance->controls[SELECT_BUTTON].button = getFileValue("SAVES/controls.cfg", "SELECT");
+		globalInstance->controls[EXIT_BUTTON].button = getFileValue("SAVES/controls.cfg", "EXIT");
+		globalInstance->controls[DOWN_BUTTON].button = getFileValue("SAVES/controls.cfg", "DOWN");
+		globalInstance->controls[UP_BUTTON].button = getFileValue("SAVES/controls.cfg", "UP");
+
+	}
+
 	//Load some options from the option file
 	if (fileExists("SAVES/options.cfg"))
 	{
 
-		FULLSCREEN_MODE = getOptionValue("FULLSCREEN");
-		VOLUME = getOptionValue("VOLUME");
-		LIMIT_FPS = getOptionValue("LIMIT FPS");
+		FULLSCREEN_MODE = getFileValue("SAVES/options.cfg", "FULLSCREEN");
+		VOLUME = getFileValue("SAVES/options.cfg", "VOLUME");
+		LIMIT_FPS = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 
 	}
 
