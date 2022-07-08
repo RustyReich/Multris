@@ -404,7 +404,6 @@ unsigned short playMode(piece* firstPiece)
 	//Draw the foreground
 	drawTexture(foreground, FONT_WIDTH, FONT_HEIGHT, 1.0);
 
-	//Draw ghost if
 	//Make Texture_Current opaque
 	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
 	//Draw Texture_Current at ghostY
@@ -581,9 +580,12 @@ unsigned short playMode(piece* firstPiece)
 				if (*linesAtCurrentLevel >= 5 * (*Level + 1))
 				{
 					
+					//If the player completes more lines than is needed to level up, the completed lines will
+					//carry-over between levels
+					*linesAtCurrentLevel = *linesAtCurrentLevel - 5 * (*Level + 1);
+
 					//Increase level count and update Texture_Level
 					*Level += 1;
-					*linesAtCurrentLevel = 0;
 					updateLevel(*Level, Texture_Level);
 
 					//Increase speed
@@ -741,19 +743,22 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 						multi = multi / 3.0;
 
 						//Calculate X and Y value for "Score:"
-						int scoreLength = getStringLength("Score:", multi) + 
-											getIntStringLength(score, multi);
+						int scoreLength = getStringLength("Score:", multi) + getIntStringLength(score, multi);
 						x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - scoreLength);
 						y = y + (multi * 3) * FONT_HEIGHT + SPRITE_HEIGHT;
 
+						//Draw a black square behind the score to make it easier to read
+						SDL_Rect rect = {.x = x, .y = y, .w = scoreLength, .h = FONT_HEIGHT * multi};
+						SDL_RenderFillRect(globalInstance->renderer, &rect);
+
 						//Print the score
-						printToTexture("Score:", foreground, x, y, multi, BLACK);
+						printToTexture("Score:", foreground, x, y, multi, WHITE);
 
 						//Calculate X for score number
 						x = x + getStringLength("Score:", multi);
 
 						//Print the score number
-						intToTexture(score, foreground, x, y, multi, BLACK);
+						intToTexture(score, foreground, x, y, multi, WHITE);
 
 					}
 
