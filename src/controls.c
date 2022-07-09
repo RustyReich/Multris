@@ -217,7 +217,12 @@ void updateControls()
 
         }
         else
+        {
+
             globalInstance->controls[i].onHold = false;
+            globalInstance->controls[i].onPress = false;
+
+        }
 
     }
 

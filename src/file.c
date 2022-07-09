@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 
 #include "HEADERS/MGF.h"
 
@@ -214,6 +215,7 @@ char* getNameAtLine(const char* file_path, int line)
 }
 
 //Return the value for the specified name in the specified file
+	//Returns INT_MAX on error
 int getFileValue(const char* file_path, const char* name)
 {
 
@@ -281,16 +283,23 @@ int getFileValue(const char* file_path, const char* name)
 
 	}
 
-	//Copy returnValue over into a non-dynamically allocated string
-	char non_dynamic[strlen(returnValue) + 1];
-	strcpy(non_dynamic, returnValue);
+	if (returnValue != NULL)
+	{
 
-	//That way we can free the memory taken up by runtime_string and avoid
-	//memory leaks
-	free(returnValue);
+		//Copy returnValue over into a non-dynamically allocated string
+		char non_dynamic[strlen(returnValue) + 1];
+		strcpy(non_dynamic, returnValue);
 
-	//Return runtime_string as an integer
-	return SDL_atoi(non_dynamic);
+		//That way we can free the memory taken up by runtime_string and avoid
+		//memory leaks
+		free(returnValue);
+
+		//Return runtime_string as an integer
+		return SDL_atoi(non_dynamic);
+
+	}
+	else	
+		return INT_MAX;
 
 }
 

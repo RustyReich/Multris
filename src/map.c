@@ -316,7 +316,7 @@ unsigned short drawTitle(piece** firstPiece)
 			}
 			else if (SDL_strcmp(selected_option, "FULLSCREEN") == 0)
 			{
-
+				
 				FULLSCREEN_MODE = !FULLSCREEN_MODE;
 				UPDATE_FULLSCREEN_MODE = true;
 

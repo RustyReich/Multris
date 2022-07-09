@@ -107,12 +107,18 @@ int main(int argc, char* argv[])
 	if (fileExists("SAVES/window.cfg"))
 	{
 		
-		//Set minimizedWindow size
+		//Get minimizedWindow size and position
 		globalInstance->minimizedWindow_W = getFileValue("SAVES/window.cfg", "WIDTH");
 		globalInstance->minimizedWindow_H = getFileValue("SAVES/window.cfg", "HEIGHT");
+		globalInstance->minimizedWindow_X = getFileValue("SAVES/window.cfg", "X");
+		globalInstance->minimizedWindow_Y = getFileValue("SAVES/window.cfg", "Y");
 
-		SDL_SetWindowPosition(globalInstance->window, getFileValue("SAVES/window.cfg", "X"),
-														getFileValue("SAVES/window.cfg", "Y"));
+		//Set window size
+		SDL_SetWindowSize(globalInstance->window, globalInstance->minimizedWindow_W, 
+													globalInstance->minimizedWindow_H);
+		//Set window position
+		SDL_SetWindowPosition(globalInstance->window, globalInstance->minimizedWindow_X,
+														globalInstance->minimizedWindow_Y);
 
 	}
 
@@ -163,16 +169,38 @@ int main(int argc, char* argv[])
 			{
 
                 if (globalInstance->event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-                    scaleRenderer();
-				if (globalInstance->event.window.event == SDL_WINDOWEVENT_MOVED)
+					scaleRenderer();
+				if (globalInstance->event.window.event == SDL_WINDOWEVENT_RESIZED && !UPDATE_FULLSCREEN_MODE)
 				{
 
-					int windowX;
-					int windowY;
-					SDL_GetWindowPosition(globalInstance->window, &windowX, &windowY);
+					if (!FULLSCREEN_MODE)
+					{
 
-					saveToFile("SAVES/window.cfg", "X", windowX);
-					saveToFile("SAVES/window.cfg", "Y", windowY);
+						//Only save window size when it changed because the user actually manually resized
+						//the window
+						SDL_GetWindowSize(globalInstance->window, 
+											&globalInstance->minimizedWindow_W, 
+											&globalInstance->minimizedWindow_H);
+						saveToFile("SAVES/window.cfg", "WIDTH", globalInstance->minimizedWindow_W);
+						saveToFile("SAVES/window.cfg", "HEIGHT", globalInstance->minimizedWindow_H);
+
+					}
+
+				}
+				if (globalInstance->event.window.event == SDL_WINDOWEVENT_MOVED && !UPDATE_FULLSCREEN_MODE)
+				{
+
+					if (!FULLSCREEN_MODE)
+					{
+
+						//Save window position when moved
+						SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X, 
+																		&globalInstance->minimizedWindow_Y);
+
+						saveToFile("SAVES/window.cfg", "X", globalInstance->minimizedWindow_X);
+						saveToFile("SAVES/window.cfg", "Y", globalInstance->minimizedWindow_Y);
+
+					}
 
 				}
 

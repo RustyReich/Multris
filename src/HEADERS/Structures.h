@@ -73,6 +73,8 @@ typedef struct gameInstance
 
     int minimizedWindow_W;
     int minimizedWindow_H;
+    int minimizedWindow_X;
+    int minimizedWindow_Y;
 
     SDL_AudioDeviceID* audioDevice;
     SDL_AudioSpec* wavSpec;

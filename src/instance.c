@@ -130,10 +130,6 @@ void scaleRenderer()
 
     SDL_RenderSetViewport(globalInstance->renderer, &rect);
 
-    //Save window size to file
-    saveToFile("SAVES/window.cfg","WIDTH", windowWidth);
-    saveToFile("SAVES/window.cfg", "HEIGHT", windowHeight);
-
 }
 
 //Initialize game instance
@@ -247,11 +243,13 @@ void setWindowMode(unsigned short mode)
         SDL_SetWindowFullscreen(globalInstance->window, 0);
 
         //Reset window size
-        SDL_SetWindowSize(globalInstance->window, 
-            globalInstance->minimizedWindow_W,
-            globalInstance->minimizedWindow_H);
+        SDL_SetWindowSize(globalInstance->window, globalInstance->minimizedWindow_W,
+                                                    globalInstance->minimizedWindow_H);
+        //Reset window position
+        SDL_SetWindowPosition(globalInstance->window, globalInstance->minimizedWindow_X,
+                                                        globalInstance->minimizedWindow_Y);
 
-	    //Reset scale on renderer;
+	    //Reset scale on renderer
 		SDL_RenderSetScale(globalInstance->renderer, 1, 1);
 		SDL_RenderSetViewport(globalInstance->renderer, NULL);
 
@@ -263,13 +261,17 @@ void setWindowMode(unsigned short mode)
     {
 
         //Save window size
-        SDL_GetWindowSize(globalInstance->window, 
-            &globalInstance->minimizedWindow_W, 
-            &globalInstance->minimizedWindow_H);
+        SDL_GetWindowSize(globalInstance->window, &globalInstance->minimizedWindow_W, 
+                                                    &globalInstance->minimizedWindow_H);
+        //Save window position
+        SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X,
+                                                        &globalInstance->minimizedWindow_Y);
 
         //Set window size to display size
         SDL_SetWindowSize(globalInstance->window, globalInstance->DM.w,
             globalInstance->DM.h);
+        //Set window position to 0,0
+        SDL_SetWindowPosition(globalInstance->window, 0, 0);
 
         //Scale renderer accordingly
 	    scaleRenderer();
