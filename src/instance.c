@@ -10,6 +10,9 @@
 //audio.c
 sound* loadSound(char* file);
 
+//file.c
+void saveToFile(const char* file_path, const char* str, int value);
+
 //Function for initializing an audio device
 SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)
 {
@@ -127,6 +130,10 @@ void scaleRenderer()
 
     SDL_RenderSetViewport(globalInstance->renderer, &rect);
 
+    //Save window size to file
+    saveToFile("SAVES/window.cfg","WIDTH", windowWidth);
+    saveToFile("SAVES/window.cfg", "HEIGHT", windowHeight);
+
 }
 
 //Initialize game instance
@@ -144,9 +151,9 @@ void initInstance(gameInstance** instance)
     //Initialize window
         //Initialize in top left of screen
         //Window will be half the width and half the height of the screen
-    (*instance)->window = SDL_CreateWindow("Multris", 0, 0, (*instance)->DM.w / 2, 
-            (*instance)->DM.h / 2, 
-            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
+    (*instance)->window = SDL_CreateWindow("Multris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+                                            (*instance)->DM.w / 2, (*instance)->DM.h / 2, 
+                                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
 
     //Save window size
     SDL_GetWindowSize((*instance)->window, &(*instance)->minimizedWindow_W,

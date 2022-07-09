@@ -16,6 +16,9 @@ unsigned short getLineCount(char* fileName);
 bool brokenOptions();
 void createControls();
 bool brokenControls();
+void createWindowFile();
+bool brokenWindowFile();
+void saveToFile(const char* file_path, const char* str, int value);
 
 //instance.c
 void initInstance(gameInstance** instance);
@@ -96,6 +99,23 @@ int main(int argc, char* argv[])
 	if (!fileExists("SAVES/controls.cfg") || brokenControls())
 		createControls();
 
+	//Create window size file if it doesn't exist or it is broken
+	if (!fileExists("SAVES/window.cfg") || brokenWindowFile())
+		createWindowFile();
+
+	//Load window size from window file
+	if (fileExists("SAVES/window.cfg"))
+	{
+		
+		//Set minimizedWindow size
+		globalInstance->minimizedWindow_W = getFileValue("SAVES/window.cfg", "WIDTH");
+		globalInstance->minimizedWindow_H = getFileValue("SAVES/window.cfg", "HEIGHT");
+
+		SDL_SetWindowPosition(globalInstance->window, getFileValue("SAVES/window.cfg", "X"),
+														getFileValue("SAVES/window.cfg", "Y"));
+
+	}
+
 	//Load controls from controls file
 	if (fileExists("SAVES/controls.cfg"))
 	{
@@ -142,9 +162,19 @@ int main(int argc, char* argv[])
             if (globalInstance->event.type == SDL_WINDOWEVENT)
 			{
 
-                if (globalInstance->event.window.event == 
-                    SDL_WINDOWEVENT_SIZE_CHANGED)
-                        scaleRenderer();
+                if (globalInstance->event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                    scaleRenderer();
+				if (globalInstance->event.window.event == SDL_WINDOWEVENT_MOVED)
+				{
+
+					int windowX;
+					int windowY;
+					SDL_GetWindowPosition(globalInstance->window, &windowX, &windowY);
+
+					saveToFile("SAVES/window.cfg", "X", windowX);
+					saveToFile("SAVES/window.cfg", "Y", windowY);
+
+				}
 
 			}
 

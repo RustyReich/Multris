@@ -83,6 +83,41 @@ void createOptions()
 
 }
 
+void createWindowFile()
+{
+
+	FILE* windowFile = NULL;
+
+	//Create SAVES folder if it does not exist
+	struct stat st = {0};
+	if (stat("SAVES", &st) == -1)
+	{
+
+		#ifdef __unix__
+			mkdir("SAVES", 0700);
+		#endif
+		#ifdef _WIN32
+			mkdir("SAVES");
+		#endif
+
+	}
+
+	//Create window file and fill it with default data
+	windowFile = fopen("SAVES/window.cfg", "w");
+	if (windowFile != NULL)
+	{
+
+		fprintf(windowFile, "WIDTH=%d\n", globalInstance->DM.w / 2);
+		fprintf(windowFile, "HEIGHT=%d\n", globalInstance->DM.h / 2);
+		fprintf(windowFile, "X=%d\n", globalInstance->DM.w / 4);
+		fprintf(windowFile, "Y=%d", globalInstance->DM.h / 4);
+
+		fclose(windowFile);
+
+	}
+
+}
+
 void createControls()
 {
 
@@ -179,7 +214,6 @@ char* getNameAtLine(const char* file_path, int line)
 }
 
 //Return the value for the specified name in the specified file
-	//Returns -1 on error
 int getFileValue(const char* file_path, const char* name)
 {
 
@@ -247,23 +281,16 @@ int getFileValue(const char* file_path, const char* name)
 
 	}
 
-	if (returnValue == NULL)
-		return -1;
-	else
-	{
+	//Copy returnValue over into a non-dynamically allocated string
+	char non_dynamic[strlen(returnValue) + 1];
+	strcpy(non_dynamic, returnValue);
 
-		//Copy returnValue over into a non-dynamically allocated string
-		char non_dynamic[strlen(returnValue) + 1];
-		strcpy(non_dynamic, returnValue);
+	//That way we can free the memory taken up by runtime_string and avoid
+	//memory leaks
+	free(returnValue);
 
-		//That way we can free the memory taken up by runtime_string and avoid
-		//memory leaks
-		free(returnValue);
-
-		//Return runtime_string as an integer
-		return SDL_atoi(non_dynamic);
-
-	}
+	//Return runtime_string as an integer
+	return SDL_atoi(non_dynamic);
 
 }
 
@@ -322,6 +349,30 @@ bool brokenControls()
 	if (invalidKey(getFileValue("SAVES/controls.cfg", "DOWN")))
 		return true;
 	if (invalidKey(getFileValue("SAVES/controls.cfg", "UP")))
+		return true;
+
+	return false;
+
+}
+
+//Check if there is an invalid size or position saved in the window file
+bool brokenWindowFile()
+{
+
+	if (getLineCount("SAVES/window.cfg") != 4)
+		return true;
+
+	if (getFileValue("SAVES/window.cfg", "WIDTH") <= 0 || 
+		getFileValue("SAVES/window.cfg", "WIDTH") > globalInstance->DM.w)
+		return true;
+	if (getFileValue("SAVES/window.cfg", "X") < -1 * globalInstance->DM.w || 
+		getFileValue("SAVES/window.cfg", "X") > globalInstance->DM.w)
+		return true;
+	if (getFileValue("SAVES/window.cfg", "HEIGHT") <= 0 ||
+		getFileValue("SAVES/window.cfg", "HEIGHT") > globalInstance->DM.h)
+		return true;
+	if (getFileValue("SAVES/window.cfg", "Y") <= -1 * globalInstance->DM.h ||
+		getFileValue("SAVES/window.cfg", "Y") > globalInstance->DM.h)
 		return true;
 
 	return false;
