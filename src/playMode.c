@@ -50,6 +50,14 @@ void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
 void declare_map_matrix(bool** ptr);
 
+//layout.c
+int getScoreDrawX(unsigned short size);
+int getScoreDrawY(unsigned short size);
+int getForegroundX(unsigned short size);
+int getForegroundY(unsigned short size);
+int getLevelX(unsigned short size, unsigned short level);
+int getLevelY(unsigned short size, unsigned short level);
+
 piece* getFirstPiece(piece*);
 void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth);
 bool isColliding(piece Piece, unsigned short X, double* Y, unsigned short direction, 
@@ -101,6 +109,8 @@ unsigned short playMode(piece* firstPiece)
 	static int* nextText_Height; declare(nextText_Height, 0);
 	static int* holdText_Width; declare(holdText_Width, 0);
 	static int* holdText_Height; declare(holdText_Height, 0);
+	static bool* firstLoop; declare(firstLoop, true);
+	static int* foregroundX; declare(foregroundX, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
@@ -116,6 +126,15 @@ unsigned short playMode(piece* firstPiece)
 		//Initialize completedRows to only include a row that is offscreen
 	static unsigned short* completedRows; declare(completedRows, MAP_HEIGHT + 1);
 	static bool* mapData; declare_map_matrix(&mapData);
+
+	if (*firstLoop)
+	{
+
+		*foregroundX = getForegroundX(MODE);
+
+		*firstLoop = false;
+
+	}
 
 	//CONTROLS ---------------------------------------------------------------
 
@@ -377,129 +396,6 @@ unsigned short playMode(piece* firstPiece)
 
 	//-----------------------------------------------------------------------
 
-	// RENDERING -------------------------------------------------------------
-
-	//Draw various textures that don't move
-	drawTexture(Texture_Next, 
-				318 - (*nextText_Width / 2),
-				282 - (*nextText_Height / 2), 
-				1.0);
-	drawTexture(Texture_Hold,
-				318 - (*holdText_Width * HOLD_TEXTURE_MULTI / 2), 
-				403 - (*holdText_Height * HOLD_TEXTURE_MULTI / 2), 
-				HOLD_TEXTURE_MULTI);
-	drawTexture(Texture_Score, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
-				FONT_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("000000", 1.0)), 
-				FONT_HEIGHT * 2 + (FONT_WIDTH + STRING_GAP) * 4 - 10, 1.0);
-	drawTexture(Texture_Level, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 1) +
-				SPRITE_WIDTH + 0.5 * (SPRITE_WIDTH * 9 - getStringLength("0", 1.0)), 
-				FONT_HEIGHT * 9 + (SPRITE_HEIGHT + STRING_GAP) - 7, 1.0);
-	drawTexture(Texture_Lines, 
-				318 - getIntStringLength(*linesAtCurrentLevel, 1.0) / 2, 
-				189, 
-				1.0);
-
-	//Draw the foreground
-	drawTexture(foreground, FONT_WIDTH, FONT_HEIGHT, 1.0);
-
-	//Make Texture_Current opaque
-	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
-	//Draw Texture_Current at ghostY
-	drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
-		FONT_HEIGHT * ((int)*ghostY + 1), 1.0);
-	//Reset Texture_Current opacity
-	SDL_SetTextureAlphaMod(Texture_Current, 255);
-
-	//Draw current piece
-	drawTexture(Texture_Current, FONT_WIDTH * (*X + 1), 
-		FONT_HEIGHT * ((int)*Y + 1), 1.0);
-
-	//Draw PAUSED if game is paused
-		//Center the text
-	if (*paused)
-		drawTexture(Texture_Paused, 
-			FONT_WIDTH + FONT_WIDTH * MAP_WIDTH / 2 - 3 * 
-			(FONT_WIDTH + STRING_GAP), FONT_HEIGHT * (23 - 0.5), 1.0);
-
-	//------------------------------------------------------------------------------
-
-	//Animations -----------------------------------------------------------------
-
-	//Line-clearing animation -------------------
-	if (*clearingLine == true && numCompleted != NULL)
-	{
-		
-		unsigned short prevNumCompleted = *numCompleted;
-		
-		if (playLineAnimation(foreground, *completedRows, clearingLine,
-			mapData, numCompleted, MAP_WIDTH, MAP_HEIGHT) == true)
-			playSound(COMPLETE_SOUND);
-
-		//Remove first element in completedRows array
-			//Also resize completedRows array
-		if (prevNumCompleted != *numCompleted && *numCompleted > 0)
-		{
-
-			unsigned short* tempRows;
-			tempRows = malloc(*numCompleted * sizeof(*tempRows));
-			for (unsigned short i = 0; i < *numCompleted; i++)
-				*(tempRows + i) = *(completedRows + i + 1);
-
-			free(completedRows);
-			completedRows = malloc(*numCompleted * sizeof(*completedRows));
-			for (unsigned short i = 0; i < *numCompleted; i++)
-				*(completedRows + i) = *(tempRows + i);
-
-			free(tempRows);
-
-		}
-
-		//Recalculate ghostY
-		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH,
-								MAP_HEIGHT);
-		
-	}
-
-	//If game is over
-	if (*gameOver == true)
-	{
-
-		if (*overAnimation == false)
-		{
-
-			*overAnimation = playOverAnimation(foreground, *Score, MAP_WIDTH, MAP_HEIGHT);
-
-			//Only save the top score if the player is playing in MULTRIS mode
-				//Save score once overAnimation is finished playing
-			if (*overAnimation == true)
-				if (*Score > loadTop() && MODE == 0)
-					saveTop(*Score);
-
-		}
-		else
-		{
-
-			if (onPress(SELECT_BUTTON))
-			{
-
-				//Free all memory taken by PLAYMODE -----------------------------------
-
-				freeVars();
-
-				//--------------------------------------------------------
-
-				return RESET;
-
-			}
-
-		}
-
-	}
-
-	//----------------------------------------------------------------------------------
-
 	//LOGIC ------------------------------------------------------------------------------
 
 	//If nextPiece does not exist, generate a new one
@@ -633,6 +529,114 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 	}
+
+	//Animations -----------------------------------------------------------------
+
+	//Line-clearing animation -------------------
+	if (*clearingLine == true && numCompleted != NULL)
+	{
+		
+		unsigned short prevNumCompleted = *numCompleted;
+		
+		if (playLineAnimation(foreground, *completedRows, clearingLine,
+			mapData, numCompleted, MAP_WIDTH, MAP_HEIGHT) == true)
+			playSound(COMPLETE_SOUND);
+
+		//Remove first element in completedRows array
+			//Also resize completedRows array
+		if (prevNumCompleted != *numCompleted && *numCompleted > 0)
+		{
+
+			unsigned short* tempRows;
+			tempRows = malloc(*numCompleted * sizeof(*tempRows));
+			for (unsigned short i = 0; i < *numCompleted; i++)
+				*(tempRows + i) = *(completedRows + i + 1);
+
+			free(completedRows);
+			completedRows = malloc(*numCompleted * sizeof(*completedRows));
+			for (unsigned short i = 0; i < *numCompleted; i++)
+				*(completedRows + i) = *(tempRows + i);
+
+			free(tempRows);
+
+		}
+
+		//Recalculate ghostY
+		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH,
+								MAP_HEIGHT);
+		
+	}
+
+	//If game is over
+	if (*gameOver == true)
+	{
+
+		if (*overAnimation == false)
+		{
+
+			*overAnimation = playOverAnimation(foreground, *Score, MAP_WIDTH, MAP_HEIGHT);
+
+			//Only save the top score if the player is playing in MULTRIS mode
+				//Save score once overAnimation is finished playing
+			if (*overAnimation == true)
+				if (*Score > loadTop() && MODE == 0)
+					saveTop(*Score);
+
+		}
+		else
+		{
+
+			if (onPress(SELECT_BUTTON))
+			{
+
+				//Free all memory taken by PLAYMODE -----------------------------------
+
+				freeVars();
+
+				//--------------------------------------------------------
+
+				return RESET;
+
+			}
+
+		}
+
+	}
+
+	//----------------------------------------------------------------------------------
+
+	// RENDERING -------------------------------------------------------------
+
+	//Draw various textures that don't move
+	drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
+	drawTexture(Texture_Hold,
+				318 - (*holdText_Width * HOLD_TEXTURE_MULTI / 2), 
+				403 - (*holdText_Height * HOLD_TEXTURE_MULTI / 2), 
+				HOLD_TEXTURE_MULTI);
+	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
+	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE, *Level), 1.0);
+	drawTexture(Texture_Lines, 318 - getIntStringLength(*linesAtCurrentLevel, 1.0) / 2, 189, 1.0);
+
+	//Draw the foreground
+	drawTexture(foreground, *foregroundX, SPRITE_HEIGHT, 1.0);
+
+	//Make Texture_Current opaque
+	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
+	//Draw Texture_Current at ghostY
+	drawTexture(Texture_Current, FONT_WIDTH * (*X) + *foregroundX, FONT_HEIGHT * ((int)*ghostY + 1), 1.0);
+	//Reset Texture_Current opacity
+	SDL_SetTextureAlphaMod(Texture_Current, 255);
+
+	//Draw current piece
+	drawTexture(Texture_Current, FONT_WIDTH * (*X) + *foregroundX, FONT_HEIGHT * ((int)*Y + 1), 1.0);
+
+	//Draw PAUSED if game is paused
+		//Center the text
+	if (*paused)
+		drawTexture(Texture_Paused, FONT_WIDTH + FONT_WIDTH * MAP_WIDTH / 2 - 3 * 
+									(FONT_WIDTH + STRING_GAP), FONT_HEIGHT * (23 - 0.5), 1.0);
+
+	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
 

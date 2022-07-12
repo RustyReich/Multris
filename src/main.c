@@ -164,7 +164,6 @@ int main(int argc, char* argv[])
             if (globalInstance->event.type == SDL_QUIT)
                 globalInstance->running = false;
 
-            //Window resized
             if (globalInstance->event.type == SDL_WINDOWEVENT)
 			{
 
@@ -178,9 +177,8 @@ int main(int argc, char* argv[])
 
 						//Only save window size when it changed because the user actually manually resized
 						//the window
-						SDL_GetWindowSize(globalInstance->window, 
-											&globalInstance->minimizedWindow_W, 
-											&globalInstance->minimizedWindow_H);
+						SDL_GetWindowSize(globalInstance->window, &globalInstance->minimizedWindow_W, 
+																	&globalInstance->minimizedWindow_H);
 						saveToFile("SAVES/window.cfg", "WIDTH", globalInstance->minimizedWindow_W);
 						saveToFile("SAVES/window.cfg", "HEIGHT", globalInstance->minimizedWindow_H);
 
@@ -193,7 +191,8 @@ int main(int argc, char* argv[])
 					if (!FULLSCREEN_MODE)
 					{
 
-						//Save window position when moved
+						//Only save window position when it changed because the user actually manually moved
+						//the window
 						SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X, 
 																		&globalInstance->minimizedWindow_Y);
 
@@ -226,9 +225,8 @@ int main(int argc, char* argv[])
 
             if (deltaTicks >= 100)
             {
-
-                globalInstance->FPS = (int)((frames_per_DS - 
-                    ((float)deltaTicks - 100) * frames_per_DS / deltaTicks) * 10);
+				//printf("test\n");
+                globalInstance->FPS = (int)((frames_per_DS-((float)deltaTicks-100)*frames_per_DS/deltaTicks)*10);
                 frames_per_DS = 0;
 
                 prevTicks = SDL_GetTicks();

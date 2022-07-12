@@ -106,6 +106,25 @@ void mainLoop()
 
 		game_state = drawTitle(&firstPiece);
 
+		if (game_state == PLAY_SCREEN && MODE != 0)
+		{
+
+			clearTexture(Texture_Background);
+			SDL_DestroyTexture(Texture_Background);
+			Texture_Background = NULL;
+			
+			int renderWidth;
+			int renderHeight;
+			SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, &renderHeight);
+			Texture_Background = createTexture(renderWidth, renderHeight);
+
+			drawPlayField(Texture_Background, MODE);
+			drawScoreBox(Texture_Background, MODE);
+			drawLevelBox(Texture_Background, MODE);
+			drawUntilBox(Texture_Background, MODE);
+
+		}
+
 	}
 	else if (game_state == PLAY_SCREEN)
 	{

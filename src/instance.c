@@ -202,6 +202,10 @@ void initInstance(gameInstance** instance)
     //Initialize controls with the default controls
     (*instance)->controls = initControls();
 
+    //Initialize FPS and frame_time to 0
+    (*instance)->FPS = 0;
+    (*instance)->frame_time = 0;
+
 }
 
 //Function for updating the volume of the game sounds

@@ -105,6 +105,15 @@ unsigned short drawTitle(piece** firstPiece)
 		SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
 		//Get the height of the title texture
 		SDL_QueryTexture(Texture_Title, NULL, NULL, NULL, titleText_Height);	
+
+		//Start the title at a Y value that is just below whatever the lowest-reaching menu is
+		int modesHeight, numericalHeight, optionsHeight;
+		SDL_QueryTexture(modes->ui->texture, NULL, NULL, NULL, &modesHeight);
+		SDL_QueryTexture(numerical->ui->texture, NULL, NULL, NULL, &numericalHeight);
+		SDL_QueryTexture(options->ui->texture, NULL, NULL, NULL, &optionsHeight);
+		*Y = SDL_ceil(SDL_max(modes->ui->y + modesHeight, numerical->ui->y + numericalHeight));
+		*Y = SDL_ceil(SDL_max(*Y, options->ui->y + optionsHeight));
+		*Y = *Y / (double)(SPRITE_HEIGHT) + 1;
 		
 		*firstLoop = false;
 
@@ -272,6 +281,7 @@ unsigned short drawTitle(piece** firstPiece)
 			{
 
 				//Enter MULTRIS gamemode
+				MODE = 0;
 				freeVars();
 				return PLAY_SCREEN;
 
@@ -380,7 +390,14 @@ unsigned short drawTitle(piece** firstPiece)
 
 	//Title dropping
 	if ((int)(*Y + *titleText_Height / SPRITE_HEIGHT) <= BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE)
-		*Y += INITIAL_SPEED * globalInstance->frame_time;
+	{
+
+		//Don't start dropping the title until the game has been running for at least 1000ms
+			//This is because FPS and frame_times can be erratic the first few frames after launch
+		if (SDL_GetTicks() > 1000)
+			*Y += INITIAL_SPEED * globalInstance->frame_time;
+
+	}
 	else
 	{
 

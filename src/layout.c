@@ -19,6 +19,7 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y,
 	float multiplier, unsigned short color);
 unsigned short getIntLength(int num);
 int getStringLength(char* str, float multiplier);
+int getIntStringLength(int num, float multiplier);
 SDL_Texture* createTexture(int width, int height);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
@@ -43,7 +44,13 @@ varVector** pushAddress(void** ptr, unsigned short type);
 void drawPlayField(SDL_Texture* background, unsigned short size)
 {
 
-    drawRectangle(WALL_SPRITE_ID, background, 0, 0, round(BASE_PLAYFIELD_WIDTH * size) + 2, 
+	int X = 0;
+	int Y = 0;
+
+	if (size == 1)
+		X = SPRITE_WIDTH * 10;
+
+    drawRectangle(WALL_SPRITE_ID, background, X, Y, round(BASE_PLAYFIELD_WIDTH * size) + 2, 
                     round(BASE_PLAYFIELD_HEIGHT * size) + 2, GRAY, false);
 		
 }
@@ -69,15 +76,11 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 		*(top + i) = '0';
 
 	//Print all content to 'content' texture
-	printToTexture("TOP   ", content, 
-					0.5 * (contentWidth - getStringLength("TOP   ", 1.0)), 
-					0, 1, WHITE);
-	printToTexture(top, content,
-					0.5 * (contentWidth - getStringLength("000000", 1.0)),
+	printToTexture("TOP   ", content, 0.5 * (contentWidth - getStringLength("TOP   ", 1.0)), 0, 1, WHITE);
+	printToTexture(top, content, 0.5 * (contentWidth - getStringLength("000000", 1.0)),
 					(FONT_HEIGHT + STRING_GAP), 1, WHITE);
-	intToTexture(topScore, content, 
-					0.5 * (contentWidth - 
-					getStringLength("000000", 1.0)) + zeroLength * (FONT_WIDTH + STRING_GAP), 
+	intToTexture(topScore, content,
+					0.5 * (contentWidth - getStringLength("000000", 1.0)) + zeroLength * (FONT_WIDTH + STRING_GAP), 
 					(FONT_HEIGHT + STRING_GAP), 1, WHITE);
     printToTexture("SCORE", content, 
 					0.5 * (contentWidth - getStringLength("SCORE ", 1.0)), 
@@ -99,10 +102,16 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
         Y = 0;
 
     }
+	else if (size == 1)
+	{
+
+		X = SPRITE_WIDTH * 14;
+		Y = 0;
+
+	}
 
 	//Draw box
-    drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
-					height_in_sprites + 2, GRAY, false);
+    drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
 
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
@@ -1175,7 +1184,7 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces)
 	if (Y == NULL)
 	{
 
-		//Push the address of Y onto varVector so that it will be freed when the title screen
+		//Push the address of Y onto varVector so that it will be freed when the title screen 
 		//is exited
         pushAddress((void**)&Y, VARIABLE);
 
@@ -1211,7 +1220,7 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces)
 			movingPieces[i]->color = color[i];
 
 		}
-
+		
 		//Drop the piece
 		if (*(Y + i) <= endY[i])
 			*(Y + i) += INITIAL_SPEED * globalInstance->frame_time;	
@@ -1234,5 +1243,72 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces)
 		updateOver = true;
 
 	return updateOver;
+
+}
+
+int getScoreDrawX(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 277;
+	else if (size == 1)
+		return 192;
+	else
+		return 277;
+
+}
+
+int getScoreDrawY(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 70;
+	else if (size == 1)
+		return 70;
+	else
+		return 70;
+
+}
+
+int getForegroundX(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return SPRITE_WIDTH;
+	else if (size == 1)
+		return SPRITE_WIDTH * 11;
+	else
+		return SPRITE_WIDTH;
+
+}
+
+int getLevelX(unsigned short size, unsigned short level)
+{
+
+	int base;
+	int offset;
+
+	offset = 0.5 * getIntStringLength(level, 1.0);
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 318;
+	else if (size == 1)
+		base = 66;
+	else
+		base = 318;
+
+	return (base - offset);
+
+}
+
+int getLevelY(unsigned short size, unsigned short level)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 115;
+	else if (size == 1)
+		return 31;
+	else
+		return 115;
 
 }

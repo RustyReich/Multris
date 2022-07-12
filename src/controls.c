@@ -172,6 +172,8 @@ unsigned short controlsScreen(piece** Piece)
     if (onPress(EXIT_BUTTON) && !(*editing_control))
     {
 
+        playSound(LAND_SOUND);
+
         freeVars();
         return RESET;
 
