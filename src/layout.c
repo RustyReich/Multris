@@ -48,10 +48,16 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 	int Y = 0;
 
 	if (size == 1)
-		X = SPRITE_WIDTH * 10;
+	{
 
-    drawRectangle(WALL_SPRITE_ID, background, X, Y, round(BASE_PLAYFIELD_WIDTH * size) + 2, 
-                    round(BASE_PLAYFIELD_HEIGHT * size) + 2, GRAY, false);
+		X = SPRITE_WIDTH * 10;
+		Y = 48;
+
+	}
+
+	int width = round(BASE_PLAYFIELD_WIDTH * size) + 2;
+	int height = round(BASE_PLAYFIELD_HEIGHT * size) + 2;
+    drawRectangle(WALL_SPRITE_ID, background, X, Y, width, height, GRAY, false);
 		
 }
 
@@ -214,6 +220,13 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 		Y = FONT_HEIGHT * 11;
 
 	}
+	else if (size == 1)
+	{
+
+		X = 0;
+		Y = 48;
+
+	}
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
@@ -244,14 +257,13 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
 	//Print all content to 'content' texture
-	printToTexture("NEXT", content,
-						0.5 * (contentWidth - getStringLength("NEXT", 1.0)),
-						0, 1, WHITE);
+	printToTexture("NEXT", content, 0.5 * (contentWidth - getStringLength("NEXT", 1.0)), 0, 1, WHITE);
 
 	int X = 0;
 	int Y = 0;
 
-	int width_in_sprites = size + 1;
+	//There is a minimum width for this box because the word "NEXT" needs to fit in it
+	int width_in_sprites = SDL_max(size + 1, 5);
 	int height_in_sprites = size + 2;
 	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
@@ -263,10 +275,16 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 		Y = FONT_HEIGHT * 17;
 
 	}
+	else if (size == 1)
+	{
+
+		X = 192;
+		Y = 84;
+
+	}
 
 	//Draw box
-	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2,
-					height_in_sprites + 2, GRAY, false);
+	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
 	
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
@@ -293,15 +311,10 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
 	//Print all content to 'content' texture
-	printToTexture("HOLD", content,
-					0.5 * (contentWidth - getStringLength("HOLD", 1.0)), 0, 1, WHITE);
+	printToTexture("HOLD", content, 0.5 * (contentWidth - getStringLength("HOLD", 1.0)), 0, 1, WHITE);
 
 	int X = 0;
 	int Y = 0;
-
-	int width_in_sprites = size + 1;
-	int height_in_sprites = size + 2;
-	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
 	{
@@ -310,24 +323,44 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 28;
 
+		int width_in_sprites = size + 1;
+		int height_in_sprites = size + 2;
+		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+
+		//Draw filled box
+		drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites, GRAY, true);
+
+		//Cut out a box in the middle that is the correct size and in the correct space
+		int width_difference = size + 1 - HOLD_TEXTURE_MULTI * width_in_sprites;
+		drawRectangle(WALL_SPRITE_ID, background, X + SPRITE_WIDTH * width_difference, Y + SPRITE_HEIGHT,
+						ceil(HOLD_TEXTURE_MULTI * width_in_sprites),
+						ceil(HOLD_TEXTURE_MULTI * height_in_sprites), BLACK, true); 
+
+		//Draw the 'content' texture
+		SDL_SetRenderTarget(globalInstance->renderer, background);
+		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
+					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
+
 	}
+	else if (size == 1)
+	{
 
-	//Draw filled box
-	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
-					height_in_sprites, GRAY, true);
+		X = 192;
+		Y = 132;
 
-	//Cut out a box in the middle that is the correct size and in the correct space
-	int width_difference = size + 1 - HOLD_TEXTURE_MULTI * width_in_sprites;
-	drawRectangle(WALL_SPRITE_ID, background, 
-					X + SPRITE_WIDTH * width_difference, 
-					Y + SPRITE_HEIGHT,
-					ceil(HOLD_TEXTURE_MULTI * width_in_sprites),
-					ceil(HOLD_TEXTURE_MULTI * height_in_sprites), BLACK, true); 
+		int width_in_sprites = 5;
+		int height_in_sprites = size + 2;
+		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
-	//Draw the 'content' texture
-	SDL_SetRenderTarget(globalInstance->renderer, background);
-	drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-				Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
+		//Draw box
+		drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
+
+		//Draw the 'content' texture
+		SDL_SetRenderTarget(globalInstance->renderer, background);
+		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
+					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
+
+	}
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -358,8 +391,6 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 
 	int width_in_sprites = size + 1;
 	int height_in_sprites = 3;
-	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
-	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
 	{
@@ -369,6 +400,18 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 		Y = FONT_HEIGHT * 37;
 
 	}
+	else if (size == 1)
+	{
+
+		width_in_sprites = 9;
+		height_in_sprites = 3;
+
+		Y = 120;
+
+	}
+
+	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
@@ -1276,9 +1319,21 @@ int getForegroundX(unsigned short size)
 	if (size == 0 || size == MAX_PIECE_SIZE)
 		return SPRITE_WIDTH;
 	else if (size == 1)
-		return SPRITE_WIDTH * 11;
+		return 132;
 	else
 		return SPRITE_WIDTH;
+
+}
+
+int getForegroundY(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return SPRITE_HEIGHT;
+	else if (size == 1)
+		return 60;
+	else
+		return 0;
 
 }
 
@@ -1310,5 +1365,200 @@ int getLevelY(unsigned short size, unsigned short level)
 		return 31;
 	else
 		return 115;
+
+}
+
+int getLinesX(unsigned short size, unsigned short lines)
+{
+
+	int base, offset;
+	offset = getIntStringLength(lines, 1.0) / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 318;
+	else if (size == 1)
+		base = 66;
+	else
+		base = 318;
+
+	return (base - offset);
+
+}
+
+int getLinesY(unsigned short size, unsigned short lines)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 189;
+	else if (size == 1)
+		return 105;
+	else
+		return 189;
+
+}
+
+int getNextX(unsigned short size, int width)
+{
+
+	int base, offset;
+	offset = width / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 318;
+	else if (size == 1)
+		base = 234;
+	else
+		base = 318;
+
+	return (base - offset);
+
+}
+
+int getNextY(unsigned short size, int height)
+{
+
+	int base, offset;
+	offset = height / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 282;
+	else if (size == 1)
+		base = 121;
+	else
+		base = 282;
+
+	return (base - offset);
+
+}
+
+int getHoldX(unsigned short size, int width)
+{
+
+	int base, offset;
+	offset = width * HOLD_TEXTURE_MULTI / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 318;
+	else if (size == 1)
+		base = 234;
+	else
+		base = 318;
+
+	return (base - offset);
+
+}
+
+int getHoldY(unsigned short size, int height)
+{
+
+	int base, offset;
+	offset = height * HOLD_TEXTURE_MULTI / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 403;
+	else if (size == 1)
+		base = 168;
+	else
+		base = 403;
+
+	return (base - offset);
+
+}
+
+int getFpsX(unsigned short size)
+{
+
+	int base, offset;
+	offset = getIntStringLength(globalInstance->FPS, 1.0) / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 318;
+	else if (size == 1)
+		base = 66;
+	else	
+		base = 318;
+
+	return (base - offset);
+
+}
+
+int getFpsY(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 474;
+	else if (size == 1)
+		return 150;
+	else
+		return 474;
+
+}
+
+//Draw extra background tiles to fill in gaps
+void drawBackgroundExtras(SDL_Texture* background, unsigned short size)
+{
+
+	if (size == 1)
+	{
+
+		drawRectangle(WALL_SPRITE_ID, background, 120, 0, 4, 4, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 120, 132, 6, 5, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 0, 180, 10, 1, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 276, 96, 2, 8, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 180, 96, 1, 3, GRAY, true);
+
+	}
+
+}
+
+//Get the width, in pixels, of the entire game content
+int getGameWidth(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 384;
+	else if (size == 1)
+		return 300;
+	else
+		return 384;
+
+}
+
+//Get the height, in pixels, of the entire game content
+int getGameHeight(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 504;
+	else if (size == 1)
+		return 192;
+	else
+		return 504;
+
+}
+
+int getPausedX(unsigned short size, float multi)
+{
+
+	if (size == 0)
+		size = MAX_PIECE_SIZE;
+
+	int start = getForegroundX(size);
+	int width = round(BASE_PLAYFIELD_WIDTH * size) * SPRITE_WIDTH;
+
+	return (start + 0.5 * (width - getStringLength("PAUSED", multi)));
+
+}
+
+int getPausedY(unsigned short size, float multi)
+{
+
+	if (size == 0)
+		size = MAX_PIECE_SIZE;
+
+	int start = getForegroundY(size);
+	int height = round(BASE_PLAYFIELD_HEIGHT * size) * SPRITE_HEIGHT;
+
+	return (start + 0.5 * (height - FONT_HEIGHT * multi));
 
 }

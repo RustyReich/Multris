@@ -115,6 +115,9 @@ unsigned short drawTitle(piece** firstPiece)
 		*Y = SDL_ceil(SDL_max(*Y, options->ui->y + optionsHeight));
 		*Y = *Y / (double)(SPRITE_HEIGHT) + 1;
 		
+		//Default MODE is 0
+		MODE = 0;
+
 		*firstLoop = false;
 
 	}

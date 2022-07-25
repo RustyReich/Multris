@@ -4,10 +4,8 @@
 #include "HEADERS/MGF.h"
 
 //draw.c
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
+void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
+void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
 unsigned short getIntLength(int num);
 SDL_Texture* createTexture(int width, int height);
 void clearTexture(SDL_Texture* texture);
@@ -41,6 +39,14 @@ void drawHoldBox(SDL_Texture* background, unsigned short size);
 void drawFPSBox(SDL_Texture* background, unsigned short size);
 int calcMapWidth();
 int calcMapHeight();
+int getFpsX(unsigned short size);
+int getFpsY(unsigned short size);
+void drawBackgroundExtras(SDL_Texture* background, unsigned short size);
+int getGameWidth(unsigned short size);
+int getGameHeight(unsigned short size);
+
+//instance.c
+void scaleRenderer();
 
 //The main game loop
 void mainLoop()
@@ -48,18 +54,18 @@ void mainLoop()
 
 	//Texture storing everything on screen that never changes
 		//This includes things like the border walls, strings, etc.
-		
 	static SDL_Texture* Texture_Background = NULL;
 	if (Texture_Background == NULL)
 	{
 
-		//Get renderer dimensions
-		int renderWidth;
-		int renderHeight;
-		SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, 
-			&renderHeight);
+		//Set renderer to dimensions for MAX_PIECE_SIZE
+		int width = getGameWidth(MAX_PIECE_SIZE);
+		int height = getGameHeight(MAX_PIECE_SIZE);
+		SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
+		scaleRenderer();
 
-		Texture_Background = createTexture(renderWidth, renderHeight);
+		//Create background texture
+		Texture_Background = createTexture(width, height);
 
 		//Draw layout
 		drawPlayField(Texture_Background, MAX_PIECE_SIZE);
@@ -95,33 +101,42 @@ void mainLoop()
 	}
 
 	// RENDERING --------------------------------------------------------------
+	
 	drawTexture(Texture_Background, 0, 0, 1.0);
-	drawTexture(Texture_FPS, 
-				SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) + 7) - 6 -
-				getIntStringLength(globalInstance->FPS, 1.0) / 2, 
-				FONT_HEIGHT * 39 + STRING_GAP * 3, 1.0);
+	drawTexture(Texture_FPS, getFpsX(MODE), getFpsY(MODE), 1.0);
 
 	if (game_state == TITLE_SCREEN)
 	{
 
 		game_state = drawTitle(&firstPiece);
 
+		//If MODE != 0, then NUMERICAL mode was selected. So we need to redraw the background layout
 		if (game_state == PLAY_SCREEN && MODE != 0)
 		{
 
+			//Clear background texture
 			clearTexture(Texture_Background);
 			SDL_DestroyTexture(Texture_Background);
 			Texture_Background = NULL;
-			
-			int renderWidth;
-			int renderHeight;
-			SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, &renderHeight);
-			Texture_Background = createTexture(renderWidth, renderHeight);
 
+			//Set renderer to correct dimensions for selected size
+			int width = getGameWidth(MODE);
+			int height = getGameHeight(MODE);
+			SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
+			scaleRenderer();
+
+			//Re-create background texture
+			Texture_Background = createTexture(width, height);
+
+			//Draw all layout stuff
 			drawPlayField(Texture_Background, MODE);
 			drawScoreBox(Texture_Background, MODE);
 			drawLevelBox(Texture_Background, MODE);
 			drawUntilBox(Texture_Background, MODE);
+			drawNextBox(Texture_Background, MODE);
+			drawHoldBox(Texture_Background, MODE);
+			drawFPSBox(Texture_Background, MODE);
+			drawBackgroundExtras(Texture_Background, MODE);
 
 		}
 

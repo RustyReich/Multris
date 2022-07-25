@@ -152,15 +152,12 @@ void initInstance(gameInstance** instance)
                                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
 
     //Save window size
-    SDL_GetWindowSize((*instance)->window, &(*instance)->minimizedWindow_W,
-        &(*instance)->minimizedWindow_H);
+    SDL_GetWindowSize((*instance)->window, &(*instance)->minimizedWindow_W, &(*instance)->minimizedWindow_H);
 
     //Initialize renderer
-    (*instance)->renderer = SDL_CreateRenderer((*instance)->window, -1, 
-        SDL_RENDERER_ACCELERATED);
+    (*instance)->renderer = SDL_CreateRenderer((*instance)->window, -1, SDL_RENDERER_ACCELERATED);
     //Set renderer size
-    SDL_RenderSetLogicalSize(globalInstance->renderer, INITIAL_INTERNAL_WIDTH, 
-        INITIAL_INTERNAL_HEIGHT);
+    SDL_RenderSetLogicalSize(globalInstance->renderer, INITIAL_INTERNAL_WIDTH, INITIAL_INTERNAL_HEIGHT);
 
     //Initialize audioDevice and wavSpec
     (*instance)->audioDevice = prepareAudioDevice(&globalInstance->wavSpec);
@@ -174,8 +171,7 @@ void initInstance(gameInstance** instance)
     if (!(IMG_Init(imgFlags) & imgFlags))
     {
 
-        fprintf(stderr, "SDL_image could not initialize! SDL_image Error: %s\n", 
-            IMG_GetError());
+        fprintf(stderr, "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
         exit(-1);
             
     }
@@ -183,18 +179,14 @@ void initInstance(gameInstance** instance)
         (*instance)->windowSurface = SDL_GetWindowSurface((*instance)->window);
 
     //Load string sprites
-    (*instance)->stringSS = IMG_LoadTexture((*instance)->renderer, 
-        "SPRITES/string_ss.png");
+    (*instance)->stringSS = IMG_LoadTexture((*instance)->renderer, "SPRITES/string_ss.png");
     //Query string spritesheet for width and height
-    SDL_QueryTexture((*instance)->stringSS, NULL, NULL, &(*instance)->stringSS_W,
-        &(*instance)->stringSS_H);
+    SDL_QueryTexture((*instance)->stringSS, NULL, NULL, &(*instance)->stringSS_W, &(*instance)->stringSS_H);
 
     //Load game sprites
-    (*instance)->gameSS = IMG_LoadTexture((*instance)->renderer, 
-        "SPRITES/game_ss.png");
+    (*instance)->gameSS = IMG_LoadTexture((*instance)->renderer, "SPRITES/game_ss.png");
     //Query game spritesheet for width and height
-    SDL_QueryTexture((*instance)->gameSS, NULL, NULL, &(*instance)->gameSS_W,
-        &(*instance)->gameSS_H);
+    SDL_QueryTexture((*instance)->gameSS, NULL, NULL, &(*instance)->gameSS_W, &(*instance)->gameSS_H);
 
     //Get keyboard state
 	(*instance)->keys = (Uint8*)SDL_GetKeyboardState(NULL);
