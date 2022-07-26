@@ -9,21 +9,18 @@ void delPiece(piece** Piece);
 void copyPiece(piece* piece1, piece* piece2);
 
 //draw.c
-void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, 
-	unsigned short Y);
+void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
+void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
+void printToTexture(char* string,SDL_Texture* dstTexture,int X,int Y,float multiplier,unsigned short color);
 unsigned short getIntLength(int num);
 SDL_Texture* createTexture(int width, int height);
-void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, Uint8 color);
+void drawToTexture(unsigned int SpriteID,SDL_Texture* dstTexture,int X,int Y,float multiplier,Uint8 color);
 void clearTexture(SDL_Texture* texture);
 SDL_Texture* createPieceTexture(piece Piece);
 int getStringLength(char* str, float multiplier);
 int getIntStringLength(int num, float multiplier);
+void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
 
 //rotate.c
 void rotatePiece(piece *Piece, unsigned short direction);
@@ -146,7 +143,7 @@ unsigned short playMode(piece* firstPiece)
 		//Calculate multiplier for PAUSED text when it would be wider than the playfield
 		if (MODE != 0)
 			if (getStringLength("PAUSED", 1.0) > round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH)
-				*pausedMulti = round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH / getStringLength("PAUSED", 1.0);
+				*pausedMulti = round(BASE_PLAYFIELD_WIDTH*MODE)*SPRITE_WIDTH/getStringLength("PAUSED",1.0);
 
 		*firstLoop = false;
 
@@ -546,6 +543,34 @@ unsigned short playMode(piece* firstPiece)
 
 	}
 
+	// RENDERING -------------------------------------------------------------
+
+	//Draw various textures that don't move
+	drawTexture(Texture_Next, getNextX(MODE, *nextText_Width), getNextY(MODE, *nextText_Height), 1.0);
+	drawTexture(Texture_Hold,getHoldX(MODE,*holdText_Width),getHoldY(MODE,*holdText_Height),HOLD_TEXTURE_MULTI);
+	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
+	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE, *Level), 1.0);
+	drawTexture(Texture_Lines, getLinesX(MODE, *linesAtCurrentLevel), getLinesY(MODE, *linesAtCurrentLevel), 1.0);
+
+	//Draw the foreground
+	drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
+
+	//Make Texture_Current opaque
+	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
+	//Draw Texture_Current at ghostY
+	drawTexture(Texture_Current, FONT_WIDTH * *X + *foregroundX, FONT_HEIGHT * (int)*ghostY + *foregroundY, 1.0);
+	//Reset Texture_Current opacity
+	SDL_SetTextureAlphaMod(Texture_Current, 255);
+
+	//Draw current piece if game isnt over
+	if (*gameOver == false)
+		drawTexture(Texture_Current,FONT_WIDTH*(*X)+*foregroundX,FONT_HEIGHT*((int)*Y)+*foregroundY,1.0);
+
+	//Draw PAUSED if game is paused
+		//Center the text
+	if (*paused)
+		drawTexture(Texture_Paused, getPausedX(MODE, *pausedMulti), getPausedY(MODE, *pausedMulti), *pausedMulti);
+
 	//Animations -----------------------------------------------------------------
 
 	//Line-clearing animation -------------------
@@ -578,8 +603,7 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		//Recalculate ghostY
-		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH,
-								MAP_HEIGHT);
+		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
 		
 	}
 
@@ -592,11 +616,39 @@ unsigned short playMode(piece* firstPiece)
 
 			*overAnimation = playOverAnimation(foreground, *Score, MAP_WIDTH, MAP_HEIGHT);
 
-			//Only save the top score if the player is playing in MULTRIS mode
-				//Save score once overAnimation is finished playing
+			//Once animation is over, print GAME OVER to screen
 			if (*overAnimation == true)
+			{
+
+				//Calculate multiplier, width, and height for "GAME" and "OVER"
+				float multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)(getStringLength("GAME", 1)) * 0.9;
+				int width = getStringLength("GAME", multi);
+				int height = multi * FONT_HEIGHT;
+
+				//Calculate X and Y value to print "GAME" at
+				int x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - getStringLength("GAME", multi));
+				int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - (height * 2 + round(multi * STRING_GAP))));
+
+				//Print "GAME"
+					//Draw black rectangle behind it 
+				drawSimpleRect(foreground, x, y, width, height, BLACK);
+				printToTexture("GAME", foreground, x, y, multi, WHITE);
+				
+				//Draw black rectangle between GAME and OVER
+				y = y + height;
+				drawSimpleRect(foreground, x, y, width, round(multi * STRING_GAP), BLACK);
+
+				//Calculate Y value for "OVER" and print it
+				y = y + round(multi * STRING_GAP);
+				drawSimpleRect(foreground, x, y, width, height, BLACK);
+				printToTexture("OVER", foreground, x, y, multi, WHITE);
+
+				//Only save the top score if the player is playing in MULTRIS mode
+					//Save score once overAnimation is finished playing
 				if (*Score > loadTop() && MODE == 0)
 					saveTop(*Score);
+
+			}
 
 		}
 		else
@@ -620,33 +672,6 @@ unsigned short playMode(piece* firstPiece)
 	}
 
 	//----------------------------------------------------------------------------------
-
-	// RENDERING -------------------------------------------------------------
-
-	//Draw various textures that don't move
-	drawTexture(Texture_Next, getNextX(MODE, *nextText_Width), getNextY(MODE, *nextText_Height), 1.0);
-	drawTexture(Texture_Hold,getHoldX(MODE,*holdText_Width),getHoldY(MODE,*holdText_Height),HOLD_TEXTURE_MULTI);
-	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
-	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE, *Level), 1.0);
-	drawTexture(Texture_Lines, getLinesX(MODE, *linesAtCurrentLevel), getLinesY(MODE, *linesAtCurrentLevel), 1.0);
-
-	//Draw the foreground
-	drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
-
-	//Make Texture_Current opaque
-	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
-	//Draw Texture_Current at ghostY
-	drawTexture(Texture_Current, FONT_WIDTH * *X + *foregroundX, FONT_HEIGHT * (int)*ghostY + *foregroundY, 1.0);
-	//Reset Texture_Current opacity
-	SDL_SetTextureAlphaMod(Texture_Current, 255);
-
-	//Draw current piece
-	drawTexture(Texture_Current, FONT_WIDTH * (*X) + *foregroundX, FONT_HEIGHT * ((int)*Y) + *foregroundY, 1.0);
-
-	//Draw PAUSED if game is paused
-		//Center the text
-	if (*paused)
-		drawTexture(Texture_Paused, getPausedX(MODE, *pausedMulti), getPausedY(MODE, *pausedMulti), *pausedMulti);
 
 	//------------------------------------------------------------------------------
 
@@ -734,48 +759,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 						
 						free(row);
 						row = NULL;
-/*
-						//Calculate multiplier for "GAME OVER"
-						float multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)getStringLength("GAME", 1);
-						multi = multi * 0.9;
 
-						//Calculate X and Y value to print "GAME" at
-						int x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - getStringLength("GAME", multi));
-						int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - SPRITE_HEIGHT) - multi * FONT_HEIGHT);
-
-						SDL_Texture* GAME = createTexture(getStringLength("GAME", multi), FONT_HEIGHT * multi);
-						printToTexture("GAME", GAME, 0, 0, multi, WHITE);
-						//drawTexture(GAME, x + getForegroundX(MODE), y + getForegroundY(MODE), 1.0);
-						drawTexture(GAME, 0, 0, 1.0);
-
-						//Print "GAME"
-						//printToTexture("GAME", foreground, x, y, multi, BLACK);
-
-						//Calculate Y value for "OVER" and print it
-						y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT + SPRITE_HEIGHT));
-						//printToTexture("OVER", foreground, x, y, multi, BLACK);
-
-						//Calculate multi for "Score:"
-						multi = multi / 3.0;
-
-						//Calculate X and Y value for "Score:"
-						int scoreLength = getStringLength("Score:", multi) + getIntStringLength(score, multi);
-						x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - scoreLength);
-						y = y + (multi * 3) * FONT_HEIGHT + SPRITE_HEIGHT;
-
-						//Draw a black square behind the score to make it easier to read
-						SDL_Rect rect = {.x = x, .y = y, .w = scoreLength, .h = FONT_HEIGHT * multi};
-						SDL_RenderFillRect(globalInstance->renderer, &rect);
-
-						//Print the score
-						printToTexture("Score:", foreground, x, y, multi, WHITE);
-
-						//Calculate X for score number
-						x = x + getStringLength("Score:", multi);
-
-						//Print the score number
-						intToTexture(score, foreground, x, y, multi, WHITE);
-*/
 					}
 
 				}

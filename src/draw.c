@@ -286,9 +286,8 @@ void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y,
 }
 
 //Draw a rectangle, filled or unfilled, with the passed sprite to a texture
-void drawRectangle(int spriteID, SDL_Texture* dstTexture, unsigned short X, 
-	unsigned short Y, unsigned short Width, unsigned short Height, 
-	unsigned short color, bool filled)
+void drawRectangle(int spriteID, SDL_Texture* dstTexture, unsigned short X, unsigned short Y, 
+					unsigned short Width, unsigned short Height, unsigned short color, bool filled)
 {
 
 	for (unsigned short i = 0; i < Width; i++)
@@ -308,6 +307,38 @@ void drawRectangle(int spriteID, SDL_Texture* dstTexture, unsigned short X,
 		}
 
 	}
+
+}
+
+//Draw a solid rectangle of the given color, doesn't use sprites
+void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color)
+{
+
+	//Save current rendering target
+	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
+
+	//Save the cusrrent rendering color
+	Uint8 currR = 0;
+	Uint8 currB = 0;
+	Uint8 currG = 0;
+	Uint8 currA = 0;
+	SDL_GetRenderDrawColor(globalInstance->renderer, &currR, &currG, &currB, &currA);
+
+	//Set rendering target
+	SDL_SetRenderTarget(globalInstance->renderer, dstTexture);
+
+	//Set rendering color
+	SDL_SetRenderDrawColor(globalInstance->renderer,getColor_R(color),getColor_G(color),getColor_B(color),255);
+
+	//Draw rectangle
+	SDL_Rect rect = { .x = x, .y = y, .w = width, .h = height };
+	SDL_RenderFillRect(globalInstance->renderer, &rect);
+
+	//Reset rendering color
+	SDL_SetRenderDrawColor(globalInstance->renderer, currR, currG, currB, currA);
+
+	//Reset rendering target
+	SDL_SetRenderTarget(globalInstance->renderer, currentTarget);
 
 }
 
