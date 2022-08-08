@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 
 	//Create options file if it doesn't exist or it is broken
 	if (!fileExists("SAVES/options.cfg") || brokenOptions())
-			createOptions();
+		createOptions();
 
 	//Create controls file if it doesn't exist or it is broken
 	if (!fileExists("SAVES/controls.cfg") || brokenControls())
@@ -225,8 +225,8 @@ int main(int argc, char* argv[])
 
             if (deltaTicks >= 100)
             {
-				//printf("test\n");
-                globalInstance->FPS = (int)((frames_per_DS-((float)deltaTicks-100)*frames_per_DS/deltaTicks)*10);
+
+                globalInstance->FPS=(int)((frames_per_DS-((float)deltaTicks-100)*frames_per_DS/deltaTicks)*10);
                 frames_per_DS = 0;
 
                 prevTicks = SDL_GetTicks();

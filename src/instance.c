@@ -235,7 +235,7 @@ void setWindowMode(unsigned short mode)
 
     if (mode == 0)
     {
-
+        
         SDL_SetWindowFullscreen(globalInstance->window, 0);
 
         //Reset window size
@@ -244,10 +244,6 @@ void setWindowMode(unsigned short mode)
         //Reset window position
         SDL_SetWindowPosition(globalInstance->window, globalInstance->minimizedWindow_X,
                                                         globalInstance->minimizedWindow_Y);
-
-	    //Reset scale on renderer
-		SDL_RenderSetScale(globalInstance->renderer, 1, 1);
-		SDL_RenderSetViewport(globalInstance->renderer, NULL);
 
         //Scale renderer accordingly
 	    scaleRenderer();
@@ -264,16 +260,14 @@ void setWindowMode(unsigned short mode)
                                                         &globalInstance->minimizedWindow_Y);
 
         //Set window size to display size
-        SDL_SetWindowSize(globalInstance->window, globalInstance->DM.w,
-            globalInstance->DM.h);
+        SDL_SetWindowSize(globalInstance->window, globalInstance->DM.w, globalInstance->DM.h);
         //Set window position to 0,0
         SDL_SetWindowPosition(globalInstance->window, 0, 0);
 
+        SDL_SetWindowFullscreen(globalInstance->window, SDL_WINDOW_FULLSCREEN);
+
         //Scale renderer accordingly
 	    scaleRenderer();
-
-        SDL_SetWindowFullscreen(globalInstance->window, 
-            SDL_WINDOW_FULLSCREEN);
 
     }
 
