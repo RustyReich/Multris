@@ -569,7 +569,7 @@ unsigned short playMode(piece* firstPiece)
 	//Draw PAUSED if game is paused
 		//Center the text
 	if (*paused)
-		drawTexture(Texture_Paused, getPausedX(MODE, *pausedMulti), getPausedY(MODE, *pausedMulti), *pausedMulti);
+		drawTexture(Texture_Paused,getPausedX(MODE,*pausedMulti),getPausedY(MODE,*pausedMulti),*pausedMulti);
 
 	//Animations -----------------------------------------------------------------
 
