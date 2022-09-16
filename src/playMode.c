@@ -719,13 +719,9 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 
 			*time_now = SDL_GetTicks();
 
-			int max_size = MAX_PIECE_SIZE;
-			if (MODE != 0)
-				max_size = MODE;
-
 			//When enough time has lapsed since the last frame in the animation, play 
 			//another frame
-			if ((*time_now - *time_start) > DEFAULT_OVER_TIME * (MAX_PIECE_SIZE / max_size))
+			if ((*time_now - *time_start) > OVER_SOUND_LENGTH / MAP_HEIGHT)
 			{
 
 				static unsigned short* row;

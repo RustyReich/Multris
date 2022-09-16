@@ -129,14 +129,30 @@ void mainLoop()
 			Texture_Background = createTexture(width, height);
 
 			//Draw all layout stuff
-			drawPlayField(Texture_Background, MODE);
-			drawScoreBox(Texture_Background, MODE);
-			drawLevelBox(Texture_Background, MODE);
-			drawUntilBox(Texture_Background, MODE);
-			drawNextBox(Texture_Background, MODE);
-			drawHoldBox(Texture_Background, MODE);
-			drawFPSBox(Texture_Background, MODE);
-			drawBackgroundExtras(Texture_Background, MODE);
+			if (MODE != 4) {
+
+				drawPlayField(Texture_Background, MODE);
+				drawScoreBox(Texture_Background, MODE);
+				drawLevelBox(Texture_Background, MODE);
+				drawUntilBox(Texture_Background, MODE);
+				drawNextBox(Texture_Background, MODE);
+				drawHoldBox(Texture_Background, MODE);
+				drawFPSBox(Texture_Background, MODE);
+				drawBackgroundExtras(Texture_Background, MODE);
+
+			}
+			else {
+
+				drawLevelBox(Texture_Background, MODE);
+				drawUntilBox(Texture_Background, MODE);
+				drawFPSBox(Texture_Background, MODE);
+				drawPlayField(Texture_Background, MODE);
+				drawScoreBox(Texture_Background, MODE);
+				drawNextBox(Texture_Background, MODE);
+				drawHoldBox(Texture_Background, MODE);
+				drawBackgroundExtras(Texture_Background, MODE);
+
+			}
 
 		}
 
