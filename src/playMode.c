@@ -151,8 +151,9 @@ unsigned short playMode(piece* firstPiece)
 
 	//CONTROLS ---------------------------------------------------------------
 
-	//These controls only work if it is not a game over and the game is not paused
-	if (!*gameOver && !*paused)
+	//These controls only work if it is not a game over and the game is not paused and the clearing animation is not
+	//playing
+	if (!*gameOver && !*paused && !*clearingLine)
 	{
 
 		//Left and right movement
