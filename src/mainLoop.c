@@ -144,13 +144,13 @@ void mainLoop()
 			else {
 
 				drawLevelBox(Texture_Background, MODE);
-				drawUntilBox(Texture_Background, MODE);
-				drawFPSBox(Texture_Background, MODE);
-				drawPlayField(Texture_Background, MODE);
-				drawScoreBox(Texture_Background, MODE);
-				drawNextBox(Texture_Background, MODE);
-				drawHoldBox(Texture_Background, MODE);
-				drawBackgroundExtras(Texture_Background, MODE);
+			//	drawUntilBox(Texture_Background, MODE);
+			//	drawFPSBox(Texture_Background, MODE);
+			//	drawPlayField(Texture_Background, MODE);
+			//	drawScoreBox(Texture_Background, MODE);
+			//	drawNextBox(Texture_Background, MODE);
+			//	drawHoldBox(Texture_Background, MODE);
+			//	drawBackgroundExtras(Texture_Background, MODE);
 
 			}
 
