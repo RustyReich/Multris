@@ -67,6 +67,12 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 		Y = 12;
 
 	}
+	else if (size == 4) {
+
+		X = SPRITE_WIDTH * 10;
+		Y = 0;
+
+	}
 
 	int width = round(BASE_PLAYFIELD_WIDTH * size) + 2;
 	int height = round(BASE_PLAYFIELD_HEIGHT * size) + 2;
@@ -191,6 +197,8 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 	}
 	else if (size == 3)
 		Y = 24;
+	else if (size == 4)
+		Y = 36;
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
@@ -259,6 +267,12 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 
 		X = 0;
 		Y = 72;
+
+	}
+	else if (size == 4) {
+
+		X = 0;
+		Y = 84;
 
 	}
 
@@ -488,6 +502,8 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 		Y = 120;
 	else if (size == 3)
 		Y = 144;
+	else if (size == 4)
+		Y = 156;
 
 	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;
@@ -1403,7 +1419,7 @@ int getForegroundX(unsigned short size)
 		return SPRITE_WIDTH;
 	else if (size == 1)
 		return 132;
-	else if (size == 2 || size == 3)
+	else if (size == 2 || size == 3 || size == 4)
 		return 132;
 	else
 		return SPRITE_WIDTH;
@@ -1421,6 +1437,8 @@ int getForegroundY(unsigned short size)
 		return 48;
 	else if (size == 3)
 		return 24;
+	else if (size == 4)
+		return 12;
 	else
 		return 0;
 
