@@ -80,7 +80,7 @@ void mainLoop()
 	
 	static SDL_Texture* Texture_FPS;
 	if (Texture_FPS == NULL)
-		Texture_FPS = createTexture(getStringLength("0000", 1.0), FONT_HEIGHT);
+		Texture_FPS = createTexture(getStringLength("00000", 1.0), FONT_HEIGHT);
 
 	//Hold the first piece that is generated in the title screen and will be the first 
 	//piece played
@@ -129,7 +129,7 @@ void mainLoop()
 			Texture_Background = createTexture(width, height);
 
 			//Draw all layout stuff
-			if (MODE != 4) {
+			if (MODE != 5) {
 
 				drawPlayField(Texture_Background, MODE);
 				drawScoreBox(Texture_Background, MODE);
@@ -143,11 +143,11 @@ void mainLoop()
 			}
 			else {
 
-				drawLevelBox(Texture_Background, MODE);
-				drawUntilBox(Texture_Background, MODE);
-				drawFPSBox(Texture_Background, MODE);
-				drawPlayField(Texture_Background, MODE);
-				drawScoreBox(Texture_Background, MODE);
+			//	drawLevelBox(Texture_Background, MODE);
+			//	drawUntilBox(Texture_Background, MODE);
+			//	drawFPSBox(Texture_Background, MODE);
+			//	drawPlayField(Texture_Background, MODE);
+			//	drawScoreBox(Texture_Background, MODE);
 			//	drawNextBox(Texture_Background, MODE);
 			//	drawHoldBox(Texture_Background, MODE);
 			//	drawBackgroundExtras(Texture_Background, MODE);
