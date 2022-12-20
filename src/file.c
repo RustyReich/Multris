@@ -558,3 +558,18 @@ void saveTop(unsigned int score)
 	}
 
 }
+
+void saveWindowSettings()
+{
+
+	SDL_GetWindowSize(globalInstance->window, &globalInstance->minimizedWindow_W, 
+						&globalInstance->minimizedWindow_H);
+	SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X, 
+							&globalInstance->minimizedWindow_Y);
+
+	saveToFile("SAVES/window.cfg", "WIDTH", globalInstance->minimizedWindow_W);
+	saveToFile("SAVES/window.cfg", "HEIGHT", globalInstance->minimizedWindow_H);
+	saveToFile("SAVES/window.cfg", "X", globalInstance->minimizedWindow_X);
+	saveToFile("SAVES/window.cfg", "Y", globalInstance->minimizedWindow_Y);
+
+}

@@ -12,6 +12,7 @@ sound* loadSound(char* file);
 
 //file.c
 void saveToFile(const char* file_path, const char* str, int value);
+void saveWindowSettings();
 
 //Function for initializing an audio device
 SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)
@@ -258,6 +259,9 @@ void setWindowMode(unsigned short mode)
         //Save window position
         SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X,
                                                         &globalInstance->minimizedWindow_Y);
+
+        //Save window settings to file
+        saveWindowSettings();
 
         //Set window size to display size
         SDL_SetWindowSize(globalInstance->window, globalInstance->DM.w, globalInstance->DM.h);

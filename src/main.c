@@ -19,6 +19,7 @@ bool brokenControls();
 void createWindowFile();
 bool brokenWindowFile();
 void saveToFile(const char* file_path, const char* str, int value);
+void saveWindowSettings();
 
 //instance.c
 void initInstance(gameInstance** instance);
@@ -168,40 +169,7 @@ int main(int argc, char* argv[])
 			{
 
                 if (globalInstance->event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-					scaleRenderer();
-				if (globalInstance->event.window.event == SDL_WINDOWEVENT_RESIZED && !UPDATE_FULLSCREEN_MODE)
-				{
-
-					if (!FULLSCREEN_MODE)
-					{
-
-						//Only save window size when it changed because the user actually manually resized
-						//the window
-						SDL_GetWindowSize(globalInstance->window, &globalInstance->minimizedWindow_W, 
-																	&globalInstance->minimizedWindow_H);
-						saveToFile("SAVES/window.cfg", "WIDTH", globalInstance->minimizedWindow_W);
-						saveToFile("SAVES/window.cfg", "HEIGHT", globalInstance->minimizedWindow_H);
-
-					}
-
-				}
-				if (globalInstance->event.window.event == SDL_WINDOWEVENT_MOVED && !UPDATE_FULLSCREEN_MODE)
-				{
-
-					if (!FULLSCREEN_MODE)
-					{
-
-						//Only save window position when it changed because the user actually manually moved
-						//the window
-						SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X, 
-																		&globalInstance->minimizedWindow_Y);
-
-						saveToFile("SAVES/window.cfg", "X", globalInstance->minimizedWindow_X);
-						saveToFile("SAVES/window.cfg", "Y", globalInstance->minimizedWindow_Y);
-
-					}
-
-				}
+					scaleRenderer(); 
 
 			}
 
@@ -286,6 +254,9 @@ int main(int argc, char* argv[])
 		}
 
 	}
+
+	if (!FULLSCREEN_MODE)
+		saveWindowSettings();
 
 	SDL_DestroyRenderer(globalInstance->renderer);
 	SDL_DestroyWindow(globalInstance->window);
