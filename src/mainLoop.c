@@ -129,7 +129,7 @@ void mainLoop()
 			Texture_Background = createTexture(width, height);
 
 			//Draw all layout stuff
-			if (MODE != 5) {
+			if (MODE != 6) {
 
 				drawPlayField(Texture_Background, MODE);
 				drawScoreBox(Texture_Background, MODE);
