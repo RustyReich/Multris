@@ -67,7 +67,7 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 		Y = 12;
 
 	}
-	else if (size == 4 || size == 5 || size == 6) {
+	else if (size == 4 || size == 5 || size == 6 || size == 7) {
 
 		X = SPRITE_WIDTH * 10;
 		Y = 0;
@@ -165,6 +165,12 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 		Y = 36;
 
 	}
+	else if (size == 7) {
+
+		X = SPRITE_WIDTH * 29;
+		Y = 60;
+
+	}
 
 	//Draw box
     drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
@@ -221,6 +227,8 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 		Y = 72;
 	else if (size == 6)
 		Y = 96;
+	else if (size == 7)
+		Y = 132;
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
@@ -309,6 +317,12 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 		Y = 144;
 
 	}
+	else if (size == 7) {
+
+		X = 0;
+		Y = 180;
+
+	}
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
@@ -393,6 +407,12 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 
 		X = 324;
 		Y = 120;
+
+	}
+	else if (size == 7) {
+
+		X = 348;
+		Y = 144;
 
 	}
 
@@ -565,6 +585,24 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
+	else if (size == 7) {
+
+		X = 360;
+		Y = 264;
+
+		int width_in_sprites = 7;
+		int height_in_sprites = size + 1;
+		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+
+		//Draw box
+		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
+
+		//Draw the 'content' texture
+		SDL_SetRenderTarget(globalInstance->renderer, background);
+		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
+					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
+
+	}
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -614,6 +652,8 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 		Y = 192;
 	else if (size == 6)
 		Y = 216;
+	else if (size == 7)
+		Y = 252;	
 
 	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;
@@ -1509,6 +1549,8 @@ int getScoreDrawX(unsigned short size)
 		return 313;
 	else if (size == 6)
 		return 337;
+	else if (size == 7)
+		return 373;
 	else
 		return 277;
 
@@ -1525,6 +1567,8 @@ int getScoreDrawY(unsigned short size)
 		return 94;
 	else if (size == 6)
 		return 106;
+	else if (size == 7)
+		return 130;
 	else
 		return 70;
 
@@ -1537,7 +1581,7 @@ int getForegroundX(unsigned short size)
 		return SPRITE_WIDTH;
 	else if (size == 1)
 		return 132;
-	else if (size == 2 || size == 3 || size == 4 || size == 5 || size == 6)
+	else if (size == 2 || size == 3 || size == 4 || size == 5 || size == 6 || size == 7)
 		return 132;
 	else
 		return SPRITE_WIDTH;
@@ -1555,7 +1599,7 @@ int getForegroundY(unsigned short size)
 		return 48;
 	else if (size == 3)
 		return 24;
-	else if (size == 4 || size == 5 || size == 6)
+	else if (size == 4 || size == 5 || size == 6 || size == 7)
 		return 12;
 	else
 		return 0;
@@ -1572,7 +1616,7 @@ int getLevelX(unsigned short size, unsigned short level)
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
 		base = 318;
-	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6)
+	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6 || size == 7)
 		base = 66;
 	else
 		base = 318;
@@ -1596,6 +1640,8 @@ int getLevelY(unsigned short size, unsigned short level)
 		return 103;
 	else if (size == 6)
 		return 127;
+	else if (size == 7)
+		return 163;
 	else
 		return 115;
 
@@ -1609,7 +1655,7 @@ int getLinesX(unsigned short size, unsigned short lines)
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
 		base = 318;
-	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6)
+	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6 || size == 7)
 		base = 66;
 	else
 		base = 318;
@@ -1633,6 +1679,8 @@ int getLinesY(unsigned short size, unsigned short lines)
 		return 177;
 	else if (size == 6)
 		return 201;
+	else if (size == 7)
+		return 237;
 	else
 		return 189;
 
@@ -1656,6 +1704,8 @@ int getNextX(unsigned short size, int width)
 		base = 360;
 	else if (size == 6)
 		base = 378;
+	else if (size == 7)
+		base = 408;
 	else
 		base = 318;
 
@@ -1683,6 +1733,8 @@ int getNextY(unsigned short size, int height)
 		base = 168;
 	else if (size == 6)
 		base = 186;
+	else if (size == 7)
+		base = 216;
 	else
 		base = 282;
 
@@ -1708,6 +1760,8 @@ int getHoldX(unsigned short size, int width)
 		base = 354;
 	else if (size == 6)
 		base = 378;
+	else if (size == 7)
+		base = 414;
 	else
 		base = 318;
 
@@ -1735,6 +1789,8 @@ int getHoldY(unsigned short size, int height)
 		base = 258;
 	else if (size == 6)
 		base = 288;
+	else if (size == 7)
+		base = 330;
 	else
 		base = 403;
 
@@ -1750,7 +1806,7 @@ int getFpsX(unsigned short size)
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
 		base = 318;
-	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6)
+	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6 || size == 7)
 		base = 66;
 	else	
 		base = 318;
@@ -1774,6 +1830,8 @@ int getFpsY(unsigned short size)
 		return 222;
 	else if (size == 6)
 		return 246;
+	else if (size == 7)
+		return 282;
 	else
 		return 474;
 
@@ -1842,6 +1900,15 @@ void drawBackgroundExtras(SDL_Texture* background, unsigned short size)
 		drawRectangle(WALL_SPRITE_ID, background, 336, 336, 7, 4, GRAY, true);
 
 	}
+	else if (size == 7) {
+
+		drawRectangle(WALL_SPRITE_ID, background, 0, 0, 10, 11, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 0, 312, 10, 11, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 360, 0, 10, 5, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 360, 384, 10, 5, GRAY, true);
+		drawRectangle(WALL_SPRITE_ID, background, 468, 156, 1, 19, GRAY, true);
+
+	}
 
 }
 
@@ -1863,6 +1930,8 @@ int getGameWidth(unsigned short size)
 		return 420;
 	else if (size == 6)
 		return 444;
+	else if (size == 7)
+		return 480;
 	else
 		return 384;
 
@@ -1886,6 +1955,8 @@ int getGameHeight(unsigned short size)
 		return 324;
 	else if (size == 6)
 		return 384;
+	else if (size == 7)
+		return 444;
 	else
 		return 504;
 
