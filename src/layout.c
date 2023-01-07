@@ -26,7 +26,7 @@ void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned 
 void clearTexture(SDL_Texture* texture);
 
 //file.c
-unsigned int loadTop();
+unsigned int loadTop(unsigned short size);
 unsigned short getLineCount(char* fileName);
 char* getOptionName(int line);
 int getOptionValue(const char* str);
@@ -92,7 +92,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
     //Load the top score and create a string for it
-    int topScore = loadTop();
+    int topScore = loadTop(MODE);
 	char* top;
 	unsigned short zeroLength = 6 - getIntLength(topScore);
 	top = malloc(zeroLength * sizeof(*top));
@@ -101,15 +101,12 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 		*(top + i) = '0';
 
 	//Print all content to 'content' texture
-	printToTexture("TOP   ", content, 0.5 * (contentWidth - getStringLength("TOP   ", 1.0)), 0, 1, WHITE);
-	printToTexture(top, content, 0.5 * (contentWidth - getStringLength("000000", 1.0)),
-					(FONT_HEIGHT + STRING_GAP), 1, WHITE);
-	intToTexture(topScore, content,
-					0.5 * (contentWidth - getStringLength("000000", 1.0)) + zeroLength * (FONT_WIDTH + STRING_GAP), 
-					(FONT_HEIGHT + STRING_GAP), 1, WHITE);
-    printToTexture("SCORE", content, 
-					0.5 * (contentWidth - getStringLength("SCORE ", 1.0)), 
-					(FONT_WIDTH + STRING_GAP) * 3, 1, WHITE);
+	int temp = 0.5 * (contentWidth - getStringLength("TOP   ", 1.0));
+	printToTexture("TOP   ", content, temp, 0, 1, WHITE);
+	printToTexture(top, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+	printToTexture("SCORE", content, temp, (FONT_WIDTH + STRING_GAP) * 3, 1, WHITE);
+	temp = temp + zeroLength * (FONT_WIDTH + STRING_GAP);
+	intToTexture(topScore, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 
     int X = 0;
     int Y = 0;
@@ -702,8 +699,7 @@ SDL_Texture* create_Score_Text()
 
 	SDL_Texture* texture;
 
-	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), 
-		FONT_HEIGHT);
+	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT);
 
 	printToTexture("000000", texture, 0, 0, 1, WHITE);
 
@@ -716,8 +712,7 @@ SDL_Texture* create_Level_Text()
 
 	SDL_Texture* texture;
 
-	texture = createTexture(2 * (FONT_WIDTH + STRING_GAP), 
-		FONT_HEIGHT);
+	texture = createTexture(2 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT);
 
 	printToTexture("0", texture, 0, 0, 1, RED);
 

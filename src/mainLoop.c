@@ -173,6 +173,9 @@ void mainLoop()
 	else if (game_state == RESET)	//Reset the game to the main menu
 	{
 		
+		//Reset MODE back to 0
+		MODE = 0;
+
 		//So lets reset the background just in case the top score has been updated
 		clearTexture(Texture_Background);
 		SDL_DestroyTexture(Texture_Background);

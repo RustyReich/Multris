@@ -8,9 +8,6 @@
 
 #include "HEADERS/MGF.h"
 
-#define COMP_START	32
-#define COMP_END	126
-
 //draw.c
 unsigned short getIntLength(int num);
 
@@ -50,27 +47,82 @@ bool fileExists(char* fileName)
 
 }
 
-void createOptions()
+//Function for creating a new file at the given path
+	//This will erase the current file if it already exists.
+void createFile(char* file_path)
 {
 
-	FILE* optionsFile = NULL;
+	FILE *file;
 
-	//Create SAVES folder if it does not exist
-	struct stat st = {0};
-	if (stat("SAVES", &st) == -1)
-	{
+	//Get length of file name
+	int file_name_length = 0;
+	for (unsigned short i = SDL_strlen(file_path) - 1; i >= 0; i--)
+		if (file_path[i] != '/')
+			file_name_length++;
+		else
+			break;
 
-		#ifdef __unix__
-			mkdir("SAVES", 0700);
-		#endif
-		#ifdef _WIN32
-			mkdir("SAVES");
-		#endif
+	//Get name of file as string as well as directory path
+	char file_name[file_name_length + 1];
+	char file_dir[SDL_strlen(file_path) - file_name_length + 1];
+	SDL_strlcpy(file_name, (file_path + (SDL_strlen(file_path) - file_name_length)), file_name_length + 1);
+	SDL_strlcpy(file_dir, file_path, SDL_strlen(file_path) - file_name_length);
+
+	//Create all directories and intermediate directories needed in order to create the file
+	char tmp[256];
+    char *p = NULL;
+    size_t len;
+    snprintf(tmp, sizeof(tmp), "%s", file_dir);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/')
+        tmp[len - 1] = 0;
+    for (p = tmp + 1; *p; p++) {
+
+        if (*p == '/') {
+
+            *p = 0;
+            mkdir(tmp, S_IRWXU);
+            *p = '/';
+
+        }
+
+	}
+    mkdir(tmp, S_IRWXU);
+
+	//Finally, create the actual file
+	file = fopen(file_path, "w");
+	fclose(file);
+
+}
+
+void createTopFile()
+{
+
+	createFile("SAVES/top.md");
+
+	//Open topFile and fill it with default data
+	FILE* topFile = fopen("SAVES/top.md", "w");
+	if (topFile != NULL) {
+
+		for (unsigned short i = 0; i <= MAX_PIECE_SIZE; i++)
+			if (i != MAX_PIECE_SIZE)
+				fprintf(topFile, "%d=0\n", i);
+			else
+				fprintf(topFile, "%d=0", i);
+
+		fclose(topFile);
 
 	}
 
-	//Create options file and fill it with default data
-	optionsFile = fopen("SAVES/options.cfg", "w");
+}
+
+void createOptions()
+{
+
+	createFile("SAVES/options.cfg");
+
+	//Open optionsFile and fill it with default data
+	FILE* optionsFile = fopen("SAVES/options.cfg", "w");
 	if (optionsFile != NULL)
 	{
 
@@ -87,24 +139,10 @@ void createOptions()
 void createWindowFile()
 {
 
-	FILE* windowFile = NULL;
+	createFile("SAVES/window.cfg");
 
-	//Create SAVES folder if it does not exist
-	struct stat st = {0};
-	if (stat("SAVES", &st) == -1)
-	{
-
-		#ifdef __unix__
-			mkdir("SAVES", 0700);
-		#endif
-		#ifdef _WIN32
-			mkdir("SAVES");
-		#endif
-
-	}
-
-	//Create window file and fill it with default data
-	windowFile = fopen("SAVES/window.cfg", "w");
+	//Open windowFile and fill it with default data
+	FILE* windowFile = fopen("SAVES/window.cfg", "w");
 	if (windowFile != NULL)
 	{
 
@@ -122,24 +160,10 @@ void createWindowFile()
 void createControls()
 {
 
-	FILE* controlsFile = NULL;
+	createFile("SAVES/controls.cfg");
 
-	//Create SAVES folder if it does not exist
-	struct stat st = {0};
-	if (stat("SAVES", &st) == -1)
-	{
-
-		#ifdef __unix__
-			mkdir("SAVES", 0700);
-		#endif
-		#ifdef _WIN32
-			mkdir("SAVES");
-		#endif
-
-	}
-
-	//Create controls file and fill it with default data
-	controlsFile = fopen("SAVES/controls.cfg", "w");
+	//Open controlsFile and fill it with default data
+	FILE* controlsFile = fopen("SAVES/controls.cfg", "w");
 	if (controlsFile != NULL)
 	{
 
@@ -388,7 +412,7 @@ bool brokenWindowFile()
 
 }
 
-//Function for a value to a name in a file
+//Function for saving an integer value to a name in a file
 void saveToFile(const char* file_path, const char* str, int value)
 {
 	
@@ -479,83 +503,29 @@ void saveToFile(const char* file_path, const char* str, int value)
 	
 }
 
-unsigned int loadTop()
+unsigned int loadTop(unsigned short size)
 {
 
-	unsigned int score = 0;
-	int c;
+	char sizeAsString[getIntLength(size)];
+	SDL_itoa(size, sizeAsString, 10);
+	int top = getFileValue("SAVES/top.md", sizeAsString);
 
-	FILE* topFile = NULL;
-
-	if (!fileExists("SAVES/top.md"))
+	if (top == INT_MAX)
 		return 0;
 	else
-		topFile = fopen("SAVES/top.md", "r");
-
-	if (topFile != NULL)
-	{
-
-		//Decrypt the score
-		while ((c = getc(topFile)) != EOF)	
-			score = (score * 10) + (c - COMP_START);
-
-		fclose(topFile);
-		return score;
-
-	}
-	else
-		return 0;
+		return top;
 
 }
 
-void saveTop(unsigned int score)
+void saveTop(unsigned int score, unsigned short size)
 {
 
-	FILE* topFile = NULL;
+	if (!fileExists("SAVES/top.md"))
+		createTopFile();
 
-	//Create file if it does not exist, open it if it does
-	topFile = fopen("SAVES/top.md", "w");
-
-	if (topFile != NULL)
-	{
-
-		unsigned short length = (unsigned short)(floor(log10(abs(score))) + 1);
-
-		//Convert integer to a string
-		char* string = malloc((length + 1) * sizeof(*string));
-		if (string != NULL)
-		{
-
-			//Store each digit from num into string in reverse order
-			unsigned short count = 0;
-			while (score)
-			{
-
-				string[length - count - 1] = '0' + (score % 10);
-
-				count = count + 1;
-				score /= 10;
-
-			}
-
-			//End the string with a end-character
-			string[length] = '\0';
-
-			//Encrypt the score
-			for (unsigned short i = 0; i < length; i++)
-				*(string + i) = ((*(string + i) - '0') % (COMP_END - COMP_START) + COMP_START);
-
-		}
-		
-		//Print score to topFile
-		if (string != 0)
-			for (unsigned short i = 0; i < length; i++)
-				fprintf(topFile, "%c", *(string + i));
-
-		free(string);
-		fclose(topFile);
-
-	}
+	char sizeAsString[getIntLength(size)];
+	SDL_itoa(size, sizeAsString, 10);
+	saveToFile("SAVES/top.md", sizeAsString, score);
 
 }
 

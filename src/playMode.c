@@ -30,9 +30,8 @@ void mirrorPieceOverY(piece* Piece);
 void _playSound(int id);
 
 //file.c
-void saveTop(unsigned int score);
-unsigned int loadTop();
-unsigned short getOption(unsigned short line);
+void saveTop(unsigned int score, unsigned short size);
+unsigned int loadTop(unsigned short size);
 
 //memory.c
 void freeVars();
@@ -646,8 +645,8 @@ unsigned short playMode(piece* firstPiece)
 
 				//Only save the top score if the player is playing in MULTRIS mode
 					//Save score once overAnimation is finished playing
-				if (*Score > loadTop() && MODE == 0)
-					saveTop(*Score);
+				if (*Score > loadTop(MODE))
+					saveTop(*Score, MODE);
 
 			}
 
