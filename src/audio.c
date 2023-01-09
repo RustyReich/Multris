@@ -14,8 +14,7 @@ void _playSound(int id)
 
 		//Then we need to clear the audio buffer and queue the audio currently trying to be played
 		SDL_ClearQueuedAudio(*globalInstance->audioDevice);
-		SDL_QueueAudio(*globalInstance->audioDevice, Sound->buffer, 
-			Sound->length);
+		SDL_QueueAudio(*globalInstance->audioDevice, Sound->buffer, Sound->length);
 
 	}
 

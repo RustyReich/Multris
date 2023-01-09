@@ -95,6 +95,23 @@ void createFile(char* file_path)
 
 }
 
+void createProgressFile()
+{
+
+	createFile("SAVES/progress.md");
+
+	//Open progressFile and fill it with default data
+	FILE* progressFile = fopen("SAVES/progress.md", "w");
+	if (progressFile != NULL)
+	{
+
+		fprintf(progressFile, "progress=1");
+		fclose(progressFile);
+
+	}
+
+}
+
 void createTopFile()
 {
 
@@ -102,7 +119,8 @@ void createTopFile()
 
 	//Open topFile and fill it with default data
 	FILE* topFile = fopen("SAVES/top.md", "w");
-	if (topFile != NULL) {
+	if (topFile != NULL) 
+	{
 
 		for (unsigned short i = 0; i <= MAX_PIECE_SIZE; i++)
 			if (i != MAX_PIECE_SIZE)
@@ -327,6 +345,23 @@ int getFileValue(const char* file_path, const char* name)
 
 }
 
+//Return true if there are iiregularities with the progress file
+	//This means that the players progress is saved as being less than 1 or greater than 8
+bool brokenProgress()
+{
+
+	if (getLineCount("SAVES/progress.md") != 1)
+		return true;
+
+	int progress_value = getFileValue("SAVES/progress.md", "progress");
+
+	if (progress_value < 1 || progress_value > 8)
+		return true;
+
+	return false;
+
+}
+
 //Return true if there are any irregularities with the options file
 	//This means if any options have irregular values
 	//It also checks if there are the right amount of lines in the file
@@ -517,6 +552,18 @@ unsigned int loadTop(unsigned short size)
 
 }
 
+unsigned int loadProgress()
+{
+
+	int prog = getFileValue("SAVES/progress.md", "progress");
+
+	if (prog < 1 || prog > MAX_PIECE_SIZE)
+		return 1;
+	else
+		return prog;
+
+}
+
 void saveTop(unsigned int score, unsigned short size)
 {
 
@@ -526,6 +573,16 @@ void saveTop(unsigned int score, unsigned short size)
 	char sizeAsString[getIntLength(size)];
 	SDL_itoa(size, sizeAsString, 10);
 	saveToFile("SAVES/top.md", sizeAsString, score);
+
+}
+
+void saveProgress()
+{
+
+	if (!fileExists("SAVES/progress.md"))
+		createProgressFile();
+
+	saveToFile("SAVES/progress.md", "progress", PROGRESS);
 
 }
 

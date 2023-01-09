@@ -930,7 +930,7 @@ SDL_Texture* create_Controls_Text()
 }
 
 //Create a UI list given an arbitrary number of strings
-UI_list* _create_list(const char* strings, ...)
+UI_list* _create_list(unsigned short color, const char* strings, ...)
 {
 
 	//Return NULL, without allocating any memory, if no strings are given
@@ -958,8 +958,7 @@ UI_list* _create_list(const char* strings, ...)
 			if (list->num_entries == 0)
 				list->entry_texts = calloc(list->num_entries + 1, sizeof(char*));
 			else
-				list->entry_texts = 
-						realloc(list->entry_texts, (list->num_entries + 2) * sizeof(char*));
+				list->entry_texts = realloc(list->entry_texts, (list->num_entries + 2) * sizeof(char*));
 
 			//Copy current_string into the entry_texts array
 				//Append a termination character to the end of it
@@ -998,7 +997,7 @@ UI_list* _create_list(const char* strings, ...)
 		int x = 0;
 		int y = (FONT_HEIGHT + STRING_GAP) * i;
 
-		printToTexture(str, texture, x, y, 1.0, WHITE);
+		printToTexture(str, texture, x, y, 1.0, color);
 
 	}
 
@@ -1011,7 +1010,7 @@ UI_list* create_Modes_List()
 {
 
 	//Initialize list
-	UI_list* list = create_list("MULTRIS", "NUMERICAL", "OPTIONS", "EXIT");
+	UI_list* list = create_list(WHITE, "MULTRIS", "NUMERICAL", "OPTIONS", "EXIT");
 
 	//First entry is selected by default
 	list->selected_entry = 0;
@@ -1032,7 +1031,20 @@ UI_list* create_Modes_List()
 UI_list* create_Numerical_List()
 {
 
-	UI_list* list = create_list("1", "2", "3", "4", "5", "6", "7", "8");
+	UI_list* list = create_list(GREEN, "1", "2", "3", "4", "5", "6", "7", "8");
+
+	for (unsigned short i = list->num_entries - 1; i > PROGRESS - 1; i--)
+	{
+
+		int texture_height;
+		SDL_QueryTexture(list->ui->texture, NULL, NULL, NULL, &texture_height);
+
+		int Y = texture_height - ((list->num_entries - i)) * SPRITE_HEIGHT;
+		Y = Y - (list->num_entries - i - 1) * STRING_GAP;
+
+		printToTexture(list->entry_texts[i], list->ui->texture, 0, Y, 1.0, RED);
+
+	}
 
 	list->selected_entry = 0;
 
@@ -1051,7 +1063,7 @@ UI_list* create_Numerical_List()
 UI_list* create_Options_List()
 {
 
-	UI_list* list = create_list("FULLSCREEN", "VOLUME", "LIMIT FPS", "CONTROLS");
+	UI_list* list = create_list(WHITE, "FULLSCREEN", "VOLUME", "LIMIT FPS", "CONTROLS");
 
 	list->selected_entry = 0;
 

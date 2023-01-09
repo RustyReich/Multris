@@ -7,9 +7,6 @@
 
 #define STRUCTURES_H
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-
 typedef struct UI
 {
 
@@ -19,7 +16,7 @@ typedef struct UI
     int x;
     int y;
 
-    //Wether the curren UI element is currently being interacted with by the player
+    //Wether the current UI element is currently being interacted with by the player
     bool currentlyInteracting;
 
 } UI;

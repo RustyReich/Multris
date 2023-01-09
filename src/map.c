@@ -141,13 +141,15 @@ unsigned short drawTitle(piece** firstPiece)
 		else if(numerical->ui->currentlyInteracting)
 		{
 
-			if (numerical->selected_entry < numerical->num_entries - 1)
+			if (numerical->selected_entry < PROGRESS - 1)
 			{
 
 				playSound(MOVE_SOUND);
 				numerical->selected_entry++;
 
 			}
+			else
+				playSound(LAND_SOUND);
 
 		}
 		else if(options->ui->currentlyInteracting && *editingVolume == false)

@@ -22,7 +22,7 @@
 #define DOWN_BUTTON			10
 #define UP_BUTTON			11
 
-#define NUM_OF_SOUNDS		7
+#define NUM_OF_SOUNDS	8
 #define COMPLETE_SOUND 	0
 #define HOLD_SOUND		1
 #define LAND_SOUND		2
@@ -30,6 +30,7 @@
 #define OVER_SOUND		4
 #define PAUSE_SOUND		5
 #define ROTATE_SOUND	6
+#define UNLOCK_SOUND	7
 
 #define GRAY	0
 #define WHITE	1

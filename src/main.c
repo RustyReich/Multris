@@ -20,6 +20,8 @@ void createWindowFile();
 bool brokenWindowFile();
 void saveToFile(const char* file_path, const char* str, int value);
 void saveWindowSettings();
+bool brokenProgress();
+void createProgressFile();
 
 //instance.c
 void initInstance(gameInstance** instance);
@@ -40,6 +42,8 @@ bool UPDATE_FULLSCREEN_MODE = true;
 bool FULLSCREEN_MODE = false;
 unsigned short VOLUME = 10;
 bool LIMIT_FPS = true;
+
+int PROGRESS = 1;
 
 int MODE = 0;
 int MAP_WIDTH = 0;
@@ -104,6 +108,10 @@ int main(int argc, char* argv[])
 	if (!fileExists("SAVES/window.cfg") || brokenWindowFile())
 		createWindowFile();
 
+	//Create progress file if it doesn't exist or it is broken
+	if (!fileExists("SAVES/progress.md") || brokenProgress())
+		createProgressFile();
+
 	//Load window size from window file
 	if (fileExists("SAVES/window.cfg"))
 	{
@@ -151,6 +159,10 @@ int main(int argc, char* argv[])
 		LIMIT_FPS = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 
 	}
+
+	//Load progress
+	if (fileExists("SAVES/progress.md"))
+		PROGRESS = getFileValue("SAVES/progress.md", "progress");
 
 	//Update volume to that loaded from options file
 	updateVolume();

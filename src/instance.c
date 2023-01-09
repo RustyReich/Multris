@@ -80,6 +80,7 @@ sound** initSounds()
     sounds[OVER_SOUND] = loadSound("AUDIO/over.wav");
     sounds[PAUSE_SOUND] = loadSound("AUDIO/pause.wav");
     sounds[ROTATE_SOUND] = loadSound("AUDIO/rotate.wav");
+    sounds[UNLOCK_SOUND] = loadSound("AUDIO/unlock.wav");
 
     return sounds;
 

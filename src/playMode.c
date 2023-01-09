@@ -32,6 +32,8 @@ void _playSound(int id);
 //file.c
 void saveTop(unsigned int score, unsigned short size);
 unsigned int loadTop(unsigned short size);
+unsigned int loadProgress();
+void saveProgress();
 
 //memory.c
 void freeVars();
@@ -74,8 +76,7 @@ bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth);
 void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground,
 				unsigned short mapWidth);
 bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
-	bool *clearingLine, bool *mapData, unsigned short* numCompleted, unsigned short mapWidth,
-	unsigned short mapHeight);
+	bool *clearingLine, bool *mapData, unsigned short* numCompleted, bool* playing_progress_sound);
 void updateScore(unsigned int, SDL_Texture*);
 void updateLevel(unsigned short, SDL_Texture*);
 void updateLines(unsigned short lines, SDL_Texture** linesTexture);
@@ -117,6 +118,7 @@ unsigned short playMode(piece* firstPiece)
 	static int* foregroundX; declare(foregroundX, 0);
 	static int* foregroundY; declare(foregroundY, 0);
 	static double* pausedMulti; declare(pausedMulti, 1.0);
+	static bool* playing_progress_sound; declare(playing_progress_sound, false);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
@@ -497,6 +499,15 @@ unsigned short playMode(piece* firstPiece)
 					*Level += 1;
 					updateLevel(*Level, Texture_Level);
 
+					if (*Level >= MODE && MODE == PROGRESS)
+					{
+					
+						playSound(UNLOCK_SOUND);
+						*playing_progress_sound = true;
+						PROGRESS++;
+
+					}
+
 					//Increase speed
 					*speed = (double)(60.0988 / (48 - 5 * *Level));
 
@@ -527,8 +538,7 @@ unsigned short playMode(piece* firstPiece)
 				*justHeld = false;
 
 			//Recalculate ghostY
-			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH,
-									MAP_HEIGHT);
+			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
 
 			//Player lost
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
@@ -579,9 +589,9 @@ unsigned short playMode(piece* firstPiece)
 		
 		unsigned short prevNumCompleted = *numCompleted;
 		
-		if (playLineAnimation(foreground, *completedRows, clearingLine,
-			mapData, numCompleted, MAP_WIDTH, MAP_HEIGHT) == true)
-			playSound(COMPLETE_SOUND);
+		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted, 
+								playing_progress_sound))
+				playSound(COMPLETE_SOUND);
 
 		//Remove first element in completedRows array
 			//Also resize completedRows array
@@ -647,6 +657,9 @@ unsigned short playMode(piece* firstPiece)
 					//Save score once overAnimation is finished playing
 				if (*Score > loadTop(MODE))
 					saveTop(*Score, MODE);
+
+				if (PROGRESS > loadProgress())
+					saveProgress();
 
 			}
 
@@ -828,8 +841,8 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 }
 
 bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
-	bool *clearingLine, bool *mapData, unsigned short* numCompleted, unsigned short mapWidth,
-	unsigned short mapHeight)
+						bool *clearingLine, bool *mapData, unsigned short* numCompleted, 
+						bool* playing_progress_sound)
 {
 
 	bool playSound = false;
@@ -866,7 +879,8 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 					column = malloc(sizeof(*column));
 					*column = 0;
 
-					playSound = true;
+					if (!*playing_progress_sound)
+						playSound = true;
 
 				}
 				else if (column != NULL)
@@ -875,17 +889,17 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 					//Because we remove a block on each side of the chasm
 						//The blocks getting removed are +-*column blocks away from the center
 					drawToTexture(BLOCK_SPRITE_ID, foreground,
-						(mapWidth / 2 - *column) * SPRITE_WIDTH, 
+						(MAP_WIDTH / 2 - *column) * SPRITE_WIDTH, 
 						row * SPRITE_HEIGHT, 1, BLACK);
 					drawToTexture(BLOCK_SPRITE_ID, foreground,
-						(mapWidth / 2 + *column) * SPRITE_WIDTH, 
+						(MAP_WIDTH / 2 + *column) * SPRITE_WIDTH, 
 						row * SPRITE_HEIGHT, 1, BLACK);
 
 					//By increasing *column, we're basically increaing the radius of the 
 					//chasm of blocks we are removing
 					*column = *column + 1;
 
-					if (*column > mapWidth / 2)
+					if (*column > MAP_WIDTH / 2)
 					{
 
 						free(column);
@@ -895,7 +909,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 						if (*numCompleted == 0)
 							*clearingLine = false;
 
-						removeLine(row, mapData, foreground, mapWidth);
+						removeLine(row, mapData, foreground, MAP_WIDTH);
 
 					}
 
