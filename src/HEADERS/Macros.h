@@ -23,3 +23,6 @@
 
 //Macros for variadic functions
 #define create_list(...) _create_list(__VA_ARGS__, NULL)
+
+//In-line function macros
+#define swap(a, b, t) { t tmp = a; a = b; b = tmp; } 

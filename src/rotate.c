@@ -1,7 +1,5 @@
 #include "HEADERS/MGF.h"
 
-#define swap(a, b, t) { t tmp = a; a = b; b = tmp; } 
-
 void inversePiece(piece* Piece);
 void mirrorPieceOverY(piece* Piece);
 
