@@ -1,7 +1,4 @@
-#include <stdbool.h>
 #include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #include "HEADERS/MGF.h"
 
@@ -12,13 +9,11 @@ void mainLoop();
 bool fileExists(char* fileName);
 void createOptions();
 int getFileValue(const char* file_path, const char* name);
-unsigned short getLineCount(char* fileName);
 bool brokenOptions();
 void createControls();
 bool brokenControls();
 void createWindowFile();
 bool brokenWindowFile();
-void saveToFile(const char* file_path, const char* str, int value);
 void saveWindowSettings();
 bool brokenProgress();
 void createProgressFile();
@@ -52,8 +47,21 @@ int MAP_HEIGHT = 0;
 //Global Instance
 gameInstance *globalInstance;
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
+
+	//Initialize SDL stuff
+    if( SDL_Init( SDL_INIT_VIDEO ) < 0) {
+
+        fprintf( stderr, "Could not initialize SDL video: %s\n", SDL_GetError() );
+        exit( -1 );
+
+    }
+	if ( SDL_Init( SDL_INIT_AUDIO ) < 0) {
+
+		fprintf( stderr, "Could not initialize SDL audio: %s\n", SDL_GetError() );
+		exit( -1 );
+
+	}
 
 	//Set MAP_WIDTH and MAP_HEIGHT
 	MAP_WIDTH = calcMapWidth();
@@ -62,28 +70,13 @@ int main(int argc, char* argv[])
 	//Set seed for random number generator
 	srand((int)time(NULL));
 
-	//Initialize SDL stuff
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0)
-	{
-
-        fprintf( stderr, "Could not initialize SDL video: %s\n", SDL_GetError() );
-        exit( -1 );
-
-    }
-	if ( SDL_Init( SDL_INIT_AUDIO ) < 0)
-	{
-
-		fprintf( stderr, "Could not initialize SDL audio: %s\n", SDL_GetError() );
-		exit( -1 );
-
-	}
-
 	//Initialize game instance
 	initInstance(&globalInstance);
 
 	//Used to check if this is the very first frame of the game
 	bool firstLoop = true;
 
+	//Keep track of the number of frames drawn in the last 10th of a second
 	int frames_per_DS = 0;
 
 	//Variables for estimating FPS every 100ms
@@ -92,27 +85,21 @@ int main(int argc, char* argv[])
 
 	//Variables for limiting FPS
 	Uint32 ticksLastFrame = SDL_GetTicks();
-	//targetFrameTime will be that of a montior with double the refresh rate of the
-	//current monitor
+	//targetFrameTime will be roughly double the refresh rate of the monitor
 	double targetFrameTime = (double)1 / (double)(globalInstance->DM.refresh_rate * 2);
 
-	//Create options file if it doesn't exist or it is broken
+	//Create SAVES files if they do not exist or are broken
 	if (!fileExists("SAVES/options.cfg") || brokenOptions())
 		createOptions();
-
-	//Create controls file if it doesn't exist or it is broken
 	if (!fileExists("SAVES/controls.cfg") || brokenControls())
 		createControls();
-
-	//Create window size file if it doesn't exist or it is broken
 	if (!fileExists("SAVES/window.cfg") || brokenWindowFile())
 		createWindowFile();
-
-	//Create progress file if it doesn't exist or it is broken
 	if (!fileExists("SAVES/progress.md") || brokenProgress())
 		createProgressFile();
 
-	//Load window size from window file
+	//Now load info from SAVES files
+
 	if (fileExists("SAVES/window.cfg"))
 	{
 		
@@ -122,16 +109,19 @@ int main(int argc, char* argv[])
 		globalInstance->minimizedWindow_X = getFileValue("SAVES/window.cfg", "X");
 		globalInstance->minimizedWindow_Y = getFileValue("SAVES/window.cfg", "Y");
 
+		int w = globalInstance->minimizedWindow_W;
+		int h = globalInstance->minimizedWindow_H;
+		int x = globalInstance->minimizedWindow_X;
+		int y = globalInstance->minimizedWindow_Y;
+
 		//Set window size
-		SDL_SetWindowSize(globalInstance->window, globalInstance->minimizedWindow_W, 
-													globalInstance->minimizedWindow_H);
+		SDL_SetWindowSize(globalInstance->window, w, h);
+		
 		//Set window position
-		SDL_SetWindowPosition(globalInstance->window, globalInstance->minimizedWindow_X,
-														globalInstance->minimizedWindow_Y);
+		SDL_SetWindowPosition(globalInstance->window, x, y);
 
 	}
-
-	//Load controls from controls file
+	
 	if (fileExists("SAVES/controls.cfg"))
 	{
 
@@ -150,7 +140,6 @@ int main(int argc, char* argv[])
 
 	}
 
-	//Load some options from the option file
 	if (fileExists("SAVES/options.cfg"))
 	{
 
@@ -160,16 +149,17 @@ int main(int argc, char* argv[])
 
 	}
 
-	//Load progress
 	if (fileExists("SAVES/progress.md"))
 		PROGRESS = getFileValue("SAVES/progress.md", "progress");
 
 	//Update volume to that loaded from options file
 	updateVolume();
 	
+	//Game loop
 	while (globalInstance->running)
 	{
 
+		//Poll for events
 		while (SDL_PollEvent(&globalInstance->event))
 		{
 
@@ -180,6 +170,7 @@ int main(int argc, char* argv[])
             if (globalInstance->event.type == SDL_WINDOWEVENT)
 			{
 
+				//Scale rendere if size of window changes
                 if (globalInstance->event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
 					scaleRenderer(); 
 
@@ -199,41 +190,53 @@ int main(int argc, char* argv[])
         if (!firstLoop)
         {
 
+			//Increase frames_per_DS counter with each frame
             frames_per_DS++;
 
+			//Now check how many milliseconds have passed since the last time we updated the FPS counter
             deltaTicks = SDL_GetTicks() - prevTicks;
 
+			//If it has been more than 100ms, then we update it
             if (deltaTicks >= 100)
             {
 
-                globalInstance->FPS=(int)((frames_per_DS-((float)deltaTicks-100)*frames_per_DS/deltaTicks)*10);
-                frames_per_DS = 0;
+				//Calculate FPS
+				int FPS = frames_per_DS;
+				FPS = (int)((FPS - ((float)deltaTicks - 100) * frames_per_DS / deltaTicks) * 10);
+				globalInstance->FPS = FPS;
+                
+				//Reset frames_per_DS counter
+				frames_per_DS = 0;
 
+				//Set prevTicks to the current value of SDL_GetTicks so that we can begin tracking frames for the
+				//next 100ms
                 prevTicks = SDL_GetTicks();
 
             }
 
         }
-        else
+        else	//In the case that this is the first frame of the game
         {   
 
+			//Set prevTicks to an initial value
             prevTicks = SDL_GetTicks();
 
             //Scale renderer to fit window
             scaleRenderer();
 
-            //It is no longer the first loop
+            //It is no longer the first frame
             firstLoop = false;
 
         }
 
+		//As long as the FPS is greater than 0, the frame_Time is just the inverse of the FPS
         if (globalInstance->FPS > 0)
             globalInstance->frame_time = (double)1 / (double)globalInstance->FPS;
 
         //-----------------------------------------------------------------------
 
-		//Main game loop
-		if (LIMIT_FPS)
+		//Call mainLoop() at different intervals depending on if the player has the FPS limiter on or not
+		if (LIMIT_FPS)	//FPS limiter is on
 		{
 
 			//Logic for limitting the FPS
@@ -267,13 +270,18 @@ int main(int argc, char* argv[])
 
 	}
 
+	//Save window size and position to disk when the game closes. But only do this if it is not in fullscreen.
+		//This is because we want to saved the minimized window settings, not the fullscreen window settings.
 	if (!FULLSCREEN_MODE)
 		saveWindowSettings();
 
+
+	//Close SDL stuff 
 	SDL_DestroyRenderer(globalInstance->renderer);
 	SDL_DestroyWindow(globalInstance->window);
 	SDL_Quit();
 
+	//Return 0 upon successful run
 	return 0;
 
 }
