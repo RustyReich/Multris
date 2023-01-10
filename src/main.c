@@ -100,8 +100,7 @@ int main(int argc, char* argv[]) {
 
 	//Now load info from SAVES files
 
-	if (fileExists("SAVES/window.cfg"))
-	{
+	if (fileExists("SAVES/window.cfg")) {
 		
 		//Get minimizedWindow size and position
 		globalInstance->minimizedWindow_W = getFileValue("SAVES/window.cfg", "WIDTH");
@@ -122,8 +121,7 @@ int main(int argc, char* argv[]) {
 
 	}
 	
-	if (fileExists("SAVES/controls.cfg"))
-	{
+	if (fileExists("SAVES/controls.cfg")) {
 
 	    globalInstance->controls[LEFT_BUTTON].button = getFileValue("SAVES/controls.cfg", "LEFT");
 		globalInstance->controls[RIGHT_BUTTON].button = getFileValue("SAVES/controls.cfg", "RIGHT");
@@ -140,8 +138,7 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	if (fileExists("SAVES/options.cfg"))
-	{
+	if (fileExists("SAVES/options.cfg")) {
 
 		FULLSCREEN_MODE = getFileValue("SAVES/options.cfg", "FULLSCREEN");
 		VOLUME = getFileValue("SAVES/options.cfg", "VOLUME");
@@ -156,19 +153,16 @@ int main(int argc, char* argv[]) {
 	updateVolume();
 	
 	//Game loop
-	while (globalInstance->running)
-	{
+	while (globalInstance->running) {
 
 		//Poll for events
-		while (SDL_PollEvent(&globalInstance->event))
-		{
+		while (SDL_PollEvent(&globalInstance->event)) {
 
 			//User quit
             if (globalInstance->event.type == SDL_QUIT)
                 globalInstance->running = false;
 
-            if (globalInstance->event.type == SDL_WINDOWEVENT)
-			{
+            if (globalInstance->event.type == SDL_WINDOWEVENT) {
 
 				//Scale rendere if size of window changes
                 if (globalInstance->event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
@@ -187,8 +181,7 @@ int main(int argc, char* argv[]) {
 
 		//Calcualte frame_time and FPS-------------------------------------------
             //FPS and frame_time get updated every ~100 ms (10 times per second)
-        if (!firstLoop)
-        {
+        if (!firstLoop) {
 
 			//Increase frames_per_DS counter with each frame
             frames_per_DS++;
@@ -197,8 +190,7 @@ int main(int argc, char* argv[]) {
             deltaTicks = SDL_GetTicks() - prevTicks;
 
 			//If it has been more than 100ms, then we update it
-            if (deltaTicks >= 100)
-            {
+            if (deltaTicks >= 100) {
 
 				//Calculate FPS
 				int FPS = frames_per_DS;
@@ -215,8 +207,7 @@ int main(int argc, char* argv[]) {
             }
 
         }
-        else	//In the case that this is the first frame of the game
-        {   
+        else {	//In the case that this is the first frame of the game   
 
 			//Set prevTicks to an initial value
             prevTicks = SDL_GetTicks();
@@ -236,8 +227,7 @@ int main(int argc, char* argv[]) {
         //-----------------------------------------------------------------------
 
 		//Call mainLoop() at different intervals depending on if the player has the FPS limiter on or not
-		if (LIMIT_FPS)	//FPS limiter is on
-		{
+		if (LIMIT_FPS) {	//FPS limiter is on
 
 			//Logic for limitting the FPS
 				//Basically just sleeps every frame if not enough time passed between frames
@@ -258,8 +248,7 @@ int main(int argc, char* argv[]) {
 		//Update window in and out of fullscreen
 			//For some reason this has to be done at the end of the frame or else it wont 
 			//update correctly on launch
-		if (UPDATE_FULLSCREEN_MODE)
-		{
+		if (UPDATE_FULLSCREEN_MODE) {
 
 			setWindowMode(FULLSCREEN_MODE);
 
