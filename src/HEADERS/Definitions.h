@@ -1,3 +1,5 @@
+#define DEFINITIONS_H
+
 #define FONT_WIDTH 	12
 #define FONT_HEIGHT 12
 #define STRING_GAP	2

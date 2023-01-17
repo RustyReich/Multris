@@ -1,26 +1,17 @@
-#include <time.h>
-#include <stdbool.h>
-
 #include "HEADERS/MGF.h"
 
 //draw.c
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
 void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
-unsigned short getIntLength(int num);
 SDL_Texture* createTexture(int width, int height);
 void clearTexture(SDL_Texture* texture);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 int getStringLength(char* str, float multiplier);
-int getIntStringLength(int num, float multiplier);
 
 //map.c
 unsigned short drawTitle(piece** firstPiece);
 
 //playMode.c
 unsigned short playMode(piece* firstPiece);
-
-//file.c
-unsigned int loadTop();
 
 //generate.c
 void delPiece(piece** Piece);
@@ -52,38 +43,37 @@ void scaleRenderer();
 void mainLoop()
 {
 
-	//Texture storing everything on screen that never changes
-		//This includes things like the border walls, strings, etc.
-	static SDL_Texture* Texture_Background = NULL;
-	if (Texture_Background == NULL)
-	{
+	static SDL_Texture* Texture_Background;
+	if (Texture_Background == NULL) {
 
-		//Set renderer to dimensions for MAX_PIECE_SIZE
-		int width = getGameWidth(MAX_PIECE_SIZE);
-		int height = getGameHeight(MAX_PIECE_SIZE);
+		//Set renderer to correect dimensions for selected size
+		int width = getGameWidth(MODE);
+		int height = getGameHeight(MODE);
 		SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
 		scaleRenderer();
 
 		//Create background texture
 		Texture_Background = createTexture(width, height);
 
-		//Draw layout
-		drawPlayField(Texture_Background, MAX_PIECE_SIZE);
-		drawScoreBox(Texture_Background, MAX_PIECE_SIZE);
-		drawLevelBox(Texture_Background, MAX_PIECE_SIZE);
-		drawUntilBox(Texture_Background, MAX_PIECE_SIZE);
-		drawNextBox(Texture_Background, MAX_PIECE_SIZE);
-		drawHoldBox(Texture_Background, MAX_PIECE_SIZE);
-		drawFPSBox(Texture_Background, MAX_PIECE_SIZE);
+		//Draw all layout stuff
+		drawPlayField(Texture_Background, MODE);
+		drawScoreBox(Texture_Background, MODE);
+		drawLevelBox(Texture_Background, MODE);
+		drawUntilBox(Texture_Background, MODE);
+		drawNextBox(Texture_Background, MODE);
+		drawHoldBox(Texture_Background, MODE);
+		drawFPSBox(Texture_Background, MODE);
+		drawBackgroundExtras(Texture_Background, MODE);
 
 	}
 	
+	//Create texture for FPS
 	static SDL_Texture* Texture_FPS;
 	if (Texture_FPS == NULL)
 		Texture_FPS = createTexture(getStringLength("00000", 1.0), FONT_HEIGHT);
 
-	//Hold the first piece that is generated in the title screen and will be the first 
-	//piece played
+	//The piece that shows up in the NEXT box on the title screen will be the first piece that is placed if
+	//playing a mode that supports the size of that piece
 	static piece* firstPiece;
 	if (firstPiece == NULL)
 		firstPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
@@ -105,54 +95,36 @@ void mainLoop()
 	drawTexture(Texture_Background, 0, 0, 1.0);
 	drawTexture(Texture_FPS, getFpsX(MODE), getFpsY(MODE), 1.0);
 
-	if (game_state == TITLE_SCREEN)
-	{
+	if (game_state == TITLE_SCREEN) {
 
 		game_state = drawTitle(&firstPiece);
 
-		//If MODE != 0, then NUMERICAL mode was selected. So we need to redraw the background layout
-		if (game_state == PLAY_SCREEN && MODE != 0)
-		{
+		//If MODE != 0, then NUMERICAL mode was selected. So we need to redraw the background layout.
+			//If Texture_Background is set to NULL, it will be re-drawn on the next frame
+		if (game_state == PLAY_SCREEN && MODE != 0) {
 
-			//Clear background texture
+			//Clear and delete background texture
 			clearTexture(Texture_Background);
 			SDL_DestroyTexture(Texture_Background);
 			Texture_Background = NULL;
 
-			//Set renderer to correct dimensions for selected size
-			int width = getGameWidth(MODE);
-			int height = getGameHeight(MODE);
-			SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
-			scaleRenderer();
-
-			//Re-create background texture
-			Texture_Background = createTexture(width, height);
-
-			//Draw all layout stuff
-			drawPlayField(Texture_Background, MODE);
-			drawScoreBox(Texture_Background, MODE);
-			drawLevelBox(Texture_Background, MODE);
-			drawUntilBox(Texture_Background, MODE);
-			drawNextBox(Texture_Background, MODE);
-			drawHoldBox(Texture_Background, MODE);
-			drawFPSBox(Texture_Background, MODE);
-			drawBackgroundExtras(Texture_Background, MODE);
-
 		}
 
 	}
-	else if (game_state == PLAY_SCREEN)
-	{
+	else if (game_state == PLAY_SCREEN) {
 
 		//The first loop into playMode
-		if (firstPiece != NULL)
-		{
+			//We can tell it's the first loop because firstPiece hasn't yet been set back to NULL
+		if (firstPiece != NULL) {
 
+			//Save the map width and height into global variables so that it doesn't have to be re-calculated
+			//every time we need it
 			MAP_WIDTH = calcMapWidth();
 			MAP_HEIGHT = calcMapHeight();
 
-			if (MODE != 0)
-			{
+			//If the firstPiece is not a valid piece for the selected game mode, delete it and generate one
+			//that is valid
+			if (MODE != 0 && MODE != firstPiece->numOfBlocks) {
 
 				delPiece(&firstPiece);
 				firstPiece = generateGamePiece(MODE);
@@ -176,7 +148,7 @@ void mainLoop()
 		//Reset MODE back to 0
 		MODE = 0;
 
-		//So lets reset the background just in case the top score has been updated
+		//Lets also reset the background again
 		clearTexture(Texture_Background);
 		SDL_DestroyTexture(Texture_Background);
 		Texture_Background = NULL;
