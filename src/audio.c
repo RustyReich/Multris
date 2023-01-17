@@ -1,22 +1,17 @@
 #include "HEADERS/MGF.h"
 
 //Play a sound
+	//Only one sound can be played at a time.
+	//Any sound currently being played when this function is called will be cutoff and the new sound will
+	//start.
 void _playSound(int id)
 {
 
 	sound* Sound = globalInstance->sounds[id];
 
-	//If the sound being played is not the one already queued into the audio buffer
-		//Technically we don't check if its the same one, we just check if its the same length
-			//This still works since all audio files in the game are different lengths
-	if (Sound->length != SDL_GetQueuedAudioSize(*globalInstance->audioDevice))
-	{
-
-		//Then we need to clear the audio buffer and queue the audio currently trying to be played
-		SDL_ClearQueuedAudio(*globalInstance->audioDevice);
-		SDL_QueueAudio(*globalInstance->audioDevice, Sound->buffer, Sound->length);
-
-	}
+	//Clear the audio buffer and queue the audio currently trying to be played
+	SDL_ClearQueuedAudio(*globalInstance->audioDevice);
+	SDL_QueueAudio(*globalInstance->audioDevice, Sound->buffer, Sound->length);
 
 	//Play the audio currently queued
 	SDL_PauseAudioDevice(*globalInstance->audioDevice, 0);
@@ -33,8 +28,7 @@ sound* loadSound(char* file)
 
 	//Load the sound into the allocated memory
 	if (newSound != NULL)
-		SDL_LoadWAV(file, globalInstance->wavSpec, &newSound->buffer, 
-			&newSound->length);
+		SDL_LoadWAV(file, globalInstance->wavSpec, &newSound->buffer, &newSound->length);
 
 	return newSound;
 
@@ -63,9 +57,8 @@ void setVolume(sound** Sound, unsigned short volume)
 	dstStream = calloc((*Sound)->length, sizeof(*dstStream));
 
 	//Mix audio with volume adjustment
-	SDL_MixAudioFormat(dstStream, (*Sound)->buffer, 
-		globalInstance->wavSpec->format, (*Sound)->length, 
-		SDL_MIX_MAXVOLUME * (volume / 100.0));
+	volume = SDL_MIX_MAXVOLUME * (volume / 100.0);
+	SDL_MixAudioFormat(dstStream, (*Sound)->buffer, globalInstance->wavSpec->format, (*Sound)->length, volume);
 
 	//Copy volume adjusted buffer back to Sound->buffer
 	if (dstStream != NULL)
