@@ -44,6 +44,9 @@ varVector** pushAddress(void** ptr, unsigned short type);
 void drawPlayField(SDL_Texture* background, unsigned short size)
 {
 
+	if (size == 0)
+		size = MAX_PIECE_SIZE;
+
 	int X = 0;
 	int Y = 0;
 
@@ -82,6 +85,9 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 
 void drawScoreBox(SDL_Texture* background, unsigned short size)
 {
+
+	if (size == 0)
+		size = 8;
 
 	//Save current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -189,6 +195,9 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 void drawLevelBox(SDL_Texture* background, unsigned short size)
 {
 
+	if (size == 0)
+		size = 8;
+
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
 
@@ -246,6 +255,9 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 
 void drawUntilBox(SDL_Texture* background, unsigned short size)
 {
+
+	if (size == 0)
+		size = 8;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -341,6 +353,9 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 void drawNextBox(SDL_Texture* background, unsigned short size)
 {
 
+	if (size == 0)
+		size = 8;
+
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
 
@@ -431,6 +446,9 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 
 void drawHoldBox(SDL_Texture* background, unsigned short size)
 {
+
+	if (size == 0)
+		size = 8;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -611,6 +629,9 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 
 void drawFPSBox(SDL_Texture* background, unsigned short size)
 {
+
+	if (size == 0)
+		size = 8;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);

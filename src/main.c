@@ -47,7 +47,7 @@ int MAP_HEIGHT = 0;
 //Global Instance
 gameInstance *globalInstance;
 
-int main(int argc, char* argv[]) {
+int main() {
 
 	//Initialize SDL stuff
     if( SDL_Init( SDL_INIT_VIDEO ) < 0) {
