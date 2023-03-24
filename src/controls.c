@@ -3,16 +3,10 @@
 #include "HEADERS/MGF.h"
 
 //draw.c
-SDL_Texture* createTexture(int width, int height);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
 
 //audio.c
 void _playSound(int id);
-sound* loadSound(char* file);
-void delSound(sound** Sound);
-void setVolume(sound** Sound, unsigned short volume);
 
 //memory.c
 void declare_HUD_Text(SDL_Texture** ptr, int type);
