@@ -66,11 +66,11 @@ unsigned short controlsScreen(piece** Piece)
     static SDL_Texture* Texture_Controls; declare_HUD_Text(&Texture_Controls, CONTROLS_TEXT);
     static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
 
+    //Get the width and height of the Next Piece texture during the first frame
     if (*firstLoop == true)
     {
 
         SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
-
         *firstLoop = false;
 
     }
@@ -137,40 +137,30 @@ unsigned short controlsScreen(piece** Piece)
 
     }
 
+    //Controls for moving up and down the list of controls
     if (onPress(DOWN_BUTTON) && !(*editing_control))
     {
-
         if (*selected_control < NUM_OF_CONTROLS - 1)
         {
-
             playSound(MOVE_SOUND);
             (*selected_control)++;
-
         }
-
     }
-
     if (onPress(UP_BUTTON) && !(*editing_control))
     {
-
         if (*selected_control > 0)
         {
-
             playSound(MOVE_SOUND);
             (*selected_control)--;
-
         }
-
     }
 
+    //Exit controls screen if EXIT_BUTTON is pressed
     if (onPress(EXIT_BUTTON) && !(*editing_control))
     {
-
         playSound(LAND_SOUND);
-
         freeVars();
         return RESET;
-
     }
 
     // -----------------------------------------------------------------
@@ -190,6 +180,7 @@ unsigned short controlsScreen(piece** Piece)
 
 }
 
+//Function for updating the onPress and onHold status of a control
 void updateControls()
 {
 
@@ -198,23 +189,28 @@ void updateControls()
     {
         
         //Update logic
+            //If button[i] is currently pushed
         if (globalInstance->keys[globalInstance->controls[i].button])
         {
 
+            //If this is the first frame of the button being pushed
             if (globalInstance->controls[i].onHold == false)
             {
 
+                //onHold and onPress are true
                 globalInstance->controls[i].onPress = true;
                 globalInstance->controls[i].onHold = true;
 
             }
             else
+                //onPress is only true for a single frame
                 globalInstance->controls[i].onPress = false;
 
         }
         else
         {
 
+            //If button is not being pushed, onHold and onPress are both false
             globalInstance->controls[i].onHold = false;
             globalInstance->controls[i].onPress = false;
 
