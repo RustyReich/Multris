@@ -1,7 +1,3 @@
-#include <ctype.h>
-#include <stdbool.h>
-#include <math.h>
-
 #include "HEADERS/MGF.h"
 
 //Return the "Red" value for a given color
@@ -103,8 +99,7 @@ unsigned short getIntLength(int num)
 }
 
 //Print string to a texture
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color)
+void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color)
 {
 
 	//Save current rendering target
@@ -118,10 +113,11 @@ void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y,
 	SDL_Rect dstR;
 
 	//Change color of string_SS
-	SDL_SetTextureColorMod(globalInstance->stringSS, getColor_R(color),
-		getColor_G(color), getColor_B(color));
+	SDL_SetTextureColorMod(globalInstance->stringSS, getColor_R(color), getColor_G(color), getColor_B(color));
 
-	for (unsigned short i = 0; i < SDL_strlen(string); i++)
+	//Iterate over whole string
+	size_t string_length = SDL_strlen(string);
+	for (size_t i = 0; i < string_length; i++)
 	{
 
 		srcR.w = FONT_WIDTH; 
@@ -133,19 +129,15 @@ void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y,
 		{
 
 			//Source rectangle
-			srcR.x = (string[i] - ' ') % 
-				(globalInstance->stringSS_W / FONT_WIDTH) * FONT_WIDTH; 
-			srcR.y = (string[i] - ' ') / 
-				(globalInstance->stringSS_H / FONT_HEIGHT) * FONT_HEIGHT;
+			srcR.x = (string[i] - ' ') % (globalInstance->stringSS_W / FONT_WIDTH) * FONT_WIDTH; 
+			srcR.y = (string[i] - ' ') / (globalInstance->stringSS_H / FONT_HEIGHT) * FONT_HEIGHT;
 	
 		}
-		else	//Undrawable character will draw the "missing ?" character
+		else	//Un-drawable character will draw the "missing ?" character
 		{
 
-			srcR.x = ('~' - ' ' + 1) % 
-				(globalInstance->stringSS_W / FONT_WIDTH) * FONT_WIDTH; 
-			srcR.y = ('~' - ' ' + 1) / 
-				(globalInstance->stringSS_H / FONT_HEIGHT) * FONT_HEIGHT;
+			srcR.x = ('~' - ' ' + 1) % (globalInstance->stringSS_W / FONT_WIDTH) * FONT_WIDTH; 
+			srcR.y = ('~' - ' ' + 1) / (globalInstance->stringSS_H / FONT_HEIGHT) * FONT_HEIGHT;
 
 		}
 
@@ -157,8 +149,7 @@ void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y,
 		dstR.h = FONT_HEIGHT * multiplier;
 
 		//Copy the letter from stringSS to dstTexture
-		SDL_RenderCopy(globalInstance->renderer, globalInstance->stringSS, 
-			&srcR, &dstR);
+		SDL_RenderCopy(globalInstance->renderer, globalInstance->stringSS, &srcR, &dstR);
 
 	}
 
@@ -171,8 +162,7 @@ void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y,
 }
 
 //Print integer to a texture
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color)
+void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color)
 {
 
 	//Stores the number of digits in the integer
@@ -183,11 +173,12 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y,
 
 		//Printing 0 sometimes goes wrong with my algorithm, so this is just a 
 		//simple way to fix that
+			//No idea why this happens
 		printToTexture("0", dstTexture, X, Y, multiplier, color);
 		return;
 
 	}
-	else //Get the number of digits in the integet
+	else //Get the number of digits in the integer
 		length = getIntLength(num);
 
 	//Convert integer to a string
@@ -221,8 +212,7 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y,
 }
 
 //Draw a sprite to a texture
-void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, Uint8 color)
+void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y, float multiplier, Uint8 color)
 {
 
 	//Save current rendering target
@@ -236,23 +226,19 @@ void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y,
 	SDL_Rect dstR;
 
 	//Change color of game_SS
-	SDL_SetTextureColorMod(globalInstance->gameSS, getColor_R(color),
-		getColor_G(color), getColor_B(color));
+	SDL_SetTextureColorMod(globalInstance->gameSS, getColor_R(color), getColor_G(color), getColor_B(color));
 
 	srcR.w = SPRITE_WIDTH; 
 	srcR.h = SPRITE_HEIGHT;
 		
 	//Copy the corresponding sprite to the dstTexture
 		//Make sure SpriteID is within bounds of the number of sprites
-	if (SpriteID < globalInstance->gameSS_W / SPRITE_WIDTH * 
-		globalInstance->gameSS_H / SPRITE_HEIGHT)
+	if (SpriteID < ((globalInstance->gameSS_W / SPRITE_WIDTH) * (globalInstance->gameSS_H / SPRITE_HEIGHT)))
 	{
 
 		//Source rectangle
-		srcR.x = SpriteID % (globalInstance->gameSS_W / SPRITE_WIDTH) * 
-			SPRITE_WIDTH; 
-		srcR.y = SpriteID / (globalInstance->gameSS_H / SPRITE_HEIGHT) * 
-			SPRITE_HEIGHT;
+		srcR.x = SpriteID % (globalInstance->gameSS_W / SPRITE_WIDTH) * SPRITE_WIDTH; 
+		srcR.y = SpriteID / (globalInstance->gameSS_H / SPRITE_HEIGHT) * SPRITE_HEIGHT;
 
 		//Destination rectangle
 			//Calculate correct positioning and sizing
@@ -262,8 +248,7 @@ void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y,
 		dstR.h = SPRITE_HEIGHT * multiplier;
 
 		//Copy the letter from gameSS to dstTexture
-		SDL_RenderCopy(globalInstance->renderer, globalInstance->gameSS, 
-			&srcR, &dstR);
+		SDL_RenderCopy(globalInstance->renderer, globalInstance->gameSS, &srcR, &dstR);
 	
 	}
 	else	//SpriteID's outside valid bounds will draw the "missing ?" character
@@ -286,23 +271,20 @@ void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y,
 }
 
 //Draw a rectangle, filled or unfilled, with the passed sprite to a texture
-void drawRectangle(int spriteID, SDL_Texture* dstTexture, unsigned short X, unsigned short Y, 
-					unsigned short Width, unsigned short Height, unsigned short color, bool filled)
+void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill)
 {
 
-	for (unsigned short i = 0; i < Width; i++)
+	for (int i = 0; i < W; i++)
 	{
 
-		for (unsigned short j = 0; j < Height; j++)
+		for (int j = 0; j < H; j++)
 		{
 
-			if (filled)
-				drawToTexture(spriteID, dstTexture, X + i * FONT_WIDTH, 
-					Y + j * FONT_HEIGHT, 1.0, color);
+			if (fill)
+				drawToTexture(spriteID, dstTexture, X + i * FONT_WIDTH, Y + j * FONT_HEIGHT, 1.0, color);
 			else
-				if ((i == 0 || i == Width - 1) || (j == 0 || j == Height - 1))
-					drawToTexture(spriteID, dstTexture, X + i * FONT_WIDTH, 
-						Y + j * FONT_HEIGHT, 1.0, color);
+				if ((i == 0 || i == W - 1) || (j == 0 || j == H - 1))
+					drawToTexture(spriteID, dstTexture, X + i * FONT_WIDTH, Y + j * FONT_HEIGHT, 1.0, color);
 
 		}
 
@@ -317,7 +299,7 @@ void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height
 	//Save current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
 
-	//Save the cusrrent rendering color
+	//Save the current rendering color
 	Uint8 currR = 0;
 	Uint8 currB = 0;
 	Uint8 currG = 0;
@@ -375,8 +357,7 @@ void clearTexture(SDL_Texture* texture)
 	Uint8 currentG;
 	Uint8 currentB;
 	Uint8 currentA;
-	SDL_GetRenderDrawColor(globalInstance->renderer, &currentR, &currentG,
-		&currentB, &currentA);
+	SDL_GetRenderDrawColor(globalInstance->renderer, &currentR, &currentG, &currentB, &currentA);
 
 	//Clear texture with "clear" color
 	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
@@ -384,8 +365,7 @@ void clearTexture(SDL_Texture* texture)
 	SDL_RenderClear(globalInstance->renderer);
 
 	//Reset rendering draw color
-	SDL_SetRenderDrawColor(globalInstance->renderer, currentR, currentG,
-		currentB, currentA);
+	SDL_SetRenderDrawColor(globalInstance->renderer, currentR, currentG, currentB, currentA);
 	//Reset rendering target
 	SDL_SetRenderTarget(globalInstance->renderer, currentTarget);
 
@@ -401,8 +381,8 @@ SDL_Texture* createTexture(int width, int height)
 	SDL_Rect dstR = { .x = 0, .y = 0, .w = width, .h = height };
 
 	SDL_Texture* texture;
-	texture = SDL_CreateTexture(globalInstance->renderer, 
-		SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, dstR.w, dstR.h);
+	SDL_Renderer* renderer = globalInstance->renderer;
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, dstR.w, dstR.h);
 
 	//For some reason, you have to clear the texture
 	clearTexture(texture);
@@ -437,15 +417,19 @@ void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier)
 
 //Draw a piece to the screen
 	//Piece will be drawn with the top left of the Piece corresponding to X,Y
-void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, 
-	unsigned short Y)
+void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y)
 {
 
-	for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
-		drawToTexture(BLOCK_SPRITE_ID, dstTexture, 
-			X + SPRITE_WIDTH * (Piece.blocks[i].X - Piece.minX), 
-			Y + SPRITE_HEIGHT * (Piece.blocks[i].Y - Piece.minY), 1.0, 
-			Piece.color);
+	//For every block in the piece
+	for (unsigned short i = 0; i < Piece.numOfBlocks; i++) {
+
+		unsigned int SpriteID = BLOCK_SPRITE_ID;
+		int block_X = X + SPRITE_WIDTH * (Piece.blocks[i].X - Piece.minX);
+		int block_Y = Y + SPRITE_HEIGHT * (Piece.blocks[i].Y - Piece.minY);
+
+		drawToTexture(SpriteID, dstTexture, block_X, block_Y, 1.0, Piece.color);
+
+	}
 
 }
 

@@ -10,9 +10,7 @@
 #define NUM_OF_TITLE_PIECES		19
 
 //draw.c
-void drawRectangle(int spriteID, SDL_Texture* dstTexture, unsigned short X, 
-	unsigned short Y, unsigned short Width, unsigned short Height, 
-	unsigned short color, bool filled);
+void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill);
 void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
 	float multiplier, unsigned short color);
 void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
