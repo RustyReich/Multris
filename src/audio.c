@@ -1,7 +1,5 @@
 #include "HEADERS/MGF.h"
 
-#include <stdio.h>
-
 //Play a sound
 	//Only one sound can be played at a time.
 	//Any sound currently being played when this function is called will be cutoff and the new sound will
