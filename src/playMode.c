@@ -28,6 +28,7 @@ void mirrorPieceOverY(piece* Piece);
 
 //audio.c
 void _playSound(int id);
+int getAudioLengthInMS(sound* Sound);
 
 //file.c
 void saveTop(unsigned int score, unsigned short size);
@@ -119,6 +120,8 @@ unsigned short playMode(piece* firstPiece)
 	static int* foregroundY; declare(foregroundY, 0);
 	static double* pausedMulti; declare(pausedMulti, 1.0);
 	static bool* playing_progress_sound; declare(playing_progress_sound, false);
+	static Uint32* progress_sound_start; declare(progress_sound_start, 0);
+	static int* length_of_progress_sound; declare(length_of_progress_sound, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
@@ -504,6 +507,8 @@ unsigned short playMode(piece* firstPiece)
 					
 						playSound(UNLOCK_SOUND);
 						*playing_progress_sound = true;
+						*progress_sound_start = SDL_GetTicks();
+						*length_of_progress_sound = getAudioLengthInMS(globalInstance->sounds[UNLOCK_SOUND]);
 						PROGRESS++;
 
 					}
@@ -512,8 +517,7 @@ unsigned short playMode(piece* firstPiece)
 					*speed = (double)(60.0988 / (48 - 5 * *Level));
 
 				}
-				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, 
-					&Texture_Lines);
+				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, &Texture_Lines);
 
 			}
 
@@ -589,9 +593,15 @@ unsigned short playMode(piece* firstPiece)
 		
 		unsigned short prevNumCompleted = *numCompleted;
 		
-		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted, 
-								playing_progress_sound))
+		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted, playing_progress_sound)) {
+			
+			if (SDL_GetTicks() - *progress_sound_start > *length_of_progress_sound)
+				*playing_progress_sound = false;
+
+			if (!*playing_progress_sound)
 				playSound(COMPLETE_SOUND);
+
+		}
 
 		//Remove first element in completedRows array
 			//Also resize completedRows array
@@ -879,8 +889,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row,
 					column = malloc(sizeof(*column));
 					*column = 0;
 
-					if (!*playing_progress_sound)
-						playSound = true;
+					playSound = true;
 
 				}
 				else if (column != NULL)

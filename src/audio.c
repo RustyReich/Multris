@@ -1,5 +1,7 @@
 #include "HEADERS/MGF.h"
 
+#include <stdio.h>
+
 //Play a sound
 	//Only one sound can be played at a time.
 	//Any sound currently being played when this function is called will be cutoff and the new sound will
@@ -69,4 +71,15 @@ void setVolume(sound** Sound, unsigned short volume)
 	free(dstStream);
 	dstStream = NULL;
 	
+}
+
+//Get the length of a sound struct in milliseconds
+int getAudioLengthInMS(sound* Sound) {
+
+	//Not really sure why we need to divide by 2 here
+	double length_in_seconds = (double)(Sound->length) / (double)(globalInstance->wavSpec->freq) / (double)2;
+	int length_in_ms = SDL_ceil(length_in_seconds * 1000);
+
+	return length_in_ms;
+
 }
