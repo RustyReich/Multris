@@ -37,9 +37,11 @@ void copyPiece(piece* piece1, piece* piece2)
 void delPiece(piece** Piece)
 {
 
+	//Delete blocks
 	free((*Piece)->blocks);
 	(*Piece)->blocks = NULL;
 
+	//Delete Piece itself
 	free(*Piece);
 	*Piece = NULL;
 
@@ -132,6 +134,7 @@ unsigned short calcWidth(piece* Piece)
 	signed short minX = 0;
 	signed short maxX = 0;
 
+	//Go through all blocks to find the min and max X values
 	for (unsigned short i = 1; i < Piece->numOfBlocks; i++)
 	{
 
@@ -155,6 +158,7 @@ unsigned short calcHeight(piece* Piece)
 	signed short minY = 0;
 	signed short maxY = 0;
 
+	//Go through all blocks to find the min and max Y values
 	for (unsigned short i = 0; i < Piece->numOfBlocks; i++)
 	{
 
@@ -184,8 +188,10 @@ piece* generateGamePiece(unsigned short size)
 
 		Piece->numOfBlocks = 0;
 		
+		//Pick random color for piece
 		Piece->color = (rand() % (RED - YELLOW + 1)) + YELLOW;
 
+		//Allocate memory for all blocks
 		if (size > 0)
 			Piece->blocks = malloc(size * sizeof(*Piece->blocks));
 		
@@ -202,8 +208,8 @@ piece* generateGamePiece(unsigned short size)
 			if (rand() % 7 == 3)
 			{
 
-				//When the game piece does spawn as a straight line, there is a 50/50 shot of whether it will spawn
-				//horizontally or vertically
+				//When the game piece does spawn as a straight line, there is a 50/50 shot of whether it will
+				//spawn horizontally or vertically
 				if (rand() % 2 == 1)
 				{
 
@@ -257,8 +263,8 @@ piece* generateGamePiece(unsigned short size)
 					//Here, we randomly choose a direction from our chosen block to build off from, making sure to
 					//choose a direction that isnt already currently occupied
 					do
-						randDirection = rand() % 4;					//Randomly choose a direction to build off of
-					while (isOccupied(Piece, randID, randDirection));	//from our block
+						randDirection = rand() % 4;
+					while (isOccupied(Piece, randID, randDirection));
 
 					//Set the coordinates of our next block
 					if (randDirection == UP)
