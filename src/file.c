@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdbool.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <stdlib.h>
-#include <math.h>
 #include <limits.h>
 
 #include "HEADERS/MGF.h"
@@ -14,6 +9,7 @@ unsigned short getIntLength(int num);
 //controls.c
 bool invalidKey(int key);
 
+//Get the number of lines in a file
 unsigned short getLineCount(char* fileName)
 {
 
@@ -26,9 +22,11 @@ unsigned short getLineCount(char* fileName)
 	if (file != NULL)
 	{
 
+		//Increase count for every line in the final
 		while (fgets(currentLine, sizeof(currentLine), file) != NULL)
 			lineCount++;
 
+		//Close file stream
 		fclose(file);
 
 		return lineCount;
@@ -39,6 +37,7 @@ unsigned short getLineCount(char* fileName)
 
 }
 
+//Return whether a file exist with the specified name
 bool fileExists(char* fileName)
 {
 
@@ -95,6 +94,7 @@ void createFile(char* file_path)
 
 }
 
+//Function for creating the "progress.md" file
 void createProgressFile()
 {
 
@@ -112,6 +112,7 @@ void createProgressFile()
 
 }
 
+//Function for creating the "top.md" file
 void createTopFile()
 {
 
@@ -134,6 +135,7 @@ void createTopFile()
 
 }
 
+//Function for creating the "options.cfg" file
 void createOptions()
 {
 
@@ -154,6 +156,7 @@ void createOptions()
 
 }
 
+//Function for creating the "window.cfg" file
 void createWindowFile()
 {
 
@@ -175,6 +178,7 @@ void createWindowFile()
 
 }
 
+//Function for creating the "controls.cfg"
 void createControls()
 {
 
@@ -210,6 +214,7 @@ void createControls()
 char* getNameAtLine(const char* file_path, int line)
 {
 
+	//Return NULL if the line number is larger than the number of lines in the file
 	if (line > getLineCount((char*)file_path))
 		return NULL;
 
@@ -218,10 +223,12 @@ char* getNameAtLine(const char* file_path, int line)
 
 	char* returnString = NULL;
 	
+	//Open file
 	file = fopen(file_path, "r");
 	if (file != NULL)
 	{
 
+		//Iterate through lines until we get to the specified line
 		int i = 0;
 		while (fgets(currentLine, sizeof(currentLine), file) != NULL)
 		{
@@ -290,6 +297,7 @@ int getFileValue(const char* file_path, const char* name)
 				
 			}
 
+			//Once we find the name we're looking for
 			if (matches == true)
 			{
 
@@ -345,7 +353,7 @@ int getFileValue(const char* file_path, const char* name)
 
 }
 
-//Return true if there are iiregularities with the progress file
+//Return true if there are irregularities with the progress file
 	//This means that the players progress is saved as being less than 1 or greater than 8
 bool brokenProgress()
 {
@@ -460,6 +468,7 @@ void saveToFile(const char* file_path, const char* str, int value)
 
 	char** fileLines = calloc(lineCount, sizeof(char*));
 	
+	//Read all lines from file and store in fileLines array
 	file = fopen(file_path, "r");
 	if (file != NULL && fileLines != NULL)
 	{
@@ -538,6 +547,8 @@ void saveToFile(const char* file_path, const char* str, int value)
 	
 }
 
+//Load the top score of the specified size
+	//size = 0 is for Multris mode
 unsigned int loadTop(unsigned short size)
 {
 
@@ -552,6 +563,7 @@ unsigned int loadTop(unsigned short size)
 
 }
 
+//Load progress
 unsigned int loadProgress()
 {
 
@@ -564,6 +576,7 @@ unsigned int loadProgress()
 
 }
 
+//Save top score for specified size
 void saveTop(unsigned int score, unsigned short size)
 {
 
@@ -576,6 +589,7 @@ void saveTop(unsigned int score, unsigned short size)
 
 }
 
+//Save progress
 void saveProgress()
 {
 
@@ -586,13 +600,14 @@ void saveProgress()
 
 }
 
+//Save window size and position
 void saveWindowSettings()
 {
 
-	SDL_GetWindowSize(globalInstance->window, &globalInstance->minimizedWindow_W, 
-						&globalInstance->minimizedWindow_H);
-	SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X, 
-							&globalInstance->minimizedWindow_Y);
+	gameInstance* inst = globalInstance;
+
+	SDL_GetWindowSize(inst->window, &inst->minimizedWindow_W, &inst->minimizedWindow_H);
+	SDL_GetWindowPosition(inst->window, &inst->minimizedWindow_X, &inst->minimizedWindow_Y);
 
 	saveToFile("SAVES/window.cfg", "WIDTH", globalInstance->minimizedWindow_W);
 	saveToFile("SAVES/window.cfg", "HEIGHT", globalInstance->minimizedWindow_H);
