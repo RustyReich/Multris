@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <stdbool.h>
-
 #include "HEADERS/MGF.h"
 
 //Function for copying all blocks from one piece to another
