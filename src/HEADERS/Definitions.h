@@ -1,3 +1,4 @@
+#ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
 #define FONT_WIDTH 	12
@@ -102,3 +103,5 @@
 #define CLEARING_TIME	20
 
 #define HOLD_TEXTURE_MULTI 0.75
+
+#endif

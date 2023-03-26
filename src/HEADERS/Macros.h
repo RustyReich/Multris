@@ -1,3 +1,6 @@
+#ifndef MACROS_H
+#define MACROS_H
+
 #define declareEnd(val) _Generic((val), \
                             int: declare_int, \
                             char: declare_char, \
@@ -26,3 +29,5 @@
 
 //In-line function macros
 #define swap(a, b, t) { t tmp = a; a = b; b = tmp; } 
+
+#endif

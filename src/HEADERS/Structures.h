@@ -3,8 +3,7 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 
-#include <stdbool.h>
-
+#ifndef STRUCTURES_H
 #define STRUCTURES_H
 
 typedef struct UI
@@ -120,3 +119,5 @@ typedef struct piece
 	signed short minY;
 
 } piece;
+
+#endif

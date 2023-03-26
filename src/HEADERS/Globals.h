@@ -1,6 +1,7 @@
-#ifndef STRUCTURES_H
-    #include "Structures.h"
-#endif
+#include "Structures.h"
+
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
 extern gameInstance *globalInstance;
 
@@ -16,3 +17,5 @@ extern int PROGRESS;
 extern int MODE;
 extern int MAP_WIDTH;
 extern int MAP_HEIGHT;
+
+#endif
