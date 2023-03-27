@@ -1,9 +1,6 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-
 #include "HEADERS/MGF.h"
 
+//The internal resolution of the game on the title screen
 #define INITIAL_INTERNAL_WIDTH	384
 #define INITIAL_INTERNAL_HEIGHT	504
 
@@ -11,7 +8,6 @@
 sound* loadSound(char* file);
 
 //file.c
-void saveToFile(const char* file_path, const char* str, int value);
 void saveWindowSettings();
 
 //Function for initializing an audio device
@@ -98,32 +94,31 @@ void scaleRenderer()
     //Get renderer dimensions
     int renderWidth;
     int renderHeight;
-    SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, 
-        &renderHeight);
+    SDL_RenderGetLogicalSize(globalInstance->renderer, &renderWidth, &renderHeight);
 
     SDL_Rect rect = { .x = 0, .y = 0, .w = renderWidth, .h = renderHeight};
     float scale = 1;
 
     //Scale renderer appropriately
+        //Basically scale relative to width, check if game is rendering outside window. If it is, scale relative
+        //to height instead
     scale = (float)windowWidth / (float)renderWidth;
-    if ((int)((float)renderWidth * scale) > windowWidth || 
-        (int)((float)renderHeight * scale) > windowHeight)
+    if ((int)((float)renderWidth * scale) > windowWidth || (int)((float)renderHeight * scale) > windowHeight)
             scale = (float)windowHeight / (float)renderHeight;
 
     //Adjust viewport
+        //Honestly, I don't really remember how this works
     if (windowWidth == round((float)renderWidth * scale))
     {
 
-        rect.y = (int)((windowHeight * ((float)renderWidth / windowWidth) - 
-            renderHeight) / 2);
+        rect.y = (int)((windowHeight * ((float)renderWidth / windowWidth) - renderHeight) / 2);
         rect.x = 0;
 
     }
     else
     {
 
-        rect.x = (int)((windowWidth * ((float)renderHeight / windowHeight) - 
-            renderWidth) / 2);
+        rect.x = (int)((windowWidth * ((float)renderHeight / windowHeight) - renderWidth) / 2);
         rect.y = 0;
 
     }
@@ -149,9 +144,12 @@ void initInstance(gameInstance** instance)
     //Initialize window
         //Initialize in top left of screen
         //Window will be half the width and half the height of the screen
-    (*instance)->window = SDL_CreateWindow("Multris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-                                            (*instance)->DM.w / 2, (*instance)->DM.h / 2, 
-                                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS);
+    int x = SDL_WINDOWPOS_CENTERED;
+    int y = SDL_WINDOWPOS_CENTERED;
+    int w = (*instance)->DM.w / 2;
+    int h = (*instance)->DM.h / 2;
+    Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS;
+    (*instance)->window = SDL_CreateWindow("Multris", x, y, w, h, flags);
 
     //Save window size
     SDL_GetWindowSize((*instance)->window, &(*instance)->minimizedWindow_W, &(*instance)->minimizedWindow_H);
@@ -206,19 +204,18 @@ void initInstance(gameInstance** instance)
 void updateVolume()
 {
 
+    //Iterate through all sounds
     for (unsigned short i = 0; i < NUM_OF_SOUNDS; i++)
     {
 
         //Buffer that stores audio after volume adjustment
-        Uint8* dstStream = calloc(globalInstance->masterSounds[i]->length, 
-                                    sizeof(*dstStream));
+        Uint8* dstStream = calloc(globalInstance->masterSounds[i]->length, sizeof(*dstStream));
 
         //Mix audio with volume adjustment
-        SDL_MixAudioFormat(dstStream, 
-                            globalInstance->masterSounds[i]->buffer, 
-                            globalInstance->wavSpec->format,
-                            globalInstance->masterSounds[i]->length,
-                            SDL_MIX_MAXVOLUME * (VOLUME / 100.0));
+        SDL_AudioFormat format = globalInstance->wavSpec->format;
+        Uint32 length = globalInstance->masterSounds[i]->length;
+        int volume = SDL_MIX_MAXVOLUME * (VOLUME / 100.0);
+        SDL_MixAudioFormat(dstStream, globalInstance->masterSounds[i]->buffer, format, length, volume);
 
         //Copy volume adjusted buffer to sounds[i]->buffer
         for (int j = 0 ; j < globalInstance->masterSounds[i]->length; j++)
@@ -241,11 +238,14 @@ void setWindowMode(unsigned short mode)
         SDL_SetWindowFullscreen(globalInstance->window, 0);
 
         //Reset window size
-        SDL_SetWindowSize(globalInstance->window, globalInstance->minimizedWindow_W,
-                                                    globalInstance->minimizedWindow_H);
+        int minimized_W = globalInstance->minimizedWindow_W;
+        int minimized_H = globalInstance->minimizedWindow_H;
+        SDL_SetWindowSize(globalInstance->window, minimized_W, minimized_H);
+
         //Reset window position
-        SDL_SetWindowPosition(globalInstance->window, globalInstance->minimizedWindow_X,
-                                                        globalInstance->minimizedWindow_Y);
+        int minimized_X = globalInstance->minimizedWindow_X;
+        int minimized_Y = globalInstance->minimizedWindow_Y;
+        SDL_SetWindowPosition(globalInstance->window, minimized_X, minimized_Y);
 
         //Scale renderer accordingly
 	    scaleRenderer();
@@ -255,11 +255,14 @@ void setWindowMode(unsigned short mode)
     {
 
         //Save window size
-        SDL_GetWindowSize(globalInstance->window, &globalInstance->minimizedWindow_W, 
-                                                    &globalInstance->minimizedWindow_H);
+        int* minimized_W = &globalInstance->minimizedWindow_W;
+        int* minimized_H = &globalInstance->minimizedWindow_H;
+        SDL_GetWindowSize(globalInstance->window, minimized_W, minimized_H);
+        
         //Save window position
-        SDL_GetWindowPosition(globalInstance->window, &globalInstance->minimizedWindow_X,
-                                                        &globalInstance->minimizedWindow_Y);
+        int* minimized_X = &globalInstance->minimizedWindow_X;
+        int* minimized_Y = &globalInstance->minimizedWindow_Y;
+        SDL_GetWindowPosition(globalInstance->window, minimized_X, minimized_Y);
 
         //Save window settings to file
         saveWindowSettings();
