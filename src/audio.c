@@ -62,7 +62,7 @@ void setVolume(sound** Sound, unsigned short volume)
 
 	//Copy volume adjusted buffer back to Sound->buffer
 	if (dstStream != NULL)
-		for (int i = 0; i < (*Sound)->length; i++)
+		for (unsigned int i = 0; i < (*Sound)->length; i++)
 			(*Sound)->buffer[i] = dstStream[i];
 	
 	//Free dstStream

@@ -218,7 +218,7 @@ void updateVolume()
         SDL_MixAudioFormat(dstStream, globalInstance->masterSounds[i]->buffer, format, length, volume);
 
         //Copy volume adjusted buffer to sounds[i]->buffer
-        for (int j = 0 ; j < globalInstance->masterSounds[i]->length; j++)
+        for (unsigned int j = 0 ; j < globalInstance->masterSounds[i]->length; j++)
             globalInstance->sounds[i]->buffer[j] = dstStream[j];
 
         //Free dstStream memory

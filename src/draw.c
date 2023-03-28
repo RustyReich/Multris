@@ -212,7 +212,7 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multipli
 }
 
 //Draw a sprite to a texture
-void drawToTexture(unsigned int SpriteID, SDL_Texture* dstTexture, int X, int Y, float multiplier, Uint8 color)
+void drawToTexture(int SpriteID, SDL_Texture* dstTexture, int X, int Y, float multiplier, Uint8 color)
 {
 
 	//Save current rendering target
@@ -339,7 +339,7 @@ int getIntStringLength(int num, float multiplier)
 {
 
 	//Convert integer to string
-	char str[getIntLength(num)];
+	char str[getIntLength(num) + 1];
 	SDL_itoa(num, str, 10);
 
 	return getStringLength(str, multiplier);

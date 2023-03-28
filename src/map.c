@@ -8,7 +8,6 @@
 void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill);
 void printToTexture(char* string,SDL_Texture* dstTexture,int X,int Y,float multiplier,unsigned short color);
 void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
-void drawToTexture(unsigned int SpriteID,SDL_Texture* dstTexture,int X,int Y,float multiplier,Uint8 color);
 void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
 void clearTexture(SDL_Texture* texture);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);

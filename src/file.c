@@ -55,7 +55,7 @@ void createFile(char* file_path)
 
 	//Get length of file name
 	int file_name_length = 0;
-	for (unsigned short i = SDL_strlen(file_path) - 1; i >= 0; i--)
+	for (int i = SDL_strlen(file_path) - 1; i >= 0; i--)
 		if (file_path[i] != '/')
 			file_name_length++;
 		else

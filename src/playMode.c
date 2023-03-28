@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <math.h>
+#include "SDL2/SDL.h"
 
 #include "HEADERS/MGF.h"
 
@@ -15,7 +16,7 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multipli
 void printToTexture(char* string,SDL_Texture* dstTexture,int X,int Y,float multiplier,unsigned short color);
 unsigned short getIntLength(int num);
 SDL_Texture* createTexture(int width, int height);
-void drawToTexture(unsigned int SpriteID,SDL_Texture* dstTexture,int X,int Y,float multiplier,Uint8 color);
+void drawToTexture(int SpriteID,SDL_Texture* dstTexture,int X,int Y,float multiplier,Uint8 color);
 void clearTexture(SDL_Texture* texture);
 SDL_Texture* createPieceTexture(piece Piece);
 int getStringLength(char* str, float multiplier);
@@ -55,9 +56,9 @@ int getScoreDrawY(unsigned short size);
 int getForegroundX(unsigned short size);
 int getForegroundY(unsigned short size);
 int getLevelX(unsigned short size, unsigned short level);
-int getLevelY(unsigned short size, unsigned short level);
+int getLevelY(unsigned short size);
 int getLinesX(unsigned short size, unsigned short lines);
-int getLinesY(unsigned short size, unsigned short lines);
+int getLinesY(unsigned short size);
 int getNextX(unsigned short size, int width);
 int getNextY(unsigned short size, int height);
 int getHoldX(unsigned short size, int width);
@@ -77,12 +78,11 @@ bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth);
 void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground,
 				unsigned short mapWidth);
 bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
-	bool *clearingLine, bool *mapData, unsigned short* numCompleted, bool* playing_progress_sound);
+	bool *clearingLine, bool *mapData, unsigned short* numCompleted);
 void updateScore(unsigned int, SDL_Texture*);
 void updateLevel(unsigned short, SDL_Texture*);
 void updateLines(unsigned short lines, SDL_Texture** linesTexture);
-bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned short mapWidth,
-						unsigned short mapHeight);
+bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight);
 unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY, 
 							bool* mapData, unsigned short mapWidth, unsigned short mapHeight);
 
@@ -563,8 +563,8 @@ unsigned short playMode(piece* firstPiece)
 	drawTexture(Texture_Next, getNextX(MODE, *nextText_Width), getNextY(MODE, *nextText_Height), 1.0);
 	drawTexture(Texture_Hold,getHoldX(MODE,*holdText_Width),getHoldY(MODE,*holdText_Height),HOLD_TEXTURE_MULTI);
 	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
-	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE, *Level), 1.0);
-	drawTexture(Texture_Lines, getLinesX(MODE, *linesAtCurrentLevel), getLinesY(MODE, *linesAtCurrentLevel), 1.0);
+	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE), 1.0);
+	drawTexture(Texture_Lines, getLinesX(MODE, *linesAtCurrentLevel), getLinesY(MODE), 1.0);
 
 	//Draw the foreground
 	drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
@@ -593,9 +593,9 @@ unsigned short playMode(piece* firstPiece)
 		
 		unsigned short prevNumCompleted = *numCompleted;
 		
-		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted, playing_progress_sound)) {
+		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted)) {
 			
-			if (SDL_GetTicks() - *progress_sound_start > *length_of_progress_sound)
+			if ((int)(SDL_GetTicks() - *progress_sound_start) > *length_of_progress_sound)
 				*playing_progress_sound = false;
 
 			if (!*playing_progress_sound)
@@ -634,7 +634,7 @@ unsigned short playMode(piece* firstPiece)
 		if (*overAnimation == false)
 		{
 
-			*overAnimation = playOverAnimation(foreground, *Score, MAP_WIDTH, MAP_HEIGHT);
+			*overAnimation = playOverAnimation(foreground, MAP_WIDTH, MAP_HEIGHT);
 
 			//Once animation is over, print GAME OVER to screen
 			if (*overAnimation == true)
@@ -668,7 +668,7 @@ unsigned short playMode(piece* firstPiece)
 				if (*Score > loadTop(MODE))
 					saveTop(*Score, MODE);
 
-				if (PROGRESS > loadProgress())
+				if (PROGRESS > (int)(loadProgress()))
 					saveProgress();
 
 			}
@@ -715,8 +715,7 @@ unsigned short calcGhostY(piece* Piece, unsigned short X, unsigned short startY,
 
 }
 
-bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned short mapWidth,
-						unsigned short mapHeight)
+bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight)
 {
 
 	//Return if the animation is done playing or not
@@ -744,7 +743,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned int score, unsigned sho
 
 			//When enough time has lapsed since the last frame in the animation, play 
 			//another frame
-			if ((*time_now - *time_start) > OVER_SOUND_LENGTH / MAP_HEIGHT)
+			if ((*time_now - *time_start) > (Uint32)(OVER_SOUND_LENGTH / MAP_HEIGHT))
 			{
 
 				static unsigned short* row;
@@ -829,7 +828,7 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 {
 
 	//Get the number of digits in the score
-	unsigned short length = (unsigned short)(floor(log10(abs(score))) + 1);
+	unsigned short length = (unsigned short)(floor(log10(score)) + 1);
 
 	//Clear area of scoreTexture that will be updated
 	SDL_Rect rect;
@@ -850,9 +849,8 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 
 }
 
-bool playLineAnimation(SDL_Texture* foreground, unsigned short row, 
-						bool *clearingLine, bool *mapData, unsigned short* numCompleted, 
-						bool* playing_progress_sound)
+bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, bool *mapData,
+						unsigned short* numCompleted)
 {
 
 	bool playSound = false;
@@ -1002,9 +1000,7 @@ unsigned short completedLine(bool* mapData, unsigned short Y, piece Piece,
 	//Duct-tape fix for a rare glitch that can sometimes happen when holding near the top
 	//of the play area
 		//Basically, if Y is out-of-bounds, just move it back in bounds.
-	if (Y < 0)
-		Y = 0;
-	else if (Y > mapHeight)
+	if (Y > mapHeight)
 		Y = mapHeight;
 
 	unsigned short numCompleted = 0;

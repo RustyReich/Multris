@@ -100,7 +100,7 @@ bool inVector(void** ptr)
 
     varVector** vector = pushAddress(NULL, TYPE_NA);
 
-    for (unsigned int i = 0; i < (*vector)->count; i++)
+    for (int i = 0; i < (*vector)->count; i++)
         if (ptr == (*vector)->ptrs[i])
             return true;
     return false;

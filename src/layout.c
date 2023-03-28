@@ -1,7 +1,4 @@
-#include <stdbool.h>
-#include <math.h>
 #include <time.h>
-#include <stdarg.h>
 
 #include "HEADERS/MGF.h"
 
@@ -11,10 +8,8 @@
 
 //draw.c
 void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill);
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, 
-	float multiplier, unsigned short color);
+void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
+void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
 unsigned short getIntLength(int num);
 int getStringLength(char* str, float multiplier);
 int getIntStringLength(int num, float multiplier);
@@ -26,8 +21,6 @@ void clearTexture(SDL_Texture* texture);
 //file.c
 unsigned int loadTop(unsigned short size);
 unsigned short getLineCount(char* fileName);
-char* getOptionName(int line);
-int getOptionValue(const char* str);
 
 //generate.c
 void delPiece(piece** Piece);
@@ -42,12 +35,14 @@ varVector** pushAddress(void** ptr, unsigned short type);
 void drawPlayField(SDL_Texture* background, unsigned short size)
 {
 
+	//Use MAX_PIECE_SIZE if size == 0
 	if (size == 0)
 		size = MAX_PIECE_SIZE;
 
 	int X = 0;
 	int Y = 0;
 
+	//Set correct X and Y value depending on size
 	if (size == 1)
 	{
 
@@ -75,17 +70,21 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 
 	}
 
+	//Set correct width and height depending on size
 	int width = round(BASE_PLAYFIELD_WIDTH * size) + 2;
 	int height = round(BASE_PLAYFIELD_HEIGHT * size) + 2;
+
+	//Draw the play field rectangle
     drawRectangle(WALL_SPRITE_ID, background, X, Y, width, height, GRAY, false);
 		
 }
 
+//Function for drawing the score box
 void drawScoreBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0)
-		size = 8;
+		size = MAX_PIECE_SIZE;
 
 	//Save current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -97,17 +96,20 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 
     //Load the top score and create a string for it
     int topScore = loadTop(MODE);
-	char* top;
+	char* top_zeros;
+	//Figure out how many zeros should be pre-pended to the score
 	unsigned short zeroLength = 6 - getIntLength(topScore);
-	top = malloc(zeroLength * sizeof(*top));
-	*(top + zeroLength) = '\0';
+	
+	//top_zeros is the string of zeros that prepend the score
+	top_zeros = malloc(zeroLength * sizeof(*top_zeros));
+	*(top_zeros + zeroLength) = '\0';
 	for (unsigned short i = 0; i < zeroLength; i++)
-		*(top + i) = '0';
+		*(top_zeros + i) = '0';
 
 	//Print all content to 'content' texture
 	int temp = 0.5 * (contentWidth - getStringLength("TOP   ", 1.0));
 	printToTexture("TOP   ", content, temp, 0, 1, WHITE);
-	printToTexture(top, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+	printToTexture(top_zeros, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 	printToTexture("SCORE", content, temp, (FONT_WIDTH + STRING_GAP) * 3, 1, WHITE);
 	temp = temp + zeroLength * (FONT_WIDTH + STRING_GAP);
 	intToTexture(topScore, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
@@ -115,11 +117,14 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
     int X = 0;
     int Y = 0;
 
+	//Hardcode the width and height of the score box
+		//This is the size of the inside of the box
 	int width_in_sprites = 9;
 	int height_in_sprites = 6;
 	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;
 
+	//Set X and Y depending on size
     if (size == 0 || size == MAX_PIECE_SIZE)
     {
 
@@ -178,11 +183,12 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
-	drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth), 
-				Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight), 1.0);
+	int content_X = X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth);
+	int content_Y = Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight);
+	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free memory
-    free(top);
+    free(top_zeros);
 	SDL_DestroyTexture(content);
 
 	//Reset rendering target
@@ -190,11 +196,12 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 
 }
 
+//Function for drawing the level box
 void drawLevelBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0)
-		size = 8;
+		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -235,13 +242,13 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 		Y = 132;
 
 	//Draw box
-	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
-					height_in_sprites + 2, GRAY, false);
+	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
 
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
-	drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth), 
-				Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight), 1.0);
+	int content_X = X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth);
+	int content_Y = Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight);
+	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -251,11 +258,12 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 
 }
 
+//Function for drawing the "lines until levelup" box
 void drawUntilBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0)
-		size = 8;
+		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -266,16 +274,11 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
 	//Print all content to 'content' texture
-	printToTexture("LINES", content, 
-					0.5 * (contentWidth - getStringLength("LINES", 1.0)), 
-					0, 1, WHITE);
-	printToTexture("UNTIL", content,
-					0.5 * (contentWidth - getStringLength("UNTIL", 1.0)),
-					(FONT_HEIGHT + STRING_GAP), 1, WHITE);
-	printToTexture("LEVELUP", content,
-					0.5 * (contentWidth - getStringLength("LEVELUP", 1.0)),
-					(FONT_HEIGHT + STRING_GAP) * 2, 1, WHITE);
-
+	int five_letter_X = 0.5 * (contentWidth - getStringLength("00000", 1.0));
+	int seven_letter_X = 0.5 * (contentWidth - getStringLength("0000000", 1.0));
+	printToTexture("LINES", content, five_letter_X, 0, 1, WHITE);
+	printToTexture("UNTIL", content, five_letter_X,	(FONT_HEIGHT + STRING_GAP), 1, WHITE);
+	printToTexture("LEVELUP", content, seven_letter_X, (FONT_HEIGHT + STRING_GAP) * 2, 1, WHITE);
 
 	int X = 0;
 	int Y = 0;
@@ -332,13 +335,13 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 	}
 
 	//Draw box
-	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
-					height_in_sprites + 2, GRAY, false);
+	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
 	
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
-	drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth), 
-				Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight), 1.0);
+	int content_X = X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth);
+	int content_Y = Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight);
+	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -348,11 +351,12 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 
 }
 
+//Function for drawing the "next" box
 void drawNextBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0)
-		size = 8;
+		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -431,8 +435,9 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 	
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
-	drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-				Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
+	int content_X = X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth);
+	int content_Y = Y + SPRITE_HEIGHT + STRING_GAP;
+	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -442,11 +447,12 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 
 }
 
+//Function for drawing the "hold" box
 void drawHoldBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0)
-		size = 8;
+		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -462,6 +468,10 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 	int X = 0;
 	int Y = 0;
 
+	int	width_in_sprites = size + 1;
+	int	height_in_sprites = size + 2;
+	int	width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+
 	if (size == 0 || size == MAX_PIECE_SIZE)
 	{
 
@@ -469,23 +479,20 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 28;
 
-		int width_in_sprites = size + 1;
-		int height_in_sprites = size + 2;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = size + 1;
+		height_in_sprites = size + 2;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw filled box
 		drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites, GRAY, true);
 
 		//Cut out a box in the middle that is the correct size and in the correct space
 		int width_difference = size + 1 - HOLD_TEXTURE_MULTI * width_in_sprites;
-		drawRectangle(WALL_SPRITE_ID, background, X + SPRITE_WIDTH * width_difference, Y + SPRITE_HEIGHT,
-						ceil(HOLD_TEXTURE_MULTI * width_in_sprites),
-						ceil(HOLD_TEXTURE_MULTI * height_in_sprites), BLACK, true); 
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
+		int rect_X = X + SPRITE_WIDTH * width_difference;
+		int rect_Y = Y + SPRITE_HEIGHT;
+		int rect_W = ceil(HOLD_TEXTURE_MULTI * width_in_sprites);
+		int rect_H = ceil(HOLD_TEXTURE_MULTI * height_in_sprites);
+		drawRectangle(WALL_SPRITE_ID, background, rect_X, rect_Y, rect_W, rect_H, BLACK, true); 
 
 	}
 	else if (size == 1)
@@ -494,17 +501,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 192;
 		Y = 132;
 
-		int width_in_sprites = 5;
-		int height_in_sprites = size + 2;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 5;
+		height_in_sprites = size + 2;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
 	else if (size == 2)
@@ -513,17 +515,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 216;
 		Y = 144;
 
-		int width_in_sprites = 5;
-		int height_in_sprites = size + 2;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 5;
+		height_in_sprites = size + 2;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
 	else if (size == 3) {
@@ -531,17 +528,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 252;
 		Y = 156;
 
-		int width_in_sprites = 5;
-		int height_in_sprites = size + 1;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 5;
+		height_in_sprites = size + 1;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
 	else if (size == 4) {
@@ -549,17 +541,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 276;
 		Y = 168;
 
-		int width_in_sprites = 5;
-		int height_in_sprites = size + 1;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 5;
+		height_in_sprites = size + 1;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
 	else if (size == 5) {
@@ -567,17 +554,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 312;
 		Y = 204;
 
-		int width_in_sprites = 5;
-		int height_in_sprites = size + 1;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 5;
+		height_in_sprites = size + 1;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
 	else if (size == 6) {
@@ -585,17 +567,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 336;
 		Y = 228;
 
-		int width_in_sprites = 5;
-		int height_in_sprites = size + 1;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 5;
+		height_in_sprites = size + 1;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
-
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
 
 	}
 	else if (size == 7) {
@@ -603,19 +580,20 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 360;
 		Y = 264;
 
-		int width_in_sprites = 7;
-		int height_in_sprites = size + 1;
-		int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
+		width_in_sprites = 7;
+		height_in_sprites = size + 1;
+		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 
 		//Draw box
 		drawRectangle(WALL_SPRITE_ID,background,X,Y,width_in_sprites+2,height_in_sprites+2,GRAY,false);
 
-		//Draw the 'content' texture
-		SDL_SetRenderTarget(globalInstance->renderer, background);
-		drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth),
-					Y + SPRITE_HEIGHT + STRING_GAP, 1.0);
-
 	}
+
+	//Draw the 'content' texture
+	SDL_SetRenderTarget(globalInstance->renderer, background);
+	int content_X = X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth);
+	int content_Y = Y + SPRITE_HEIGHT + STRING_GAP;
+	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -625,11 +603,12 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 
 }
 
+//Function for drawing the FPS box
 void drawFPSBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0)
-		size = 8;
+		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
@@ -640,9 +619,7 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
 	//Print all content to 'content' texture
-	printToTexture("FPS", content,
-					0.5 * (contentWidth - getStringLength("FPS", 1.0)), STRING_GAP * 2, 1, 
-					WHITE);
+	printToTexture("FPS", content, 0.5 * (contentWidth - getStringLength("FPS", 1.0)), STRING_GAP * 2, 1, WHITE);
 
 	int X = 0;
 	int Y = 0;
@@ -675,13 +652,13 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;
 
 	//Draw box
-	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, 
-					height_in_sprites + 2, GRAY, false);
+	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
 
 	//Draw the 'content' texture
 	SDL_SetRenderTarget(globalInstance->renderer, background);
-	drawTexture(content, X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth), 
-				Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight), 1.0);
+	int content_X = X + SPRITE_WIDTH + 0.5 * (width_in_pixels - contentWidth);
+	int content_Y = Y + SPRITE_HEIGHT + 0.5 * (height_in_pixels - contentHeight);
+	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free 'content' memory
 	SDL_DestroyTexture(content);
@@ -713,6 +690,7 @@ int calcMapHeight()
 
 }
 
+//Function for creating the texture for the score
 SDL_Texture* create_Score_Text()
 {
 
@@ -726,6 +704,7 @@ SDL_Texture* create_Score_Text()
 
 }
 
+//Function for creating the texture for the level
 SDL_Texture* create_Level_Text()
 {
 
@@ -739,11 +718,11 @@ SDL_Texture* create_Level_Text()
 
 }
 
+//Function for creating the texture for the "lines until levelup" number
 SDL_Texture* create_Lines_Text()
 {
 
 	SDL_Texture* texture;
-
 	
 	texture = createTexture(FONT_WIDTH, FONT_HEIGHT);
 	printToTexture("5", texture, 0, 0, 1, ORANGE);
@@ -752,22 +731,22 @@ SDL_Texture* create_Lines_Text()
 
 }
 
+//Function for creating the texture for the PAUSED text
 SDL_Texture* create_Pause_Text()
 {
 
 	SDL_Texture* texture;
 
-	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), 
-		FONT_HEIGHT);
+	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT);
 	printToTexture("PAUSED", texture, 0, 0, 1, WHITE);
 
 	return texture;
 
 }
 
+//Function for creating the texture for the foreground
 SDL_Texture* create_Foreground_Text()
 {
-
 
 	SDL_Texture* texture;
 
@@ -777,6 +756,7 @@ SDL_Texture* create_Foreground_Text()
 
 }
 
+//Function for creating the texture for the cursor
 SDL_Texture* create_Cursor_Text()
 {
 
@@ -997,6 +977,7 @@ UI_list* _create_list(unsigned short color, const char* strings, ...)
 	va_end(valist);
 
 	//Find the longest string
+		//This is used to decide the width of the texture
 	char* longest = list->entry_texts[0];
 	for (int i = 1; i < list->num_entries; i++)
 		if (SDL_strlen(list->entry_texts[i]) > SDL_strlen(longest))
@@ -1052,6 +1033,8 @@ UI_list* create_Numerical_List()
 
 	UI_list* list = create_list(GREEN, "1", "2", "3", "4", "5", "6", "7", "8");
 
+	//This list has the unique aspect of entries being different colors. This loop is making the appropriate
+	//entries have red text
 	for (unsigned short i = list->num_entries - 1; i > PROGRESS - 1; i--)
 	{
 
@@ -1171,15 +1154,19 @@ piece** makeTitlePieces()
 	}
 	srand((int)title_time);
 
+	//Allocate memory for array of pieces
 	piece** titlePieces = calloc(NUM_OF_TITLE_PIECES, sizeof(piece));
 
 	piece* currentPiece = NULL;
 
+	//All sizes are hard-coded
 	unsigned short sizes[] = { 3, 1, 1, 2, 3, 3, 1, 2, 2, 1, 1, 3, 1, 3, 2, 1, 3, 4, 1 };
 
+	//For every piece
 	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
 	{
 
+		//Allocate memory for piece and for pieces array of blocks
 		currentPiece = malloc(sizeof(*currentPiece));
 		currentPiece->numOfBlocks = sizes[i];
 		currentPiece->blocks = malloc(currentPiece->numOfBlocks*sizeof(*currentPiece->blocks));
@@ -1187,8 +1174,10 @@ piece** makeTitlePieces()
 		if (currentPiece != NULL && currentPiece->blocks != NULL)
 		{
 
+			//Randomize color for piece
 			currentPiece->color = (rand() % (RED - YELLOW + 1) + YELLOW);
 
+			//Shapes of every piece are hard-coded
 			if (i == 0)
 			{
 
@@ -1365,6 +1354,7 @@ piece** makeTitlePieces()
 			currentPiece->width = calcWidth(currentPiece);
 			currentPiece->height = calcHeight(currentPiece);
 
+			//Append piece to array of title pieces
 			if (titlePieces != NULL)
 				titlePieces[i] = currentPiece;
 
@@ -1411,11 +1401,13 @@ SDL_Texture* create_Title_Text()
 
 //Return the pieces in the title that will continue falling once the title reaches the 
 //bottom of the screen.
-	//Also free all pieces in the array passed to the function
+	//Also free all pieces in the array passed to the function.
+		//This is because we use a copy of the title screen pieces, so we want to delete that copy
 piece** getMovingPieces(piece** titlePieces)
 {
 
-	piece** movingPieces = malloc(5 * sizeof(**movingPieces));
+	//Only 14 pieces continue falling when the title hits the bottom of the screen
+	piece** movingPieces = malloc(NUM_MOVING_TITLE_PIECES * sizeof(**movingPieces));
 	
 	if (movingPieces != NULL)
 	{
@@ -1424,36 +1416,24 @@ piece** getMovingPieces(piece** titlePieces)
 			//titlepieces[0], [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [12], [14],
 			//and [18] are the pieces that must continue falling even after the rest of the
 			//title has finished
-		for (unsigned short i = 0; i < 14; i++)
+		for (unsigned short i = 0; i < NUM_MOVING_TITLE_PIECES; i++)
 			movingPieces[i] = malloc(sizeof(*movingPieces[i]));
-		movingPieces[0]->blocks = 
-					malloc(titlePieces[0]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[1]->blocks = 
-					malloc(titlePieces[1]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[2]->blocks = 
-					malloc(titlePieces[2]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[3]->blocks = 
-					malloc(titlePieces[3]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[4]->blocks = 
-					malloc(titlePieces[4]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[5]->blocks = 
-					malloc(titlePieces[5]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[6]->blocks = 
-					malloc(titlePieces[6]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[7]->blocks = 
-					malloc(titlePieces[7]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[8]->blocks = 
-					malloc(titlePieces[8]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[9]->blocks = 
-					malloc(titlePieces[9]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[10]->blocks = 
-					malloc(titlePieces[10]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[11]->blocks = 
-					malloc(titlePieces[12]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[12]->blocks = 
-					malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[13]->blocks = 
-					malloc(titlePieces[18]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+
+		//Allocate memory for the correct number of blocks for each movingPiece
+		movingPieces[0]->blocks = malloc(titlePieces[0]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[1]->blocks = malloc(titlePieces[1]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[2]->blocks = malloc(titlePieces[2]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[3]->blocks = malloc(titlePieces[3]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[4]->blocks = malloc(titlePieces[4]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[5]->blocks = malloc(titlePieces[5]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[6]->blocks = malloc(titlePieces[6]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[7]->blocks = malloc(titlePieces[7]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[8]->blocks = malloc(titlePieces[8]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[9]->blocks = malloc(titlePieces[9]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[10]->blocks = malloc(titlePieces[10]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[11]->blocks = malloc(titlePieces[12]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[12]->blocks = malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[13]->blocks = malloc(titlePieces[18]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 
 		//Copy the pieces over for each movingPiece
 		copyPiece(titlePieces[0], movingPieces[0]);
@@ -1473,6 +1453,7 @@ piece** getMovingPieces(piece** titlePieces)
 		
 	}
 
+	//Delete the title pieces that got passed
 	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
 		delPiece(&titlePieces[i]);
 	free(titlePieces);
@@ -1560,6 +1541,7 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces)
 
 }
 
+//Get the X coordinate of where to draw the score to the screen depending on the current game mode size
 int getScoreDrawX(unsigned short size)
 {
 
@@ -1582,6 +1564,7 @@ int getScoreDrawX(unsigned short size)
 
 }
 
+//Get the Y coordinate of where to draw the score to the screen depending on the current game mode size
 int getScoreDrawY(unsigned short size)
 {
 
@@ -1600,6 +1583,7 @@ int getScoreDrawY(unsigned short size)
 
 }
 
+//Get the X coordinate of where to draw the foreground to the screen depending on the current game mode size
 int getForegroundX(unsigned short size)
 {
 
@@ -1614,6 +1598,7 @@ int getForegroundX(unsigned short size)
 
 }
 
+//Get the Y coordinate of where to draw the foreground to the screen depending on the current game mode size
 int getForegroundY(unsigned short size)
 {
 
@@ -1632,6 +1617,7 @@ int getForegroundY(unsigned short size)
 
 }
 
+//Get the X coordinate of where to draw the level to the screen depending on the current game mode size
 int getLevelX(unsigned short size, unsigned short level)
 {
 
@@ -1651,7 +1637,8 @@ int getLevelX(unsigned short size, unsigned short level)
 
 }
 
-int getLevelY(unsigned short size, unsigned short level)
+//Get the Y coordinate of where to draw the level to the screen depending on the current game mode size
+int getLevelY(unsigned short size)
 {
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
@@ -1673,6 +1660,8 @@ int getLevelY(unsigned short size, unsigned short level)
 
 }
 
+//Get the X coordinate of where to draw the "lines until levelup" to the screen depending on the current game
+//mode size
 int getLinesX(unsigned short size, unsigned short lines)
 {
 
@@ -1690,7 +1679,9 @@ int getLinesX(unsigned short size, unsigned short lines)
 
 }
 
-int getLinesY(unsigned short size, unsigned short lines)
+//Get the Y coordinate of where to draw the "lines until levelup" to the screen depending on the current game
+//mode size
+int getLinesY(unsigned short size)
 {
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
@@ -1712,6 +1703,7 @@ int getLinesY(unsigned short size, unsigned short lines)
 
 }
 
+//Get the X coord of where to draw the Next piece to the screen depending on the current game mode
 int getNextX(unsigned short size, int width)
 {
 
@@ -1739,6 +1731,7 @@ int getNextX(unsigned short size, int width)
 
 }
 
+//Get the Y coord of where to draw the Next piece to the screen depending on the current game mode
 int getNextY(unsigned short size, int height)
 {
 
@@ -1768,6 +1761,7 @@ int getNextY(unsigned short size, int height)
 
 }
 
+//Get the X coord of where to draw the Hold piece to the screen depending on the current game mode
 int getHoldX(unsigned short size, int width)
 {
 
@@ -1795,6 +1789,7 @@ int getHoldX(unsigned short size, int width)
 
 }
 
+//Get the Y coord of where to draw the Hold piece to the screen depending on the current game mode
 int getHoldY(unsigned short size, int height)
 {
 
@@ -1824,6 +1819,7 @@ int getHoldY(unsigned short size, int height)
 
 }
 
+//Get the X coord of where to draw the FPS to the screen depending on the current game mode
 int getFpsX(unsigned short size)
 {
 
@@ -1841,6 +1837,7 @@ int getFpsX(unsigned short size)
 
 }
 
+//Get the Y coord of where to draw the FPS to the screen depending on the current game mode
 int getFpsY(unsigned short size)
 {
 
@@ -1867,6 +1864,7 @@ int getFpsY(unsigned short size)
 void drawBackgroundExtras(SDL_Texture* background, unsigned short size)
 {
 
+	//Extra Background walls are specific to the current game mode
 	if (size == 1)
 	{
 
@@ -1988,6 +1986,7 @@ int getGameHeight(unsigned short size)
 
 }
 
+//Get the X coord of where to draw the Pause text to the screen depending on the current game mode
 int getPausedX(unsigned short size, float multi)
 {
 
@@ -2001,6 +2000,7 @@ int getPausedX(unsigned short size, float multi)
 
 }
 
+//Get the Y coord of where to draw the Pause text to the screen depending on the current game mode
 int getPausedY(unsigned short size, float multi)
 {
 
