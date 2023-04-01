@@ -1,36 +1,10 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
-
 #include "HEADERS/MGF.h"
 
 //draw.c
-void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill);
-void printToTexture(char* string,SDL_Texture* dstTexture,int X,int Y,float multiplier,unsigned short color);
-void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
-void clearTexture(SDL_Texture* texture);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-SDL_Texture* createTexture(int width, int height);
-SDL_Texture* createPieceTexture(piece Piece);
-int getStringLength(char* str, float multiplier);
-
-//generate.c
-piece* generateGamePiece(unsigned short size);
-void delPiece(piece** Piece);
-void copyBlocks(piece* piece1, piece* piece2);
-void copyPiece(piece* piece1, piece* piece2);
-
-//audio.c
-void _playSound(int id);
-sound* loadSound(char* file);
-void delSound(sound** Sound);
-void setVolume(sound** Sound, unsigned short volume);
 
 //file.c
-bool fileExists(char* fileName);
 void saveToFile(const char* file_path, const char* str, int value);
-int getFileValue(const char* file_path, const char* name);
 
 //instance.c
 void updateVolume();
@@ -104,6 +78,7 @@ unsigned short drawTitle(piece** firstPiece)
 		SDL_QueryTexture(modes->ui->texture, NULL, NULL, NULL, &modesHeight);
 		SDL_QueryTexture(numerical->ui->texture, NULL, NULL, NULL, &numericalHeight);
 		SDL_QueryTexture(options->ui->texture, NULL, NULL, NULL, &optionsHeight);
+		//This section basically finds the bottom Y value of the lowest-reaching menu
 		*Y = SDL_ceil(SDL_max(modes->ui->y + modesHeight, numerical->ui->y + numericalHeight));
 		*Y = SDL_ceil(SDL_max(*Y, options->ui->y + optionsHeight));
 		*Y = *Y / (double)(SPRITE_HEIGHT) + 1;
@@ -117,15 +92,19 @@ unsigned short drawTitle(piece** firstPiece)
 
 	// Control Logic -------------------------------------------------------------
 
+	//Keep track of the current selected mode and option
 	const char* selected_mode = getListSelectedString(modes);
 	const char* selected_option = getListSelectedString(options);
 
+	//If you press DOWN
 	if (onPress(DOWN_BUTTON))
 	{
 
+		//Move down only in the menu that is currently being interacted with
 		if(modes->ui->currentlyInteracting)
 		{
 
+			//Do some bounds checking to make sure you dont move down off the menu
 			if (modes->selected_entry < modes->num_entries - 1)
 			{
 
@@ -145,7 +124,7 @@ unsigned short drawTitle(piece** firstPiece)
 				numerical->selected_entry++;
 
 			}
-			else
+			else	//Play LAND_SOUND if player trying to select a size they dont have unlocked
 				playSound(LAND_SOUND);
 
 		}
@@ -164,6 +143,8 @@ unsigned short drawTitle(piece** firstPiece)
 
 	}
 
+	//If you press UP
+		//Basically same logic as pressing DOWN
 	if (onPress(UP_BUTTON))
 	{
 
@@ -206,6 +187,7 @@ unsigned short drawTitle(piece** firstPiece)
 
 	}
 
+	//Holding LEFT or RIGHT is only used for changing the volume
 	if (onHold(LEFT_BUTTON) || onHold(RIGHT_BUTTON))
 	{
 
@@ -220,6 +202,7 @@ unsigned short drawTitle(piece** firstPiece)
 
 		}
 
+		//Logic for volume changing rapidly if you hold the button
 		if (*moveStartBool || (currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
 		{
 
@@ -266,12 +249,15 @@ unsigned short drawTitle(piece** firstPiece)
 	else
 		*moveStart = 0;
 
+	//When you press the SELECT_BUTTON
 	if (onPress(SELECT_BUTTON))
 	{
 
+		//Play ROTATE_SOUND only if pressed when not editing volume
 		if (*editingVolume == false)
 			playSound(ROTATE_SOUND);
 
+		//If pressed SELECT when in the modes menu
 		if (modes->ui->currentlyInteracting)
 		{
 
@@ -287,6 +273,7 @@ unsigned short drawTitle(piece** firstPiece)
 			else if (SDL_strcmp(selected_mode, "NUMERICAL") == 0)
 			{
 
+				//Go into NUMERICAL menu
 				modes->ui->currentlyInteracting = false;
 				numerical->ui->currentlyInteracting = true;
 
@@ -294,14 +281,17 @@ unsigned short drawTitle(piece** firstPiece)
 			else if (SDL_strcmp(selected_mode, "OPTIONS") == 0)
 			{
 
+				//Go into OPTIONS menu
 				modes->ui->currentlyInteracting = false;
 				options->ui->currentlyInteracting = true;
 
 			}
 			else if (SDL_strcmp(selected_mode, "EXIT") == 0)
+				//Exit the game
 				globalInstance->running = false;
 
 		}
+		//If pressed SELECT when in the NUMERICAL menu
 		else if (numerical->ui->currentlyInteracting)
 		{
 
@@ -311,9 +301,11 @@ unsigned short drawTitle(piece** firstPiece)
 			return PLAY_SCREEN;
 
 		}
+		//If pressed SELECT when in the OPTIONS menu
 		else if (options->ui->currentlyInteracting)
 		{
 
+			//Logic for what option you pressed SELECT on
 			if (SDL_strcmp(selected_option, "LIMIT FPS") == 0)
 			{
 
@@ -423,6 +415,7 @@ unsigned short drawTitle(piece** firstPiece)
 	drawTexture(Texture_Cursor, modes->ui->x - 14, getListSelectedEntryY(modes), 1.0);
 
 	//Only draw currently active sub-menu
+		//MODES menu is always active
 	if (numerical->ui->currentlyInteracting)
 	{
 
@@ -444,8 +437,7 @@ unsigned short drawTitle(piece** firstPiece)
 
 		//If editing the volume, draw cursors to left and right of volume
 		if (*editingVolume)
-			drawTexture(Texture_volSlide, options->ui->x + optionsWidth - FONT_WIDTH, 
-						getListSelectedEntryY(options), 1.0);
+			drawTexture(Texture_volSlide, options->ui->x + optionsWidth - FONT_WIDTH, getListSelectedEntryY(options), 1.0);
 
 	}
 
