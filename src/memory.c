@@ -25,37 +25,44 @@ SDL_Texture* create_Values_Text();
 SDL_Texture* create_volSlide_Text();
 SDL_Texture* create_Controls_Text();
 
-//Function for pushing a variable or object onto an array of varVector structures 
+//Function for pushing a variable or object onto a varVector structure 
 //designed to make freeing variables at the end of a game_state easier
 varVector** pushAddress(void** ptr, unsigned short type)
 {
 
+    //If this is the first address being pushed
     static varVector* vector;
     if (vector == NULL) {
         
+        //Allocate memory for the varVector
         vector = calloc(1, sizeof(*vector));
         vector->count = 0;
 
     }
 
+    //If we passed a NULL ptr, return the address of the varVector
     if(ptr == NULL)
         return &vector;
-    else
+    else    //Otherwise, we want to push the pointer onto the varVector
     {
 
+        //If this is the first pointer being pushed since the last time they were all freed
         if (vector->ptrs == NULL)
         {
 
+            //Allocate memory for the ptrs array and the types array
             vector->ptrs = calloc(1, sizeof(void*));
             vector->types = calloc(1, sizeof(unsigned short));
 
         }
-        else
+        else    //Otherwise, we need to reallocate ptrs and types to increase their size by 1
         {
 
+            //Allocate memory to temporarily store ptrs and types arrays
             void** tempPtrs = calloc(vector->count, sizeof(void*));
             unsigned short* tempTypes = calloc(vector->count, sizeof(unsigned short));
 
+            //Copy all ptrs and types into these temporary arrays
             for (int i = 0; i < vector->count; i++)
             {
 
@@ -64,12 +71,15 @@ varVector** pushAddress(void** ptr, unsigned short type)
 
             }
 
+            //Then free the ptrs and types arrays
             free(vector->ptrs);
             free(vector->types);
-
+            
+            //Then reallocate them with a larger size
             vector->ptrs = calloc(vector->count + 1, sizeof(void*));
             vector->types = calloc(vector->count + 1, sizeof(unsigned short));
 
+            //Then copy all the stuff out of the temp arrays and back to the newly allocated arrays
             for(int i = 0; i < vector->count + 1; i++)
             {
 
@@ -78,14 +88,17 @@ varVector** pushAddress(void** ptr, unsigned short type)
 
             }
 
+            //And finally free the temp arrays
             free(tempPtrs);
             free(tempTypes);
 
         }
         
+        //Store the pointer to the variable and the type of variable into the arrays
         vector->ptrs[vector->count] = ptr;
         vector->types[vector->count] = type;
 
+        //Increase the count of the varVector
         vector->count++;
 
         return NULL;
@@ -256,6 +269,7 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
     if (*ptr == NULL)
     {
 
+        //Call a different function depending on the the type of HUD texture we are trying to make
         if (type == SCORE_TEXT)
             *ptr = create_Score_Text();
         else if (type == LEVEL_TEXT)
@@ -327,6 +341,7 @@ void declare_UI_list(UI_list** ptr, int type)
     if (*ptr == NULL)
     {
 
+        //Call a different function depending on which list we are trying to make
         if (type == MODES_LIST)
             *ptr = create_Modes_List();
         else if (type == NUMERICAL_LIST)
@@ -345,6 +360,7 @@ void declare_UI_list(UI_list** ptr, int type)
 void freeVars()
 {
     
+    //By passing NULL to pushAddress(), we get the address of the varVector
     varVector** vector = pushAddress(NULL, TYPE_NA);
 
     for (int i = 0; i < (*vector)->count; i++)
