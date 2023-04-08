@@ -30,6 +30,9 @@ int getListSelectedEntryY(UI_list* list);
 const char* getListSelectedString(UI_list* list);
 void updateValuesText(SDL_Texture* texture);
 
+//audio.c
+void _playSound(int id);
+
 unsigned short drawTitle(piece** firstPiece)
 {
 
