@@ -501,20 +501,24 @@ unsigned short playMode(piece* firstPiece)
 					*speed = (double)(60.0988 / (48 - 5 * *Level));
 
 				}
+
+				//Update the texture displaying how many more lines are needed to reach the next level
 				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, &Texture_Lines);
 
 			}
 
+			//Delete texture for currentPiece
 			delPiece(&currentPiece);
 			SDL_DestroyTexture(Texture_Current);
 			Texture_Current = NULL;
 
+			//Grab the next piece and store it in currentPiece
 			currentPiece = nextPiece;
 			adjustNewPiece(currentPiece, X, MAP_WIDTH);
 
 			//NextPiece no longer exists
 			nextPiece = NULL;
-
+			//So delete texture for next piece
 			SDL_DestroyTexture(Texture_Next);
 			Texture_Next = NULL;
 
@@ -545,7 +549,7 @@ unsigned short playMode(piece* firstPiece)
 
 	//Draw various textures that don't move
 	drawTexture(Texture_Next, getNextX(MODE, *nextText_Width), getNextY(MODE, *nextText_Height), 1.0);
-	drawTexture(Texture_Hold,getHoldX(MODE,*holdText_Width),getHoldY(MODE,*holdText_Height),HOLD_TEXTURE_MULTI);
+	drawTexture(Texture_Hold, getHoldX(MODE, *holdText_Width), getHoldY(MODE, *holdText_Height), HOLD_TEXTURE_MULTI);
 	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
 	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE), 1.0);
 	drawTexture(Texture_Lines, getLinesX(MODE, *linesAtCurrentLevel), getLinesY(MODE), 1.0);
@@ -553,7 +557,7 @@ unsigned short playMode(piece* firstPiece)
 	//Draw the foreground
 	drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
 
-	//Make Texture_Current opaque
+	//Make Texture_Current transparent
 	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
 	//Draw Texture_Current at ghostY
 	drawTexture(Texture_Current, FONT_WIDTH * *X + *foregroundX, FONT_HEIGHT * (int)*ghostY + *foregroundY, 1.0);
@@ -562,12 +566,12 @@ unsigned short playMode(piece* firstPiece)
 
 	//Draw current piece if game isnt over
 	if (*gameOver == false)
-		drawTexture(Texture_Current,FONT_WIDTH*(*X)+*foregroundX,FONT_HEIGHT*((int)*Y)+*foregroundY,1.0);
+		drawTexture(Texture_Current, FONT_WIDTH * (*X) + *foregroundX, FONT_HEIGHT * ((int)*Y) + *foregroundY, 1.0);
 
 	//Draw PAUSED if game is paused
 		//Center the text
 	if (*paused)
-		drawTexture(Texture_Paused,getPausedX(MODE,*pausedMulti),getPausedY(MODE,*pausedMulti),*pausedMulti);
+		drawTexture(Texture_Paused, getPausedX(MODE, *pausedMulti), getPausedY(MODE, *pausedMulti), *pausedMulti);
 
 	//Animations -----------------------------------------------------------------
 
@@ -575,13 +579,21 @@ unsigned short playMode(piece* firstPiece)
 	if (*clearingLine == true && numCompleted != NULL)
 	{
 		
+		//Keep track of the number of lines completed prior to drawing the next frame of the line animation
+			//This is because the playLineAnimation() function modifies the numCompleted variable
 		unsigned short prevNumCompleted = *numCompleted;
 		
+		//Play a single frame of the line animation
 		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted)) {
+
+			//This if statement only gets entered after the completion of a single line being cleared in animation
 			
+			//Set the playing_progress_sound value to false once the progress sound is done playing
+				//This is so that we can start playing COMPLETE_SOUND again
 			if ((int)(SDL_GetTicks() - *progress_sound_start) > *length_of_progress_sound)
 				*playing_progress_sound = false;
 
+			//Play COMPLETE_SOUND as long as the PROGRESS_SOUND is not playing
 			if (!*playing_progress_sound)
 				playSound(COMPLETE_SOUND);
 
@@ -615,6 +627,7 @@ unsigned short playMode(piece* firstPiece)
 	if (*gameOver == true)
 	{
 
+		//If the overAnimation isnt playing
 		if (*overAnimation == false)
 		{
 
@@ -643,6 +656,7 @@ unsigned short playMode(piece* firstPiece)
 				drawSimpleRect(foreground, x, y, width, round(multi * STRING_GAP), BLACK);
 
 				//Calculate Y value for "OVER" and print it
+					//Also draw a black box behind it
 				y = y + round(multi * STRING_GAP);
 				drawSimpleRect(foreground, x, y, width, height, BLACK);
 				printToTexture("OVER", foreground, x, y, multi, WHITE);
@@ -652,6 +666,7 @@ unsigned short playMode(piece* firstPiece)
 				if (*Score > loadTop(MODE))
 					saveTop(*Score, MODE);
 
+				//Also save the Progress to disk
 				if (PROGRESS > (int)(loadProgress()))
 					saveProgress();
 
@@ -661,6 +676,7 @@ unsigned short playMode(piece* firstPiece)
 		else
 		{
 
+			//Once the game is over, pressing the SELECT_BUTTON will exit back to the main menu
 			if (onPress(SELECT_BUTTON))
 			{
 
@@ -686,6 +702,7 @@ unsigned short playMode(piece* firstPiece)
 
 }
 
+//Function for calculating the Y coord to display the "ghost" of the current piece at
 unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int mapWidth, int mapHeight)
 {
 
@@ -698,6 +715,7 @@ unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int ma
 
 }
 
+//Function for playing a single frame of the overAnimation
 bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight)
 {
 
@@ -710,6 +728,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 	if (time_start == NULL)
 	{
 
+		//Allocate memory for storing time values
 		time_start = malloc(sizeof(*time_start));
 		time_now = malloc(sizeof(*time_now));
 		if (time_start != NULL)
@@ -722,6 +741,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 		if (time_now != NULL)
 		{
 
+			//Get the current time
 			*time_now = SDL_GetTicks();
 
 			//When enough time has lapsed since the last frame in the animation, play 
@@ -729,6 +749,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 			if ((*time_now - *time_start) > (Uint32)(OVER_SOUND_LENGTH / MAP_HEIGHT))
 			{
 
+				//row stores the y value of the current row that is being animated
 				static unsigned short* row;
 				if (row == NULL)
 				{
@@ -746,8 +767,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 
 					//Fill the current row with randomly colored BLOCKSs
 					for (unsigned short i = 0; i < mapWidth; i++)
-						drawToTexture(BLOCK_SPRITE_ID, foreground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1,
-										(rand() % (RED - YELLOW + 1)) + YELLOW);
+						drawToTexture(BLOCK_SPRITE_ID, foreground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (rand() % (RED - YELLOW + 1)) + YELLOW);
 
 					//Check if we are on the last row
 					if (*row < mapHeight)
@@ -758,6 +778,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 						//If we are on the last row, the animation is over
 						animationOver = true;
 						
+						//Free memory used to store the row 
 						free(row);
 						row = NULL;
 
@@ -777,25 +798,29 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 
 	}
 
+	//Return the status of whether the animation is finished playing or not
 	return animationOver;
 
 }
 
+//Function for updating the texture that displays the number of lines needed to get to the next level
 void updateLines(unsigned short lines, SDL_Texture** linesTexture)
 {
 
 	//Erase linesTexture
+		//We need to delete it because its size may change with the new lines value
 	clearTexture(*linesTexture);
 	SDL_DestroyTexture(*linesTexture);
 
 	//Recreate linesTexture
 	*linesTexture = createTexture(getIntStringLength(lines, 1.0), FONT_HEIGHT);
 
-	//Draw new level to levelTexture
+	//Draw new lines to linesTexture
 	intToTexture(lines, *linesTexture, 0, 0, 1, ORANGE);
 
 }
 
+//Function for updating the texture that displays the current level
 void updateLevel(unsigned short level, SDL_Texture* levelTexture)
 {
 
@@ -807,6 +832,7 @@ void updateLevel(unsigned short level, SDL_Texture* levelTexture)
 
 }
 
+//Function for updating the texture that displays the score
 void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 {
 
@@ -832,11 +858,14 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 
 }
 
+//Function for playing one frame of the line clearing animation
 bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, bool *mapData, unsigned short* numCompleted)
 {
 
+	//This is the value that gets returned from the function and is used to tell if a sound should be played for the animation this frame
 	bool playSound = false;
 
+	//Allocate memory for storing some time values
 	static Uint32* time_start = NULL;
 	static Uint32* time_now = NULL;
 	if (time_start == NULL)
@@ -854,14 +883,18 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 		if (time_now != NULL)
 		{
 
+			//Keep track of the current time for this framess
 			*time_now = SDL_GetTicks();
 
+			//If a certain amount of time has passed since the last time the animation was updated
 			if ((*time_now - *time_start) > CLEARING_TIME)
 			{
 
 				//With each frame of the animation, remove two blocks from the line being erased
+					//Here, frame refers to when the animation actually changes
 				SDL_SetRenderTarget(globalInstance->renderer, foreground);
 
+				//'column' stores the x value of the current column that is being erased
 				static unsigned short* column;
 				if (column == NULL)
 				{
@@ -869,6 +902,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 					column = malloc(sizeof(*column));
 					*column = 0;
 
+					//When 'column' == NULL, that means we are on a new line, so play a sound
 					playSound = true;
 
 				}
@@ -876,18 +910,15 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 				{
 
 					//Because we remove a block on each side of the chasm
-						//The blocks getting removed are +-*column blocks away from the center
-					drawToTexture(BLOCK_SPRITE_ID, foreground,
-						(MAP_WIDTH / 2 - *column) * SPRITE_WIDTH, 
-						row * SPRITE_HEIGHT, 1, BLACK);
-					drawToTexture(BLOCK_SPRITE_ID, foreground,
-						(MAP_WIDTH / 2 + *column) * SPRITE_WIDTH, 
-						row * SPRITE_HEIGHT, 1, BLACK);
+						//The blocks getting removed are +-column blocks away from the center
+					drawToTexture(BLOCK_SPRITE_ID, foreground, (MAP_WIDTH / 2 - *column) * SPRITE_WIDTH, row * SPRITE_HEIGHT, 1, BLACK);
+					drawToTexture(BLOCK_SPRITE_ID, foreground, (MAP_WIDTH / 2 + *column) * SPRITE_WIDTH, row * SPRITE_HEIGHT, 1, BLACK);
 
 					//By increasing *column, we're basically increaing the radius of the 
 					//chasm of blocks we are removing
 					*column = *column + 1;
 
+					//Once we have removed all the blocks in this row
 					if (*column > MAP_WIDTH / 2)
 					{
 
@@ -921,6 +952,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 
 }
 
+//Function for removing a line from the mapData and moving the lines above it down
 void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsigned short mapWidth)
 {
 
@@ -928,9 +960,7 @@ void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsi
 	for (unsigned short j = 0; j < mapWidth; j++)
 		*(mapData + row * mapWidth + j) = false;
 
-	SDL_Rect srcRect
-		= { .x = 0, .y = 0, .w = mapWidth * SPRITE_WIDTH, 
-			.h = row * SPRITE_HEIGHT };
+	SDL_Rect srcRect = { .x = 0, .y = 0, .w = mapWidth * SPRITE_WIDTH, .h = row * SPRITE_HEIGHT };
 	
 	//Copy portion of the foreground above the clearedLine
 	SDL_Texture* aboveText;
@@ -943,8 +973,7 @@ void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsi
 	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
 	SDL_RenderFillRect(globalInstance->renderer, &srcRect);
 
-	SDL_Rect dstRect
-		= { .x = 0, .y = SPRITE_HEIGHT, .w = srcRect.w, .h = srcRect.h };
+	SDL_Rect dstRect = { .x = 0, .y = SPRITE_HEIGHT, .w = srcRect.w, .h = srcRect.h };
 
 	//Copy the texture from above the clearedLine down by 1 row
 	SDL_RenderCopy(globalInstance->renderer, aboveText, NULL, &dstRect);
@@ -953,11 +982,11 @@ void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsi
 	//Shift all mapData above clearedLine down by 1
 	for (unsigned short i = row; i > 0; i--)
 		for (unsigned short j = 0; j < mapWidth; j++)
-			*(mapData + i * mapWidth + j) = 
-				*(mapData + (i - 1) * mapWidth + j);
+			*(mapData + i * mapWidth + j) = *(mapData + (i - 1) * mapWidth + j);
 
 }
 
+//Functiom for checking if a given row is completely filled
 bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth)
 {
 
@@ -982,6 +1011,7 @@ unsigned short completedLine(bool* mapData, int Y, piece Piece, int** returnRows
 	if (Y > mapHeight)
 		Y = mapHeight;
 
+	//Keep track of the number of lines that were completed by the last placement
 	unsigned short numCompleted = 0;
 
 	//Count the number of lines completed
@@ -1085,6 +1115,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, in
 
 }
 
+//Function for moving a piece left and right
 void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth)
 {
 	
@@ -1106,6 +1137,7 @@ void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth
 
 }
 
+//Function for getting the first piece from the title screen
 piece* getFirstPiece(piece* firstPiece)
 {
 	
@@ -1128,8 +1160,8 @@ piece* getFirstPiece(piece* firstPiece)
 
 			//Copy over all blocks from firstPiece into currentPiece
 			if (currentPiece->numOfBlocks > 0)
-				currentPiece->blocks = malloc(currentPiece->numOfBlocks * 
-												sizeof(*currentPiece->blocks));
+				currentPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*currentPiece->blocks));
+				
 			for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 			{
 				if (currentPiece->blocks != NULL)
