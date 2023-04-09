@@ -1,5 +1,13 @@
 #include <sys/stat.h>
 #include <limits.h>
+#include <stdio.h>
+
+//Fix for cross-compiling mkdir() for windows on linux
+#ifdef _WIN32
+#include <windows.h>
+#define mkdir(dir, mode) mkdir(dir)
+#endif
+
 
 #include "HEADERS/MGF.h"
 
@@ -91,7 +99,6 @@ void createFile(char* file_path)
 	//Finally, create the actual file
 	file = fopen(file_path, "w");
 	fclose(file);
-
 }
 
 //Function for creating the "progress.md" file

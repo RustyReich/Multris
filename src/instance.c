@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "HEADERS/MGF.h"
 
 //The internal resolution of the game on the title screen
@@ -108,7 +110,7 @@ void scaleRenderer()
 
     //Adjust viewport
         //Honestly, I don't really remember how this works
-    if (windowWidth == round((float)renderWidth * scale))
+    if (windowWidth == SDL_round((float)renderWidth * scale))
     {
 
         rect.y = (int)((windowHeight * ((float)renderWidth / windowWidth) - renderHeight) / 2);

@@ -94,8 +94,8 @@ unsigned short getIntLength(int num)
 	if (num == 0)
 		return 1;
 	else
-		return (unsigned short)(floor(log10(abs(num))) + 1);
-
+		return (unsigned short)(SDL_floor(SDL_log10(abs(num))) + 1);
+	
 }
 
 //Print string to a texture

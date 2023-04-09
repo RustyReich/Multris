@@ -137,8 +137,8 @@ unsigned short playMode(piece* firstPiece)
 
 		//Calculate multiplier for PAUSED text when it would be wider than the playfield
 		if (MODE != 0)
-			if (getStringLength("PAUSED", 1.0) > round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH)
-				*pausedMulti = round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH / getStringLength("PAUSED", 1.0);
+			if (getStringLength("PAUSED", 1.0) > SDL_round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH)
+				*pausedMulti = SDL_round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH / getStringLength("PAUSED", 1.0);
 
 		*firstLoop = false;
 
@@ -465,7 +465,7 @@ unsigned short playMode(piece* firstPiece)
 
 				//Scoring formula was derived by plotting the scoring table from the NES 
 				//version of tetris and then finding a best-fit line
-				*Score += ((93.333 * pow(*numCompleted, 3) - 490 * pow(*numCompleted, 2) + 876.67 * *numCompleted - 440) * (*Level + 1));
+				*Score += ((93.333 * SDL_pow(*numCompleted, 3) - 490 * SDL_pow(*numCompleted, 2) + 876.67 * *numCompleted - 440) * (*Level + 1));
 				updateScore(*Score, Texture_Score);
 
 				//Keep track of the number of lines that have been cleared on the current 
@@ -644,7 +644,7 @@ unsigned short playMode(piece* firstPiece)
 
 				//Calculate X and Y value to print "GAME" at
 				int x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - getStringLength("GAME", multi));
-				int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - (height * 2 + round(multi * STRING_GAP))));
+				int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - (height * 2 + SDL_round(multi * STRING_GAP))));
 
 				//Print "GAME"
 					//Draw black rectangle behind it 
@@ -653,11 +653,11 @@ unsigned short playMode(piece* firstPiece)
 				
 				//Draw black rectangle between GAME and OVER
 				y = y + height;
-				drawSimpleRect(foreground, x, y, width, round(multi * STRING_GAP), BLACK);
+				drawSimpleRect(foreground, x, y, width, SDL_round(multi * STRING_GAP), BLACK);
 
 				//Calculate Y value for "OVER" and print it
 					//Also draw a black box behind it
-				y = y + round(multi * STRING_GAP);
+				y = y + SDL_round(multi * STRING_GAP);
 				drawSimpleRect(foreground, x, y, width, height, BLACK);
 				printToTexture("OVER", foreground, x, y, multi, WHITE);
 
@@ -837,7 +837,7 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 {
 
 	//Get the number of digits in the score
-	unsigned short length = (unsigned short)(floor(log10(score)) + 1);
+	unsigned short length = (unsigned short)(SDL_floor(SDL_log10(score)) + 1);
 
 	//Clear area of scoreTexture that will be updated
 	SDL_Rect rect;

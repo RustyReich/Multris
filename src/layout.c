@@ -71,8 +71,8 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 	}
 
 	//Set correct width and height depending on size
-	int width = round(BASE_PLAYFIELD_WIDTH * size) + 2;
-	int height = round(BASE_PLAYFIELD_HEIGHT * size) + 2;
+	int width = SDL_round(BASE_PLAYFIELD_WIDTH * size) + 2;
+	int height = SDL_round(BASE_PLAYFIELD_HEIGHT * size) + 2;
 
 	//Draw the play field rectangle
     drawRectangle(WALL_SPRITE_ID, background, X, Y, width, height, GRAY, false);
@@ -129,7 +129,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
     {
 
 		//Set X any Y
-        X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
+        X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
         Y = 0;
 
     }
@@ -226,7 +226,7 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 	{
 
 		//Set X and Y
-		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
+		X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 7;
 
 	}
@@ -292,7 +292,7 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 	{
 
 		//Set X and Y
-		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
+		X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 11;
 
 	}
@@ -381,7 +381,7 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 	{
 
 		//Set X and Y
-		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
+		X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 17;
 
 	}
@@ -476,7 +476,7 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 	{
 
 		//Set X and Y
-		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
+		X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 28;
 
 		width_in_sprites = size + 1;
@@ -631,7 +631,7 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 	{
 
 		//Set X and Y
-		X = SPRITE_WIDTH * (round(BASE_PLAYFIELD_WIDTH * size) + 1);
+		X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 37;
 
 	}
@@ -673,9 +673,9 @@ int calcMapWidth()
 {
 
 	if (MODE == 0)
-		return (int)round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE);
+		return (int)SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE);
 	else
-		return (int)round(BASE_PLAYFIELD_WIDTH * MODE);
+		return (int)SDL_round(BASE_PLAYFIELD_WIDTH * MODE);
 
 }
 
@@ -684,9 +684,9 @@ int calcMapHeight()
 {
 
 	if (MODE == 0)
-		return (int)round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE);
+		return (int)SDL_round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE);
 	else
-		return (int)round(BASE_PLAYFIELD_HEIGHT * MODE);
+		return (int)SDL_round(BASE_PLAYFIELD_HEIGHT * MODE);
 
 }
 
@@ -1994,7 +1994,7 @@ int getPausedX(unsigned short size, float multi)
 		size = MAX_PIECE_SIZE;
 
 	int start = getForegroundX(size);
-	int width = round(BASE_PLAYFIELD_WIDTH * size) * SPRITE_WIDTH;
+	int width = SDL_round(BASE_PLAYFIELD_WIDTH * size) * SPRITE_WIDTH;
 
 	return (start + 0.5 * (width - getStringLength("PAUSED", multi)));
 
@@ -2008,7 +2008,7 @@ int getPausedY(unsigned short size, float multi)
 		size = MAX_PIECE_SIZE;
 
 	int start = getForegroundY(size);
-	int height = round(BASE_PLAYFIELD_HEIGHT * size) * SPRITE_HEIGHT;
+	int height = SDL_round(BASE_PLAYFIELD_HEIGHT * size) * SPRITE_HEIGHT;
 
 	return (start + 0.5 * (height - FONT_HEIGHT * multi));
 
