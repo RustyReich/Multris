@@ -274,7 +274,12 @@ void setWindowMode(unsigned short mode)
         //Set window position to 0,0
         SDL_SetWindowPosition(globalInstance->window, 0, 0);
 
+        //For some reason, SDL_WINDOW_FULLSCREEN causes things to break on Windows
+        #ifdef _WIN32
+        SDL_SetWindowFullscreen(globalInstance->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        #else
         SDL_SetWindowFullscreen(globalInstance->window, SDL_WINDOW_FULLSCREEN);
+        #endif
 
         //Scale renderer accordingly
 	    scaleRenderer();

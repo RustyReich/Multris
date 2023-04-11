@@ -1,0 +1,55 @@
+########################################################################
+####################### Makefile Template ##############################
+########################################################################
+
+# Compiler settings - Can be customized.
+CC = 	gcc \
+		-LSDL2-2.26.5\x86_64-w64-mingw32\lib 			\
+		-ISDL2-2.26.5\x86_64-w64-mingw32\include		\
+		-ISDL2-2.26.5\x86_64-w64-mingw32\include\SDL2	\
+		-LSDL2_image-2.6.3\x86_64-w64-mingw32\lib 		\
+		-ISDL2_image-2.6.3\x86_64-w64-mingw32\include
+
+CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
+LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lssp -mwindows -lm
+
+# Makefile settings - Can be customized.
+APPNAME = build_windows/Multris
+EXT = .c
+SRCDIR = src
+OBJDIR = win_obj
+DEPDIR = win_dep
+
+############## Do not change anything from here downwards! #############
+SRC = $(wildcard $(SRCDIR)/*$(EXT))
+OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
+DEP = $(OBJ:$(OBJDIR)/%.o=$(DEPDIR)%.d)
+# UNIX-based OS variables & settings
+RM = rm
+DELOBJ = $(OBJ)
+# Windows OS variables & settings
+DEL = del
+EXE = .exe
+WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
+
+########################################################################
+####################### Targets beginning here #########################
+########################################################################
+
+all: $(APPNAME)
+	rm $(OBJ)
+
+# Builds the app
+$(APPNAME): $(OBJ)
+	$(CC) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+
+# Creates the dependecy rules
+%.d: $(SRCDIR)/%$(EXT)
+	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
+
+# Includes all .h files
+-include $(DEP)
+
+# Building rule for .o files and its .c/.cpp in combination with all .h
+$(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
+	$(CC) $(CXXFLAGS) -o $@ -c $<

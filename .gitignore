@@ -11,6 +11,14 @@
 !build/SPRITES
 !build/SPRITES/*
 
+!build_windows/
+!build_windows/AUDIO
+!build_windows/AUDIO/*
+!build_windows/SPRITES
+!build_windows/SPRITES/*
+
 !Makefile_Linux
+!Makefile_Windows
 
 !unix_obj/
+!win_obj/
