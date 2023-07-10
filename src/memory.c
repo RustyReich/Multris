@@ -58,39 +58,8 @@ varVector** pushAddress(void** ptr, unsigned short type)
         else    //Otherwise, we need to reallocate ptrs and types to increase their size by 1
         {
 
-            //Allocate memory to temporarily store ptrs and types arrays
-            void** tempPtrs = calloc(vector->count, sizeof(void*));
-            unsigned short* tempTypes = calloc(vector->count, sizeof(unsigned short));
-
-            //Copy all ptrs and types into these temporary arrays
-            for (int i = 0; i < vector->count; i++)
-            {
-
-                tempPtrs[i] = vector->ptrs[i];
-                tempTypes[i] = vector->types[i];
-
-            }
-
-            //Then free the ptrs and types arrays
-            free(vector->ptrs);
-            free(vector->types);
-            
-            //Then reallocate them with a larger size
-            vector->ptrs = calloc(vector->count + 1, sizeof(void*));
-            vector->types = calloc(vector->count + 1, sizeof(unsigned short));
-
-            //Then copy all the stuff out of the temp arrays and back to the newly allocated arrays
-            for(int i = 0; i < vector->count + 1; i++)
-            {
-
-                vector->ptrs[i] = tempPtrs[i];
-                vector->types[i] = tempTypes[i];
-
-            }
-
-            //And finally free the temp arrays
-            free(tempPtrs);
-            free(tempTypes);
+            vector->ptrs = realloc(vector->ptrs, (vector->count + 1) * sizeof(void*));
+            vector->types = realloc(vector->types, (vector->count + 1) * sizeof(unsigned short));
 
         }
         
@@ -129,7 +98,7 @@ void declare_unsigned_short(void** ptr, unsigned short value)
 
         *ptr = calloc(1, sizeof(unsigned short));
         **(unsigned short**)(ptr) = value;
-
+        
         if (!inVector(ptr))
             pushAddress(ptr, VARIABLE);
 
@@ -396,6 +365,10 @@ void freeVars()
         *(void**)((*vector)->ptrs[i]) = NULL;
 
     }   
+
+    //Free ptrs and types arrays
+    free((*vector)->ptrs);
+    free((*vector)->types);
 
     //Free the memory taken by the varVector
     free(*vector);
