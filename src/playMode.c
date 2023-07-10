@@ -390,6 +390,15 @@ unsigned short playMode(piece* firstPiece)
 
 		}
 
+		// Exit if press ESCAPE_BUTTON while paused
+		if (*paused && onPress(EXIT_BUTTON))
+		{
+
+			freeVars();
+			return RESET;
+
+		}
+
 	}
 
 	//-----------------------------------------------------------------------
@@ -683,9 +692,6 @@ unsigned short playMode(piece* firstPiece)
 				//Free all memory taken by PLAYMODE -----------------------------------
 
 				freeVars();
-
-				//--------------------------------------------------------
-
 				return RESET;
 
 			}
