@@ -74,6 +74,7 @@ void updateLevel(unsigned short, SDL_Texture*);
 void updateLines(unsigned short lines, SDL_Texture** linesTexture);
 bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight);
 unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int mapWidth, int mapHeight);
+unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel);
 
 unsigned short playMode(piece* firstPiece)
 {
@@ -512,7 +513,7 @@ unsigned short playMode(piece* firstPiece)
 				}
 
 				//Update the texture displaying how many more lines are needed to reach the next level
-				updateLines(5 * (*Level + 1) - *linesAtCurrentLevel, &Texture_Lines);
+				updateLines(calcLinesUntilLevelup(*linesAtCurrentLevel, *Level), &Texture_Lines);
 
 			}
 
@@ -561,7 +562,7 @@ unsigned short playMode(piece* firstPiece)
 	drawTexture(Texture_Hold, getHoldX(MODE, *holdText_Width), getHoldY(MODE, *holdText_Height), HOLD_TEXTURE_MULTI);
 	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
 	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE), 1.0);
-	drawTexture(Texture_Lines, getLinesX(MODE, *linesAtCurrentLevel), getLinesY(MODE), 1.0);
+	drawTexture(Texture_Lines, getLinesX(MODE, calcLinesUntilLevelup(*linesAtCurrentLevel, *Level)), getLinesY(MODE), 1.0);
 
 	//Draw the foreground
 	drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
@@ -705,6 +706,14 @@ unsigned short playMode(piece* firstPiece)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
+
+}
+
+// Calculate how many more lines must be completed until the player reaches the next level
+unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel)
+{
+
+	return 5 * (currentLevel + 1) - linesAtCurrentLevel;
 
 }
 
