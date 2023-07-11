@@ -89,6 +89,23 @@ bool inVector(void** ptr)
 
 }
 
+//Function for declaring a short on the varVector array
+void declare_short(void** ptr, short value)
+{
+
+    if (*ptr == NULL)
+    {
+
+        *ptr = calloc(1, sizeof(short));
+        **(short**)(ptr) = value;
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
+
+    }
+
+}
+
 //Function for declaring an unsigned short on the varVector array
 void declare_unsigned_short(void** ptr, unsigned short value)
 {

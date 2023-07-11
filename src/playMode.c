@@ -40,6 +40,7 @@ void declare_int(void** ptr, int value);
 void declare_char(void** ptr, char value);
 void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
+void declare_short(void** ptr, short value);
 void declare_Piece(piece** ptr, piece* Piece);
 void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
@@ -85,33 +86,33 @@ unsigned short playMode(piece* firstPiece)
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
 	
 	//Variables
-	static unsigned short* X; declare(X, 0);
-	static double *Y; declare(Y, 0.0);
-	static double *speed; declare(speed, INITIAL_SPEED);
-	static bool *softDrop; declare(softDrop, false);
-	static bool* gameOver; declare(gameOver, false);
-	static bool* clearingLine; declare(clearingLine, false);
-	static bool* paused; declare(paused, false);
-	static bool* overAnimation; declare(overAnimation, false);
-	static bool* justHeld; declare(justHeld, false);
-	static unsigned short* numCompleted; declare(numCompleted, 0);
-	static unsigned int* Score; declare(Score, 0);
-	static unsigned short* Level; declare(Level, 0);
-	static unsigned short* linesAtCurrentLevel; declare(linesAtCurrentLevel, 0);
-	static unsigned short* ghostY; declare(ghostY, MAP_HEIGHT - currentPiece->height);
-	static Uint32* moveStart; declare(moveStart, 0);
-	static bool* moveStartBool; declare(moveStartBool, false);
-	static int* nextText_Width; declare(nextText_Width, 0);
-	static int* nextText_Height; declare(nextText_Height, 0);
-	static int* holdText_Width; declare(holdText_Width, 0);
-	static int* holdText_Height; declare(holdText_Height, 0);
-	static bool* firstLoop; declare(firstLoop, true);
-	static int* foregroundX; declare(foregroundX, 0);
-	static int* foregroundY; declare(foregroundY, 0);
-	static double* pausedMulti; declare(pausedMulti, 1.0);
-	static bool* playing_progress_sound; declare(playing_progress_sound, false);
-	static Uint32* progress_sound_start; declare(progress_sound_start, 0);
-	static int* length_of_progress_sound; declare(length_of_progress_sound, 0);
+	DECLARE_VARIABLE(unsigned short, X, 0);
+	DECLARE_VARIABLE(double, Y, 0.0);
+	DECLARE_VARIABLE(double, speed, INITIAL_SPEED);
+	DECLARE_VARIABLE(bool, softDrop, false);
+	DECLARE_VARIABLE(bool, gameOver, false);
+	DECLARE_VARIABLE(bool, clearingLine, false);
+	DECLARE_VARIABLE(bool, paused, false);
+	DECLARE_VARIABLE(bool, overAnimation, false);
+	DECLARE_VARIABLE(bool, justHeld, false);
+	DECLARE_VARIABLE(unsigned short, numCompleted, 0);
+	DECLARE_VARIABLE(unsigned int, Score, 0);
+	DECLARE_VARIABLE(short, Level, 0);
+	DECLARE_VARIABLE(short, linesAtCurrentLevel, 0);
+	DECLARE_VARIABLE(short, ghostY, MAP_HEIGHT - currentPiece->height);
+	DECLARE_VARIABLE(unsigned int, moveStart, 0);
+	DECLARE_VARIABLE(bool, moveStartBool, false);
+	DECLARE_VARIABLE(int, nextText_Width, 0);
+	DECLARE_VARIABLE(int, nextText_Height, 0);
+	DECLARE_VARIABLE(int, holdText_Width, 0);
+	DECLARE_VARIABLE(int, holdText_Height, 0);
+	DECLARE_VARIABLE(bool, firstLoop, true);
+	DECLARE_VARIABLE(int, foregroundX, 0);
+	DECLARE_VARIABLE(int, foregroundY, 0);
+	DECLARE_VARIABLE(double, pausedMulti, 1.0);
+	DECLARE_VARIABLE(bool, playing_progress_sound, false);
+	DECLARE_VARIABLE(unsigned int, progress_sound_start, 0);
+	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
@@ -125,9 +126,9 @@ unsigned short playMode(piece* firstPiece)
 
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
-	static int* completedRows; declare(completedRows, MAP_HEIGHT + 1);
+	static int* completedRows; declareStart(completedRows, MAP_HEIGHT + 1);
 	static bool* mapData; declare_map_matrix(&mapData);
-
+	
 	//First frame
 	if (*firstLoop)
 	{

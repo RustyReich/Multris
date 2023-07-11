@@ -17,6 +17,7 @@ void declare_int(void** ptr, int value);
 void declare_char(void** ptr, char value);
 void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
+void declare_short(void** ptr, short value);
 void declare_Piece(piece** ptr, piece* Piece);
 void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
 void declare_map_matrix(bool** ptr);
@@ -37,17 +38,17 @@ unsigned short drawTitle(piece** firstPiece)
 {
 
 	//Variables
-	static bool* titleUpdating; declare(titleUpdating, false);
-	static unsigned short* mode; declare(mode, 0);
-	static double* Y; declare(Y, (double)15);
-	static char* inputLock; declare(inputLock, true);
-	static int* nextText_Width; declare(nextText_Width, 0);
-	static int* nextText_Height; declare(nextText_Height, 0);
-	static int* titleText_Height; declare(titleText_Height, 0);
-	static bool* firstLoop; declare(firstLoop, true);
-	static bool* editingVolume; declare(editingVolume, false);
-	static Uint32* moveStart; declare(moveStart, 0);
-	static bool* moveStartBool; declare(moveStartBool, false);
+	DECLARE_VARIABLE(bool, titleUpdating, false);
+	DECLARE_VARIABLE(unsigned short, mode, 0);
+	DECLARE_VARIABLE(double, Y, (double)15);
+	DECLARE_VARIABLE(char, inputLock, true);
+	DECLARE_VARIABLE(int, nextText_Width, 0);
+	DECLARE_VARIABLE(int, nextText_Height, 0);
+	DECLARE_VARIABLE(int, titleText_Height, 0);
+	DECLARE_VARIABLE(bool, firstLoop, true);
+	DECLARE_VARIABLE(bool, editingVolume, false);
+	DECLARE_VARIABLE(unsigned int, moveStart, 0);
+	DECLARE_VARIABLE(bool, moveStartBool, false);
 
 	//Textures
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *firstPiece);

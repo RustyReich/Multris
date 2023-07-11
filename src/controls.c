@@ -17,6 +17,7 @@ void declare_int(void** ptr, int value);
 void declare_char(void** ptr, char value);
 void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
+void declare_short(void** ptr, short value);
 void declare_UI_list(UI_list** ptr, int type);
 void freeVars();
 
@@ -51,12 +52,12 @@ unsigned short controlsScreen(piece** Piece)
 {
 
     //Variables
-    static int* nextText_Width; declare(nextText_Width, 0);
-    static int* nextText_Height; declare(nextText_Height, 0);
-    static bool* firstLoop; declare(firstLoop, true);  
-    static unsigned short* selected_control; declare(selected_control, 0);  
-    static bool* editing_control; declare(editing_control, false);
-    static int* new_key; declare(new_key, -1);
+    DECLARE_VARIABLE(int, nextText_Width, 0);
+    DECLARE_VARIABLE(int, nextText_Height, 0);
+    DECLARE_VARIABLE(bool, firstLoop, true);
+    DECLARE_VARIABLE(unsigned short, selected_control, 0);
+    DECLARE_VARIABLE(bool, editing_control, false);
+    DECLARE_VARIABLE(int, new_key, -1);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
