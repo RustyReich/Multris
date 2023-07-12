@@ -150,7 +150,7 @@ unsigned short playMode(piece* firstPiece)
 
 	//These controls only work if it is not a game over and the game is not paused and the clearing animation is not
 	//playing
-	if (!*gameOver && !*paused && !*clearingLine)
+	if (!*gameOver && !*clearingLine)
 	{
 
 		//Left and right movement
@@ -215,42 +215,52 @@ unsigned short playMode(piece* firstPiece)
 		else
 			*moveStart = 0;
 
-		//Rotate CCW
-		if (onPress(ROTATE_CCW_BUTTON) && *X + currentPiece->height <= MAP_WIDTH && *Y + currentPiece->width <= MAP_HEIGHT)
+		if (onPress(ROTATE_CCW_BUTTON) || onPress(ROTATE_CW_BUTTON))
 		{
 
-			rotatePiece(currentPiece, CCW);
+			int previousX = *X;
+			double previousY = *Y;
 
-			//If rotation puts the piece inside another piece, just rotate back the 
-			//opposite way
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
+			printf("previousY = %f\n", previousY);
+
+			float previousCenterX = (float)currentPiece->width / 2;
+			float previousCenterY = (float)currentPiece->height / 2;
+
+			if (onPress(ROTATE_CCW_BUTTON))
+			{
+				rotatePiece(currentPiece, CCW);
+			}
+			else if (onPress(ROTATE_CW_BUTTON))
+			{
 				rotatePiece(currentPiece, CW);
+			}
+
+			float newCenterX = (float)currentPiece->width / 2;
+			float newCenterY = (float)currentPiece->height / 2;
+
+			*X -= SDL_round(newCenterX - previousCenterX);
+			*Y -= newCenterY - previousCenterY;
+
+			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
+			{
+				
+				if (onPress(ROTATE_CCW_BUTTON))
+				{
+					rotatePiece(currentPiece, CW);
+				}
+				else if (onPress(ROTATE_CW_BUTTON))
+				{
+					rotatePiece(currentPiece, CCW);
+				}
+
+				*X = previousX;
+				*Y = previousY;
+
+			}
 			else
 			{
 
 				//Only play sound if it actually rotated
-				playSound(ROTATE_SOUND);
-				SDL_DestroyTexture(Texture_Current);
-				Texture_Current = NULL;
-
-				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
-
-			}
-
-		}
-
-		//Rotate CW
-		if (onPress(ROTATE_CW_BUTTON) && *X + currentPiece->height <= MAP_WIDTH && *Y + currentPiece->width <= MAP_HEIGHT)
-		{
-
-			rotatePiece(currentPiece, CW);
-
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
-				rotatePiece(currentPiece, CCW);
-			else
-			{
-
 				playSound(ROTATE_SOUND);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
