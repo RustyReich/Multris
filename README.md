@@ -34,9 +34,8 @@ LEFT / RIGHT ARROW - Move. Hold to move quicker.
 ##### GAME MODES
 ```
   MULTRIS - All pieces are a random size. 
-            Top Scores are saved.
 NUMERICAL - All pieces are the selected size.
-            Top Score are NOT saved.
+            Unlock larger sizes by reaching high levels in smaller sizes.
 ```           
 ##### GAMEPLAY
 ```
@@ -49,10 +48,10 @@ Score - You score points by completing lines.
 ```
 ##### OPTIONS
 ```
-BLOCK SPRITE - Choose what sprite to use for the squares that make up the polyominoes
-       GHOST - Choose to have a transparent "ghost" image to show where the current piece would land.
   FULLSCREEN - Enable or disable fullscreen mode
       VOLUME - Set the volume of the game audio. Between 0-9
+   LIMIT FPS - Limit the FPS of the game to twice that of the refresh rate of the display to reserve resource usage.
+    CONTROLS - Modify the keybindings for the game.
 ```
 
 <a name="Building_From_Source"/>
