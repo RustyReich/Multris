@@ -29,7 +29,8 @@ LEFT / RIGHT ARROW - Move. Hold to move quicker.
                  X - Rotate CW
                  C - Mirror piece over Y-Axis
              ENTER - Select/Pause
-            ESCAPE - Exit the game if pressed in the menu
+            ESCAPE - Exit current menu.
+                     Return to main menu if pressed when game paused.
 ``` 
 ##### GAME MODES
 ```
