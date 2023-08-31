@@ -50,7 +50,8 @@ Score - You score points by completing lines.
 ```
   FULLSCREEN - Enable or disable fullscreen mode
       VOLUME - Set the volume of the game audio. Between 0-9
-   LIMIT FPS - Limit the FPS of the game to twice that of the refresh rate of the display to reserve resource usage.
+   LIMIT FPS - Limit the FPS of the game to twice that of the refresh rate of the display.
+               This is to lower CPU usage.
     CONTROLS - Modify the keybindings for the game.
 ```
 
