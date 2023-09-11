@@ -84,6 +84,19 @@ make -f Makefile_Linux
 
 #### Building a Specific Release Version (Stable)
 
+###### For versions 1.0.8+
+
+##### Linux
+
+```
+git clone https://github.com/RustyReich/Multris --branch v1.x.x
+cd Multris
+make -f Makefile_Linux
+```
+
+#### Windows
+`Coming Soon`
+
 ###### For versions 1.0.4 - 1.0.7
 
 ##### Linux
