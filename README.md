@@ -68,6 +68,7 @@ Score - You score points by completing lines.
 
 [SDL2_Image](https://www.libsdl.org/projects/SDL_image/)
 
+For all following instructions, replace `make -f Makefile_Linux` with `make -f Makefile_Windows` if you are on Windows.
 
 #### Building the Latest Development Version (Unstable)
 
