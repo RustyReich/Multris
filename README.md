@@ -71,22 +71,15 @@ Score - You score points by completing lines.
 
 #### Building the Latest Development Version (Unstable)
 
-##### Linux
-
 ```
 git clone https://github.com/RustyReich/Multris
 cd Multris
 make -f Makefile_Linux
 ```
 
-##### Windows
-`Coming Soon`
-
 #### Building a Specific Release Version (Stable)
 
 ###### For versions 1.0.8+
-
-##### Linux
 
 ```
 git clone https://github.com/RustyReich/Multris --branch v1.x.x
@@ -94,12 +87,7 @@ cd Multris
 make -f Makefile_Linux
 ```
 
-#### Windows
-`Coming Soon`
-
 ###### For versions 1.0.4 - 1.0.7
-
-##### Linux
 
 ```
 git clone https://github.com/RustyReich/Multris --branch v1.x.x
@@ -113,8 +101,6 @@ cp -R ./src/AUDIO ./build/AUDIO
 cp -R ./src/SPRITES ./build/SPRITES
 ```
 
-#### Windows
-`Coming Soon`
 
 ###### Build instructions are not available for versions before 1.0.4
 
