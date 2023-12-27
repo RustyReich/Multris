@@ -109,6 +109,8 @@ typedef struct piece
 
 	block* blocks;
 
+    block* centerBlock;
+
 	unsigned short numOfBlocks;
 	unsigned short color;
 

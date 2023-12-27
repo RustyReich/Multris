@@ -1,5 +1,15 @@
 #include "HEADERS/MGF.h"
 
+// Function for finding and creating the centerBlock for a piece
+void createCenterBlock(piece* piece)
+{
+
+	piece->centerBlock = calloc(1, sizeof(block));
+	piece->centerBlock->X = piece->minX + SDL_floor((float)piece->width / (float)2);
+	piece->centerBlock->Y = piece->minY + SDL_floor((float)piece->height / (float)2);
+
+}
+
 //Function for copying all blocks from one piece to another
 	//Make sure piece2 has allocated enough space to store all blocks
 void copyBlocks(piece* piece1, piece* piece2)
@@ -13,6 +23,10 @@ void copyBlocks(piece* piece1, piece* piece2)
 		piece2->blocks[i].Y = piece1->blocks[i].Y;
 
 	}
+
+	// Copy over the coordinates for the centerBlock
+	piece2->centerBlock->X = piece1->centerBlock->X;
+	piece2->centerBlock->Y = piece1->centerBlock->Y;
 	
 }
 
@@ -36,6 +50,10 @@ void copyPiece(piece* piece1, piece* piece2)
 //Clear memory allocated by a Piece
 void delPiece(piece** Piece)
 {
+
+	// Delete the centerBlock
+	free((*Piece)->centerBlock);
+	(*Piece)->centerBlock = NULL;
 
 	//Delete blocks
 	free((*Piece)->blocks);
@@ -307,6 +325,9 @@ piece* generateGamePiece(unsigned short size)
 			//Calculate the width and height of the piece
 			Piece->width = calcWidth(Piece);
 			Piece->height = calcHeight(Piece);
+
+			// Create the centerBlock
+			createCenterBlock(Piece);
 
 		}
 		

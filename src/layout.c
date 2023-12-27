@@ -27,6 +27,7 @@ void delPiece(piece** Piece);
 unsigned short calcWidth(piece* Piece);
 unsigned short calcHeight(piece* Piece);
 void copyPiece(piece* piece1, piece* piece2);
+void createCenterBlock(piece* piece);
 
 //memory.c
 varVector** pushAddress(void** ptr, unsigned short type);
@@ -1354,6 +1355,9 @@ piece** makeTitlePieces()
 			currentPiece->width = calcWidth(currentPiece);
 			currentPiece->height = calcHeight(currentPiece);
 
+			// Create the centerBlock
+			createCenterBlock(currentPiece);
+
 			//Append piece to array of title pieces
 			if (titlePieces != NULL)
 				titlePieces[i] = currentPiece;
@@ -1434,6 +1438,22 @@ piece** getMovingPieces(piece** titlePieces)
 		movingPieces[11]->blocks = malloc(titlePieces[12]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 		movingPieces[12]->blocks = malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 		movingPieces[13]->blocks = malloc(titlePieces[18]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+
+		// Create the centerBlocks for all movingPieces
+		createCenterBlock(movingPieces[0]);
+		createCenterBlock(movingPieces[1]);
+		createCenterBlock(movingPieces[2]);
+		createCenterBlock(movingPieces[3]);
+		createCenterBlock(movingPieces[4]);
+		createCenterBlock(movingPieces[5]);
+		createCenterBlock(movingPieces[6]);
+		createCenterBlock(movingPieces[7]);
+		createCenterBlock(movingPieces[8]);
+		createCenterBlock(movingPieces[9]);
+		createCenterBlock(movingPieces[10]);
+		createCenterBlock(movingPieces[11]);
+		createCenterBlock(movingPieces[12]);
+		createCenterBlock(movingPieces[13]);
 
 		//Copy the pieces over for each movingPiece
 		copyPiece(titlePieces[0], movingPieces[0]);

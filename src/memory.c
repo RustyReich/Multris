@@ -7,7 +7,7 @@ void copyPiece(piece* piece1, piece* piece2);
 //draw.c
 SDL_Texture* createPieceTexture(piece Piece);
 
-//layouc.c
+//layout.c
 SDL_Texture* create_Score_Text();
 SDL_Texture* create_Level_Text();
 SDL_Texture* create_Lines_Text();
@@ -220,6 +220,7 @@ void declare_Piece(piece** ptr, piece* Piece)
 
             *ptr = calloc(1, sizeof(piece));
             (*ptr)->blocks = calloc(Piece->numOfBlocks, sizeof(*(*ptr)->blocks));
+            (*ptr)->centerBlock = calloc(1, sizeof(block));
             copyPiece(Piece, *ptr);
 
         }

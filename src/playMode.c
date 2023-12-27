@@ -221,10 +221,9 @@ unsigned short playMode(piece* firstPiece)
 			int previousX = *X;
 			double previousY = *Y;
 
-			printf("previousY = %f\n", previousY);
-
-			float previousCenterX = (float)currentPiece->width / 2;
-			float previousCenterY = (float)currentPiece->height / 2;
+			// Calculate the current center of the piece
+			int previousCenterX = *X + (currentPiece->centerBlock->X - currentPiece->minX);
+			int previousCenterY = (int)*Y + (currentPiece->centerBlock->Y - currentPiece->minY);
 
 			if (onPress(ROTATE_CCW_BUTTON))
 			{
@@ -235,10 +234,12 @@ unsigned short playMode(piece* firstPiece)
 				rotatePiece(currentPiece, CW);
 			}
 
-			float newCenterX = (float)currentPiece->width / 2;
-			float newCenterY = (float)currentPiece->height / 2;
+			// Calculate the new center of the piece
+			int newCenterX = *X + (currentPiece->centerBlock->X - currentPiece->minX);
+			int newCenterY = (int)*Y + (currentPiece->centerBlock->Y - currentPiece->minY);
 
-			*X -= SDL_round(newCenterX - previousCenterX);
+			// Adjust X and Y so that the centerBlock is in the same place, that way it looks like we are rotating around it
+			*X -= newCenterX - previousCenterX;
 			*Y -= newCenterY - previousCenterY;
 
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
@@ -308,6 +309,7 @@ unsigned short playMode(piece* firstPiece)
 				//Create holdPiece by copying currentPiece
 				holdPiece = malloc(sizeof(*holdPiece));
 				holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+				holdPiece->centerBlock = calloc(1, sizeof(block));
 				copyPiece(currentPiece, holdPiece);
 				Texture_Hold = createPieceTexture(*holdPiece);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
@@ -341,6 +343,7 @@ unsigned short playMode(piece* firstPiece)
 				piece* tempPiece;
 				tempPiece = malloc(sizeof(*tempPiece));
 				tempPiece->blocks = malloc(holdPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+				tempPiece->centerBlock = calloc(1, sizeof(block));
 				copyPiece(holdPiece, tempPiece);
 
 				//Recreate holdPiece
@@ -348,6 +351,7 @@ unsigned short playMode(piece* firstPiece)
 				SDL_DestroyTexture(Texture_Hold);
 				holdPiece = malloc(sizeof(*holdPiece));
 				holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+				holdPiece->centerBlock = calloc(1, sizeof(block));
 				copyPiece(currentPiece, holdPiece);
 				Texture_Hold = createPieceTexture(*holdPiece);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
@@ -360,6 +364,7 @@ unsigned short playMode(piece* firstPiece)
 				//Copy tempPiece to currentPiece
 				currentPiece = malloc(sizeof(*currentPiece));
 				currentPiece->blocks = malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+				currentPiece->centerBlock = calloc(1, sizeof(block));
 				copyPiece(tempPiece, currentPiece);
 				adjustNewPiece(currentPiece, X, MAP_WIDTH);
 
@@ -1187,6 +1192,7 @@ piece* getFirstPiece(piece* firstPiece)
 			//Copy over all blocks from firstPiece into currentPiece
 			if (currentPiece->numOfBlocks > 0)
 				currentPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*currentPiece->blocks));
+			currentPiece->centerBlock = calloc(1, sizeof(block));
 				
 			for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 			{
@@ -1199,6 +1205,10 @@ piece* getFirstPiece(piece* firstPiece)
 				}
 
 			}
+
+			// Copy over the centerBlock from firstPiece
+			currentPiece->centerBlock->X = firstPiece->centerBlock->X;
+			currentPiece->centerBlock->Y = firstPiece->centerBlock->Y;
 
 		}
 

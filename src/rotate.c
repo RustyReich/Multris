@@ -28,6 +28,7 @@ void inversePiece(piece* Piece) {
 	//Swap all X and Y values
 	for (unsigned short i = 0; i < Piece->numOfBlocks; i++)
 		swap(Piece->blocks[i].X, Piece->blocks[i].Y, signed short);
+	swap(Piece->centerBlock->X, Piece->centerBlock->Y, signed short);
 
 	//Swap width & height, minX & minY
 	swap(Piece->width, Piece->height, unsigned short);
@@ -47,5 +48,7 @@ void mirrorPieceOverY(piece* Piece) {
 			Piece->minX = Piece->blocks[i].X;
 
 	}
+
+	Piece->centerBlock->X = center - Piece->centerBlock->X;
 
 }

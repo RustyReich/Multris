@@ -74,9 +74,15 @@ void mainLoop()
 
 	//The piece that shows up in the NEXT box on the title screen will be the first piece that is placed if
 	//playing a mode that supports the size of that piece
+	static bool generateFirst = true;
 	static piece* firstPiece;
-	if (firstPiece == NULL)
+	if (generateFirst == true)
+	{
+
 		firstPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
+		generateFirst = false;
+		
+	}
 
 	//Stores the current game state
 	static unsigned short game_state = TITLE_SCREEN;
@@ -155,6 +161,9 @@ void mainLoop()
 
 		//Return to the TITLE_SCREEN when the game is reset
 		game_state = TITLE_SCREEN;
+
+		// We need to re-generate the firstPiece when we RESET
+		generateFirst = true;
 
 	}
 
