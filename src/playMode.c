@@ -63,9 +63,9 @@ int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
 
 piece* getFirstPiece(piece*);
-void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth);
+void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight);
-void adjustNewPiece(piece* Piece, unsigned short* X, unsigned short mapWidth);
+void adjustNewPiece(piece* Piece, signed short* X, unsigned short mapWidth);
 unsigned short completedLine(bool* mapData, int Y, piece Piece, int** returnRows, int mapWidth, int mapHeight);
 bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth);
 void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsigned short mapWidth);
@@ -86,7 +86,7 @@ unsigned short playMode(piece* firstPiece)
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
 	
 	//Variables
-	DECLARE_VARIABLE(unsigned short, X, 0);
+	DECLARE_VARIABLE(signed short, X, 0);
 	DECLARE_VARIABLE(double, Y, 0.0);
 	DECLARE_VARIABLE(double, speed, INITIAL_SPEED);
 	DECLARE_VARIABLE(bool, softDrop, false);
@@ -150,7 +150,7 @@ unsigned short playMode(piece* firstPiece)
 
 	//These controls only work if it is not a game over and the game is not paused and the clearing animation is not
 	//playing
-	if (!*gameOver && !*clearingLine)
+	if (!*gameOver && !*clearingLine && !*paused)
 	{
 
 		//Left and right movement
@@ -215,9 +215,10 @@ unsigned short playMode(piece* firstPiece)
 		else
 			*moveStart = 0;
 
-		if (onPress(ROTATE_CCW_BUTTON) || onPress(ROTATE_CW_BUTTON))
+		if (onPress(ROTATE_CCW_BUTTON) || onPress(ROTATE_CW_BUTTON) || onPress(MIRROR_BUTTON))
 		{
 
+			// Save the previous X and Y of the cursor
 			int previousX = *X;
 			double previousY = *Y;
 
@@ -225,37 +226,168 @@ unsigned short playMode(piece* firstPiece)
 			int previousCenterX = *X + (currentPiece->centerBlock->X - currentPiece->minX);
 			int previousCenterY = (int)*Y + (currentPiece->centerBlock->Y - currentPiece->minY);
 
+			// Perform the rotation on the piece
 			if (onPress(ROTATE_CCW_BUTTON))
-			{
 				rotatePiece(currentPiece, CCW);
-			}
 			else if (onPress(ROTATE_CW_BUTTON))
-			{
 				rotatePiece(currentPiece, CW);
-			}
+			else if (onPress(MIRROR_BUTTON))
+				mirrorPieceOverY(currentPiece);
 
 			// Calculate the new center of the piece
 			int newCenterX = *X + (currentPiece->centerBlock->X - currentPiece->minX);
 			int newCenterY = (int)*Y + (currentPiece->centerBlock->Y - currentPiece->minY);
 
-			// Adjust X and Y so that the centerBlock is in the same place, that way it looks like we are rotating around it
+			// Adjust X and Y of cursors so that the centerBlock is in the same place, that way it looks like we are rotating around it
 			*X -= newCenterX - previousCenterX;
 			*Y -= newCenterY - previousCenterY;
 
+			// Check if the piece is now colliding with something
 			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
 			{
-				
-				if (onPress(ROTATE_CCW_BUTTON))
+
+				// Boolean for storing whether a wall kick is possible
+				bool ableToKick = false;
+
+				// Store the furthest colliding X and Y values from the center of the piece
+				int furthestX = 0;
+				int furthestY = 0;
+
+				// Get the minimum X and Y values of all blocks in the piece
+				int minX = currentPiece->minX;
+				int minY = currentPiece->minY;
+
+				// Go through each piece
+				for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 				{
-					rotatePiece(currentPiece, CW);
-				}
-				else if (onPress(ROTATE_CW_BUTTON))
-				{
-					rotatePiece(currentPiece, CCW);
+
+					int blockX = currentPiece->blocks[i].X;
+					int blockY = currentPiece->blocks[i].Y;
+					int offsetX = blockX - minX;
+					int offsetY = blockY - minY;
+					double currY = *Y;
+
+					// Check if any block in the piece goes outside the bounds of the playable area
+					if ((*X + offsetX < 0) || (*X + offsetX >= MAP_WIDTH) || (currY + offsetY < 0) || (currY + offsetY >= MAP_HEIGHT))
+					{
+
+						// If they do, check whether their X or Y values are further from the center than our current furthestX and
+						// furthestY values. Save them if they are.
+						if (SDL_abs(blockX - currentPiece->centerBlock->X) > SDL_abs(furthestX))
+							furthestX = blockX - currentPiece->centerBlock->X;
+
+						if (SDL_abs(blockY - currentPiece->centerBlock->Y) > SDL_abs(furthestY))
+							furthestY = blockY - currentPiece->centerBlock->Y;
+
+					}	// Check whether the current block is colliding with a different piece that has already been placed
+					else if (*(mapData + ((int)*Y + (blockY - currentPiece->minY)) * MAP_WIDTH + (*X + (blockX - currentPiece->minX))))
+					{
+
+						// If it is, check wether the collision is to the left or right of the center. If there is a collision, then
+						// we know we would need to shift the piece over by the entire distance from the center to the side of the piece
+						// that the collision was on in order to ensure there would no longer be a collion.
+							// If this distance is larger in magnitude than furthestX, overwrite furthestX.
+						if (blockX < currentPiece->centerBlock->X)
+						{
+
+							if (SDL_abs(minX - currentPiece->centerBlock->X) > SDL_abs(furthestX))
+								furthestX = minX - currentPiece->centerBlock->X;
+
+						}
+						else if (blockX > currentPiece->centerBlock->X)
+						{
+
+							if (SDL_abs((minX + currentPiece->width) - currentPiece->centerBlock->X) > SDL_abs(furthestX))
+								furthestX = (minX + currentPiece->width) - currentPiece->centerBlock->X;
+
+						}
+
+						// Do the same thing as above but on the Y-axis.
+						if (blockY < currentPiece->centerBlock->Y)
+						{
+
+							if (SDL_abs(minY - currentPiece->centerBlock->Y) > SDL_abs(furthestY))
+								furthestY = minY - currentPiece->centerBlock->Y;
+
+						}
+						else if (blockY > currentPiece->centerBlock->Y)
+						{
+
+							if (SDL_abs((minY + currentPiece->height) - currentPiece->centerBlock->Y) > SDL_abs(furthestY))
+								furthestY = (minY + currentPiece->height) - currentPiece->centerBlock->Y;
+
+						}
+
+					}
+
 				}
 
-				*X = previousX;
-				*Y = previousY;
+				// Now we have calcuated the furthest we could possibly shift the piece in the X or Y directions to attempt a wall kick
+
+				// Now, we try every permutation of X and Y shifts within these bounds to see if any would avoid the piece from colliding
+				// with anything.
+				for (unsigned short i = 0; i <= SDL_abs(furthestX); i++)
+				{
+
+					int currentOffsetX = 0;
+					int currentOffsetY = 0;
+
+					if (furthestX != 0)
+						currentOffsetX = i * furthestX / SDL_abs(furthestX);
+
+					for (unsigned short j = 0; j <= SDL_abs(furthestY); j++)
+					{
+
+						if (furthestY != 0)
+							currentOffsetY = j * furthestY / SDL_abs(furthestY);
+
+						double tempY = *Y - currentOffsetY;
+
+						if (!isColliding(*currentPiece, *X - currentOffsetX, &tempY, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
+						{
+
+							// Once we find a permuation of shift amounts that could avoid a collision, we shift the piece by that much
+							*X -= currentOffsetX;
+							*Y = tempY;
+
+							// And then we exit this double loop
+							ableToKick = true;
+							goto EndKickCheck;
+
+						}
+
+					}
+
+				}
+
+				EndKickCheck:;
+
+				// If the piece was not able to be shifted with a wall kick
+				if (!ableToKick)
+				{
+
+					// Reverse the move by rotating it back in the opposite direction
+					if (onPress(ROTATE_CCW_BUTTON))
+						rotatePiece(currentPiece, CW);
+					else if (onPress(ROTATE_CW_BUTTON))
+						rotatePiece(currentPiece, CCW);
+					else if (onPress(MIRROR_BUTTON))
+						mirrorPieceOverY(currentPiece);
+
+					// And restoring the X and Y values of the cursor
+					*X = previousX;
+					*Y = previousY;
+
+				}
+				else
+				{
+
+					//Only play sound if it actually rotated
+					playSound(ROTATE_SOUND);
+					SDL_DestroyTexture(Texture_Current);
+					Texture_Current = NULL;
+
+				}
 
 			}
 			else
@@ -266,33 +398,10 @@ unsigned short playMode(piece* firstPiece)
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
 
-				//Recalculate ghostY
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
-
 			}
 
-		}
-
-		//Mirroring
-		if (onPress(MIRROR_BUTTON))
-		{
-
-			mirrorPieceOverY(currentPiece);
-
-			//If mirroring puts the piece inside another piece, just mirror it back
-			if (isColliding(*currentPiece, *X, Y, NONE, mapData, MAP_WIDTH, MAP_HEIGHT))
-				mirrorPieceOverY(currentPiece);
-			else
-			{
-
-				//Only play sound if actually mirrored
-				playSound(ROTATE_SOUND);
-				SDL_DestroyTexture(Texture_Current);
-				Texture_Current = NULL;
-
-				*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
-
-			}
+			//Recalculate ghostY
+			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
 
 		}
 
@@ -1079,7 +1188,7 @@ unsigned short completedLine(bool* mapData, int Y, piece Piece, int** returnRows
 }
 
 //This prevents pieces from spawning partially in the wall
-void adjustNewPiece(piece* Piece, unsigned short* X, unsigned short mapWidth)
+void adjustNewPiece(piece* Piece, signed short* X, unsigned short mapWidth)
 {
 
 	if (*X + Piece->width > mapWidth)
@@ -1090,6 +1199,12 @@ void adjustNewPiece(piece* Piece, unsigned short* X, unsigned short mapWidth)
 //Check if a piece is colliding with another piece in various circumstances
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight)
 {
+
+	//A piece is considered colliding if it sticks outside the bounds of the playable area
+	if (X < 0 || X + Piece.width > mapWidth)
+		return true;
+	else if (*Y < 0)
+		return true;
 
 	if (direction == DOWN)
 	{
@@ -1147,7 +1262,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, in
 }
 
 //Function for moving a piece left and right
-void move(char keyPress, unsigned short *X, piece Piece, unsigned short mapWidth)
+void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth)
 {
 	
 	//Only allow movement within bounds
