@@ -912,6 +912,34 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 
 }
 
+// Function for redrawing the custom texture
+void updateCustomText(SDL_Texture* texture, unsigned short value)
+{
+
+	clearTexture(texture);
+
+	// Print the value to the texture
+	intToTexture(value, texture, 0, 0, 1.0, WHITE);
+
+}
+
+// Create the texture that displays for playing custom mode
+SDL_Texture* create_Custom_Text()
+{
+
+	SDL_Texture* texture;
+
+	int height = FONT_HEIGHT;
+	int width = 3 * FONT_WIDTH + 2 * STRING_GAP;
+
+	texture = createTexture(width, height);
+
+	updateCustomText(texture, 1);
+
+	return texture;
+
+}
+
 //Create the texture that displays for editing your controls
 SDL_Texture* create_Controls_Text()
 {
@@ -1011,7 +1039,7 @@ UI_list* create_Modes_List()
 {
 
 	//Initialize list
-	UI_list* list = create_list(WHITE, "MULTRIS", "NUMERICAL", "OPTIONS", "EXIT");
+	UI_list* list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "OPTIONS", "EXIT");
 
 	//First entry is selected by default
 	list->selected_entry = 0;
@@ -1062,6 +1090,22 @@ UI_list* create_Numerical_List()
 
 }
 
+// Create the "Custom" UI element on the title screen
+UI_list* create_Custom_List()
+{
+
+	UI_list* list = create_list(YELLOW, "<   >");
+
+	list->selected_entry = 0;
+
+	list->ui->x = 182;
+	list->ui->y = 42;
+
+	list->ui->currentlyInteracting = false;
+	return list;
+
+}
+
 //Create the "Options" UI element on the title screen
 UI_list* create_Options_List()
 {
@@ -1071,7 +1115,7 @@ UI_list* create_Options_List()
 	list->selected_entry = 0;
 
 	list->ui->x = 42;
-	list->ui->y = 70;
+	list->ui->y = 84;
 
 	list->ui->currentlyInteracting = false;
 

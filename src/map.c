@@ -2,6 +2,7 @@
 
 //draw.c
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
+int getIntStringLength(int num, float multiplier);
 
 //file.c
 void saveToFile(const char* file_path, const char* str, int value);
@@ -32,6 +33,7 @@ const char* getListSelectedString(UI_list* list);
 void updateValuesText(SDL_Texture* texture);
 int getScoreDrawX(unsigned short size);
 int getScoreDrawY(unsigned short size);
+void updateCustomText(SDL_Texture* texture, unsigned short value);
 
 //audio.c
 void _playSound(int id);
@@ -51,6 +53,7 @@ unsigned short drawTitle(piece** firstPiece)
 	DECLARE_VARIABLE(bool, editingVolume, false);
 	DECLARE_VARIABLE(unsigned int, moveStart, 0);
 	DECLARE_VARIABLE(bool, moveStartBool, false);
+	DECLARE_VARIABLE(unsigned short, customModeSize, 1);
 
 	//Textures
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *firstPiece);
@@ -61,6 +64,7 @@ unsigned short drawTitle(piece** firstPiece)
 	static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
 	static SDL_Texture* Texture_volSlide; declare_HUD_Text(&Texture_volSlide, VOLSLIDE_TEXT);
 	static SDL_Texture* Texture_Values; declare_HUD_Text(&Texture_Values, VALUES_TEXT);
+	static SDL_Texture* Texture_Custom; declare_HUD_Text(&Texture_Custom, CUSTOM_TEXT);
 
 	//Arrays
 	static piece** movingPieces; declare_moving_title_pieces(&movingPieces);
@@ -68,6 +72,7 @@ unsigned short drawTitle(piece** firstPiece)
 	//UI elements
 	static UI_list* modes; declare_UI_list(&modes, MODES_LIST);
 	static UI_list* numerical; declare_UI_list(&numerical, NUMERICAL_LIST);
+	static UI_list* custom; declare_UI_list(&custom, CUSTOM_LIST);
 	static UI_list* options; declare_UI_list(&options, OPTIONS_LIST);
 
 	//Some stuff to do on the firstLoop
@@ -80,12 +85,14 @@ unsigned short drawTitle(piece** firstPiece)
 		SDL_QueryTexture(Texture_Title, NULL, NULL, NULL, titleText_Height);	
 
 		//Start the title at a Y value that is just below whatever the lowest-reaching menu is
-		int modesHeight, numericalHeight, optionsHeight;
+		int modesHeight, numericalHeight, customHeight, optionsHeight;
 		SDL_QueryTexture(modes->ui->texture, NULL, NULL, NULL, &modesHeight);
 		SDL_QueryTexture(numerical->ui->texture, NULL, NULL, NULL, &numericalHeight);
+		SDL_QueryTexture(custom->ui->texture, NULL, NULL, NULL, &customHeight);
 		SDL_QueryTexture(options->ui->texture, NULL, NULL, NULL, &optionsHeight);
 		//This section basically finds the bottom Y value of the lowest-reaching menu
 		*Y = SDL_ceil(SDL_max(modes->ui->y + modesHeight, numerical->ui->y + numericalHeight));
+		*Y = SDL_ceil(SDL_max(*Y, custom->ui->y + customHeight));
 		*Y = SDL_ceil(SDL_max(*Y, options->ui->y + optionsHeight));
 		*Y = *Y / (double)(SPRITE_HEIGHT) + 1;
 		
@@ -208,7 +215,7 @@ unsigned short drawTitle(piece** firstPiece)
 
 		}
 
-		//Logic for volume changing rapidly if you hold the button
+		//Logic for volume or custom value changing rapidly if you hold the button
 		if (*moveStartBool || (currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
 		{
 
@@ -225,6 +232,15 @@ unsigned short drawTitle(piece** firstPiece)
 					playSound(MOVE_SOUND);
 
 				}
+				else if (custom->ui->currentlyInteracting && *customModeSize > 1)
+				{
+
+					*customModeSize -= 1;
+					updateCustomText(Texture_Custom, *customModeSize);
+
+					playSound(MOVE_SOUND);
+
+				}
 
 			}
 			
@@ -238,6 +254,15 @@ unsigned short drawTitle(piece** firstPiece)
 					updateValuesText(Texture_Values);
 
 					updateVolume();
+					playSound(MOVE_SOUND);
+
+				}
+				else if (custom->ui->currentlyInteracting && *customModeSize < MAX_CUSTOM_SIZE)
+				{
+
+					*customModeSize += 1;
+					updateCustomText(Texture_Custom, *customModeSize);
+
 					playSound(MOVE_SOUND);
 
 				}
@@ -284,6 +309,14 @@ unsigned short drawTitle(piece** firstPiece)
 				numerical->ui->currentlyInteracting = true;
 
 			}
+			else if (SDL_strcmp(selected_mode, "CUSTOM") == 0)
+			{
+
+				// Go into CUSTOM menu
+				modes->ui->currentlyInteracting = false;
+				custom->ui->currentlyInteracting = true;
+
+			}
 			else if (SDL_strcmp(selected_mode, "OPTIONS") == 0)
 			{
 
@@ -305,6 +338,14 @@ unsigned short drawTitle(piece** firstPiece)
 			MODE = SDL_atoi(getListSelectedString(numerical));
 			freeVars();
 			return PLAY_SCREEN;
+
+		}
+		else if (custom->ui->currentlyInteracting)
+		{
+
+			//MODE = *customModeSize;
+			//freeVars();
+			//return PLAY_SCREEN;
 
 		}
 		//If pressed SELECT when in the OPTIONS menu
@@ -357,6 +398,13 @@ unsigned short drawTitle(piece** firstPiece)
 		{
 
 			numerical->ui->currentlyInteracting = false;
+			modes->ui->currentlyInteracting = true;
+
+		}
+		else if (custom->ui->currentlyInteracting)
+		{
+
+			custom->ui->currentlyInteracting = false;
 			modes->ui->currentlyInteracting = true;
 
 		}
@@ -427,6 +475,17 @@ unsigned short drawTitle(piece** firstPiece)
 
 		drawTexture(numerical->ui->texture, numerical->ui->x, numerical->ui->y, 1.0);
 		drawTexture(Texture_Cursor, numerical->ui->x - 14, getListSelectedEntryY(numerical), 1);
+
+	}
+	else if (custom->ui->currentlyInteracting)
+	{
+
+		// Draw CUSTOM menu texture
+		drawTexture(custom->ui->texture, custom->ui->x, custom->ui->y, 1.0);
+
+		// Draw CUSTOM value
+		int customValueX = custom->ui->x + (int)(2.5 * (double)FONT_WIDTH) + 2 * STRING_GAP - getIntStringLength(*customModeSize, 1.0) / 2;
+		drawTexture(Texture_Custom, customValueX, custom->ui->y, 1.0);
 
 	}
 	else if (options->ui->currentlyInteracting)

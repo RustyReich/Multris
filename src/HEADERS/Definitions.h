@@ -63,10 +63,12 @@
 #define VALUES_TEXT		7
 #define VOLSLIDE_TEXT	8
 #define CONTROLS_TEXT	9
+#define CUSTOM_TEXT		10
 
 #define MODES_LIST		0
 #define NUMERICAL_LIST	1
-#define OPTIONS_LIST	2
+#define CUSTOM_LIST		2
+#define OPTIONS_LIST	3
 
 #define OVER_SOUND_LENGTH 2000
 
@@ -103,5 +105,7 @@
 #define CLEARING_TIME	20
 
 #define HOLD_TEXTURE_MULTI 0.75
+
+#define MAX_CUSTOM_SIZE 10
 
 #endif
