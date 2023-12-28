@@ -796,8 +796,7 @@ unsigned short playMode(piece* firstPiece)
 				drawSimpleRect(foreground, x, y, width, height, BLACK);
 				printToTexture("OVER", foreground, x, y, multi, WHITE);
 
-				//Only save the top score if the player is playing in MULTRIS mode
-					//Save score once overAnimation is finished playing
+				//Save score once overAnimation is finished playing
 				if (*Score > loadTop(MODE))
 					saveTop(*Score, MODE);
 

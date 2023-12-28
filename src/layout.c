@@ -91,7 +91,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
 
 	//Create 'content' texture
-	int contentWidth = getStringLength("000000", 1.0);
+	int contentWidth = getStringLength("0000000", 1.0);
 	int contentHeight = getStringLength("00000", 1.0);
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
@@ -99,7 +99,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
     int topScore = loadTop(MODE);
 	char* top_zeros;
 	//Figure out how many zeros should be pre-pended to the score
-	unsigned short zeroLength = 6 - getIntLength(topScore);
+	unsigned short zeroLength = 7 - getIntLength(topScore);
 	
 	//top_zeros is the string of zeros that prepend the score
 	top_zeros = malloc(zeroLength * sizeof(*top_zeros));
@@ -108,8 +108,8 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 		*(top_zeros + i) = '0';
 
 	//Print all content to 'content' texture
-	int temp = 0.5 * (contentWidth - getStringLength("TOP   ", 1.0));
-	printToTexture("TOP   ", content, temp, 0, 1, WHITE);
+	int temp = 0.5 * (contentWidth - getStringLength("TOP    ", 1.0));
+	printToTexture("TOP    ", content, temp, 0, 1, WHITE);
 	printToTexture(top_zeros, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 	printToTexture("SCORE", content, temp, (FONT_WIDTH + STRING_GAP) * 3, 1, WHITE);
 	temp = temp + zeroLength * (FONT_WIDTH + STRING_GAP);
@@ -697,9 +697,9 @@ SDL_Texture* create_Score_Text()
 
 	SDL_Texture* texture;
 
-	texture = createTexture(6 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT);
+	texture = createTexture(7 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT);
 
-	printToTexture("000000", texture, 0, 0, 1, WHITE);
+	printToTexture("0000000", texture, 0, 0, 1, WHITE);
 
 	return texture;
 
@@ -1566,21 +1566,21 @@ int getScoreDrawX(unsigned short size)
 {
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
-		return 277;
+		return 270;
 	else if (size == 1)
-		return 192;
+		return 185;
 	else if (size == 2)
-		return 217;
+		return 210;
 	else if (size == 3)
-		return 253;
+		return 246;
 	else if (size == 5)
-		return 313;
+		return 306;
 	else if (size == 6)
-		return 337;
+		return 330;
 	else if (size == 7)
-		return 373;
+		return 366;
 	else
-		return 277;
+		return 270;
 
 }
 

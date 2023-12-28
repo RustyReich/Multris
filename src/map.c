@@ -30,6 +30,8 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces);
 int getListSelectedEntryY(UI_list* list);
 const char* getListSelectedString(UI_list* list);
 void updateValuesText(SDL_Texture* texture);
+int getScoreDrawX(unsigned short size);
+int getScoreDrawY(unsigned short size);
 
 //audio.c
 void _playSound(int id);
@@ -408,7 +410,7 @@ unsigned short drawTitle(piece** firstPiece)
 
 	drawTexture(Texture_Title, FONT_WIDTH, FONT_HEIGHT * (int)*Y, 1.0);
 	drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
-	drawTexture(Texture_Score, 277, 70, 1.0);
+	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
 	drawTexture(Texture_Level, 312, 115, 1.0);
 	drawTexture(Texture_Lines, 312, 189, 1.0);
 

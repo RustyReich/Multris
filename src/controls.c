@@ -23,6 +23,8 @@ void freeVars();
 
 //layout.c
 void updateControlsText(SDL_Texture* texture, int selected_control, bool editing);
+int getScoreDrawX(unsigned short size);
+int getScoreDrawY(unsigned short size);
 
 //file.c
 void saveToFile(const char* file_path, const char* str, int value);
@@ -168,7 +170,7 @@ unsigned short controlsScreen(piece** Piece)
 
     // Rendering --------------------------------------------------------
     
-    drawTexture(Texture_Score, 277, 70, 1.0);
+	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
     drawTexture(Texture_Level, 312, 115, 1.0);
     drawTexture(Texture_Lines, 312, 189, 1.0);
     drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
