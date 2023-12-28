@@ -45,6 +45,8 @@ int MODE = 0;
 int MAP_WIDTH = 0;
 int MAP_HEIGHT = 0;
 
+bool CUSTOM_MODE = false;
+
 //Global Instance
 gameInstance *globalInstance;
 

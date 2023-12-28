@@ -99,6 +99,8 @@ unsigned short drawTitle(piece** firstPiece)
 		//Default MODE is 0
 		MODE = 0;
 
+		CUSTOM_MODE = false;
+
 		*firstLoop = false;
 
 	}
@@ -343,9 +345,10 @@ unsigned short drawTitle(piece** firstPiece)
 		else if (custom->ui->currentlyInteracting)
 		{
 
-			//MODE = *customModeSize;
-			//freeVars();
-			//return PLAY_SCREEN;
+			CUSTOM_MODE = true;
+			MODE = *customModeSize;
+			freeVars();
+			return PLAY_SCREEN;
 
 		}
 		//If pressed SELECT when in the OPTIONS menu

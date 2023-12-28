@@ -537,6 +537,8 @@ unsigned short playMode(piece* firstPiece)
 
 		if (MODE == 0)
 			nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
+		else if (CUSTOM_MODE == true)
+			nextPiece = generateGamePiece(rand() % MODE + 1);
 		else
 			nextPiece = generateGamePiece(MODE);
 
@@ -618,7 +620,7 @@ unsigned short playMode(piece* firstPiece)
 					updateLevel(*Level, Texture_Level);
 
 					//If player reaches the appropriate level to unlock a new size in numerical mode
-					if (*Level >= MODE && MODE == PROGRESS)
+					if (*Level >= MODE && MODE == PROGRESS && CUSTOM_MODE == false)
 					{
 					
 						playSound(UNLOCK_SOUND);
@@ -695,7 +697,8 @@ unsigned short playMode(piece* firstPiece)
 	//Make Texture_Current transparent
 	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
 	//Draw Texture_Current at ghostY
-	drawTexture(Texture_Current, FONT_WIDTH * *X + *foregroundX, FONT_HEIGHT * (int)*ghostY + *foregroundY, 1.0);
+	if ((int)*ghostY >= 0)
+		drawTexture(Texture_Current, FONT_WIDTH * *X + *foregroundX, FONT_HEIGHT * (int)*ghostY + *foregroundY, 1.0);
 	//Reset Texture_Current opacity
 	SDL_SetTextureAlphaMod(Texture_Current, 255);
 
@@ -797,7 +800,7 @@ unsigned short playMode(piece* firstPiece)
 				printToTexture("OVER", foreground, x, y, multi, WHITE);
 
 				//Save score once overAnimation is finished playing
-				if (*Score > loadTop(MODE))
+				if (*Score > loadTop(MODE) && CUSTOM_MODE == false)
 					saveTop(*Score, MODE);
 
 				//Also save the Progress to disk

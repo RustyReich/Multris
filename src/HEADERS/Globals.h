@@ -18,4 +18,6 @@ extern int MODE;
 extern int MAP_WIDTH;
 extern int MAP_HEIGHT;
 
+extern bool CUSTOM_MODE;
+
 #endif
