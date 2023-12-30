@@ -20,7 +20,7 @@ void clearTexture(SDL_Texture* texture);
 void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
 
 //file.c
-unsigned int loadTop(unsigned short size);
+unsigned int loadTop(unsigned short size, bool inCustomMode);
 unsigned short getLineCount(char* fileName);
 
 //generate.c
@@ -84,7 +84,7 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 }
 
 //Function for drawing the score box
-void drawScoreBox(SDL_Texture* background, unsigned short size)
+void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -99,7 +99,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
     //Load the top score and create a string for it
-    int topScore = loadTop(MODE);
+    int topScore = loadTop(MODE, inCustomMode);
 	char* top_zeros;
 	//Figure out how many zeros should be pre-pended to the score
 	unsigned short zeroLength = 7 - getIntLength(topScore);

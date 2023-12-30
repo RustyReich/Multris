@@ -119,6 +119,28 @@ void createProgressFile()
 
 }
 
+void createCustomTopFile()
+{
+
+	createFile("SAVES/custom_top.md");
+
+	// Open customTopFile and fill it with default data
+	FILE* customTopFile = fopen("SAVES/custom_top.md", "w");
+	if (customTopFile != NULL) 
+	{
+
+		for (unsigned short i = 0; i <= MAX_CUSTOM_SIZE; i++)
+			if (i != MAX_CUSTOM_SIZE)
+				fprintf(customTopFile, "%d=0\n", i);
+			else
+				fprintf(customTopFile, "%d=0", i);
+
+		fclose(customTopFile);
+
+	}
+
+}
+
 //Function for creating the "top.md" file
 void createTopFile()
 {
@@ -291,8 +313,12 @@ int getFileValue(const char* file_path, const char* name)
 
 			//Check if the currentLine contains the name we're looking for
 			bool matches = true;
-			for (unsigned short i = 0; i < SDL_strlen(name); i++)
+			for (unsigned short i = 0; i < SDL_strlen(currentLine); i++)
 			{
+
+				// If we find a '=', that means we are no longer in the "name" part of the line
+				if (currentLine[i] == '=')
+					break;
 
 				if (currentLine[i] != name[i])
 				{
@@ -556,12 +582,18 @@ void saveToFile(const char* file_path, const char* str, int value)
 
 //Load the top score of the specified size
 	//size = 0 is for Multris mode
-unsigned int loadTop(unsigned short size)
+unsigned int loadTop(unsigned short size, bool inCustomMode)
 {
 
 	char sizeAsString[getIntLength(size)];
 	SDL_itoa(size, sizeAsString, 10);
-	int top = getFileValue("SAVES/top.md", sizeAsString);
+
+	// Different save files depending on if playing in CUSTOM_MODE or not
+	int top = 0;
+	if (inCustomMode == false)
+		top = getFileValue("SAVES/top.md", sizeAsString);
+	else
+		top = getFileValue("SAVES/custom_top.md", sizeAsString);
 
 	if (top == INT_MAX)
 		return 0;
@@ -584,15 +616,32 @@ unsigned int loadProgress()
 }
 
 //Save top score for specified size
-void saveTop(unsigned int score, unsigned short size)
+void saveTop(unsigned int score, unsigned short size, bool inCustomMode)
 {
 
-	if (!fileExists("SAVES/top.md"))
-		createTopFile();
+	// Different save files depending on if playing in CUSTOM_MODE or not
+	if (inCustomMode == false)
+	{
+
+		if (!fileExists("SAVES/top.md"))
+			createTopFile();
+
+	}
+	else
+	{
+
+		if (!fileExists("SAVES/custom_top.md"))
+			createCustomTopFile();
+
+	}
 
 	char sizeAsString[getIntLength(size)];
 	SDL_itoa(size, sizeAsString, 10);
-	saveToFile("SAVES/top.md", sizeAsString, score);
+
+	if (inCustomMode == false)
+		saveToFile("SAVES/top.md", sizeAsString, score);
+	else
+		saveToFile("SAVES/custom_top.md", sizeAsString, score);
 
 }
 

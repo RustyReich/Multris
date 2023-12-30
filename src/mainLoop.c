@@ -22,7 +22,7 @@ unsigned short controlsScreen(piece** Piece);
 
 //layout.c
 void drawPlayField(SDL_Texture* background, unsigned short size);
-void drawScoreBox(SDL_Texture* background, unsigned short size);
+void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode);
 void drawLevelBox(SDL_Texture* background, unsigned short size);
 void drawUntilBox(SDL_Texture* background, unsigned short size);
 void drawNextBox(SDL_Texture* background, unsigned short size);
@@ -57,7 +57,7 @@ void mainLoop()
 
 		//Draw all layout stuff
 		drawPlayField(Texture_Background, MODE);
-		drawScoreBox(Texture_Background, MODE);
+		drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
 		drawLevelBox(Texture_Background, MODE);
 		drawUntilBox(Texture_Background, MODE);
 		drawNextBox(Texture_Background, MODE);

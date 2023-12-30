@@ -27,8 +27,8 @@ void _playSound(int id);
 int getAudioLengthInMS(sound* Sound);
 
 //file.c
-void saveTop(unsigned int score, unsigned short size);
-unsigned int loadTop(unsigned short size);
+void saveTop(unsigned int score, unsigned short size, bool inCustomMode);
+unsigned int loadTop(unsigned short size, bool inCustomMode);
 unsigned int loadProgress();
 void saveProgress();
 
@@ -842,8 +842,8 @@ unsigned short playMode(piece* firstPiece)
 				printToTexture("OVER", foreground, x, y, multi, WHITE);
 
 				//Save score once overAnimation is finished playing
-				if (*Score > loadTop(MODE) && CUSTOM_MODE == false)
-					saveTop(*Score, MODE);
+				if (*Score > loadTop(MODE, CUSTOM_MODE))
+					saveTop(*Score, MODE, CUSTOM_MODE);
 
 				//Also save the Progress to disk
 				if (PROGRESS > (int)(loadProgress()))
