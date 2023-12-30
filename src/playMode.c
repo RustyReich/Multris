@@ -692,19 +692,36 @@ unsigned short playMode(piece* firstPiece)
 	drawTexture(Texture_Lines, getLinesX(MODE, calcLinesUntilLevelup(*linesAtCurrentLevel, *Level)), getLinesY(MODE), 1.0);
 
 	//Draw the foreground
-	drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
-
-	//Make Texture_Current transparent
-	SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
-	//Draw Texture_Current at ghostY
-	if ((int)*ghostY >= 0)
-		drawTexture(Texture_Current, FONT_WIDTH * *X + *foregroundX, FONT_HEIGHT * (int)*ghostY + *foregroundY, 1.0);
-	//Reset Texture_Current opacity
-	SDL_SetTextureAlphaMod(Texture_Current, 255);
+	if (CUSTOM_MODE == false || MODE < MAX_PIECE_SIZE)
+		drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
+	else	// In SIZE > MAX_PIECE_SIZE, the foreground is rendered smaller to fit within the same sized play area as MULTRIS mode.
+		drawTexture(foreground, *foregroundX, *foregroundY, (float)MAX_PIECE_SIZE / (float)MODE);
 
 	//Draw current piece if game isnt over
 	if (*gameOver == false)
-		drawTexture(Texture_Current, FONT_WIDTH * (*X) + *foregroundX, FONT_HEIGHT * ((int)*Y) + *foregroundY, 1.0);
+	{
+
+		// If playing CUSTOM_MODE with a size > MAX_PIECE_SIZE, we need to scale Texture_current.
+		float multiplier = 1.0;
+		if (CUSTOM_MODE && MODE > MAX_PIECE_SIZE)
+			multiplier = (float)MAX_PIECE_SIZE / (float)MODE;
+
+		int drawX = SDL_ceil((float)FONT_WIDTH * (float)(*X) * multiplier + (float)*foregroundX);
+		int drawY = SDL_ceil((float)FONT_HEIGHT * (float)((int)*Y) * multiplier + (float)*foregroundY);
+
+		drawTexture(Texture_Current, drawX, drawY, multiplier);
+		
+		drawY = SDL_ceil((float)FONT_HEIGHT * (float)(int)*ghostY * multiplier + (float)*foregroundY);
+
+		//Make Texture_Current transparent
+		SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
+		//Draw Texture_Current at ghostY
+		if ((int)*ghostY >= 0)
+			drawTexture(Texture_Current, drawX, drawY, multiplier);
+		//Reset Texture_Current opacity
+		SDL_SetTextureAlphaMod(Texture_Current, 255);
+
+	}
 
 	//Draw PAUSED if game is paused
 		//Center the text

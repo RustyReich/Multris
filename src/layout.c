@@ -17,6 +17,7 @@ SDL_Texture* createTexture(int width, int height);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
 void clearTexture(SDL_Texture* texture);
+void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
 
 //file.c
 unsigned int loadTop(unsigned short size);
@@ -37,7 +38,9 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 {
 
 	//Use MAX_PIECE_SIZE if size == 0
-	if (size == 0)
+		// Also if size > MAX_PIECE_SIZE (Only for Custom mode) because Custom mode will always have the same sized HUD layout for sizes
+		// above MAX_PIECE_SIZE
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	int X = 0;
@@ -84,7 +87,7 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 void drawScoreBox(SDL_Texture* background, unsigned short size)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	//Save current rendering target
@@ -201,7 +204,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size)
 void drawLevelBox(SDL_Texture* background, unsigned short size)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
@@ -263,7 +266,7 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 void drawUntilBox(SDL_Texture* background, unsigned short size)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
@@ -356,7 +359,7 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 void drawNextBox(SDL_Texture* background, unsigned short size)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
@@ -452,7 +455,7 @@ void drawNextBox(SDL_Texture* background, unsigned short size)
 void drawHoldBox(SDL_Texture* background, unsigned short size)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
@@ -608,7 +611,7 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 void drawFPSBox(SDL_Texture* background, unsigned short size)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	//Save the current rendering target
@@ -752,6 +755,10 @@ SDL_Texture* create_Foreground_Text()
 	SDL_Texture* texture;
 
 	texture = createTexture(FONT_WIDTH * MAP_WIDTH, FONT_HEIGHT * MAP_HEIGHT);
+
+	//Make entire foreground black to begin with.
+		// This is to deal with rounding errors with CUSTOM_MODE foregrounds
+	drawSimpleRect(texture, 0, 0, FONT_WIDTH * MAP_WIDTH, FONT_HEIGHT * MAP_HEIGHT, BLACK);	
 
 	return texture;
 
@@ -1677,7 +1684,7 @@ int getForegroundY(unsigned short size)
 	else if (size == 4 || size == 5 || size == 6 || size == 7)
 		return 12;
 	else
-		return 0;
+		return SPRITE_HEIGHT;
 
 }
 

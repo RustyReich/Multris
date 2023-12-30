@@ -106,6 +106,6 @@
 
 #define HOLD_TEXTURE_MULTI 0.75
 
-#define MAX_CUSTOM_SIZE 10
+#define MAX_CUSTOM_SIZE 15
 
 #endif
