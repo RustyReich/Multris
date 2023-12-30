@@ -2061,7 +2061,8 @@ int getGameHeight(unsigned short size)
 int getPausedX(unsigned short size, float multi)
 {
 
-	if (size == 0)
+	// Use size = MAX_PIECE_SIZE for placement if in MULTRIS mode or CUSTOM mode.
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	int start = getForegroundX(size);
@@ -2075,7 +2076,7 @@ int getPausedX(unsigned short size, float multi)
 int getPausedY(unsigned short size, float multi)
 {
 
-	if (size == 0)
+	if (size == 0 || size > MAX_PIECE_SIZE)
 		size = MAX_PIECE_SIZE;
 
 	int start = getForegroundY(size);

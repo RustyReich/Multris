@@ -685,8 +685,33 @@ unsigned short playMode(piece* firstPiece)
 	// RENDERING -------------------------------------------------------------
 
 	//Draw various textures that don't move
-	drawTexture(Texture_Next, getNextX(MODE, *nextText_Width), getNextY(MODE, *nextText_Height), 1.0);
-	drawTexture(Texture_Hold, getHoldX(MODE, *holdText_Width), getHoldY(MODE, *holdText_Height), HOLD_TEXTURE_MULTI);
+	if (CUSTOM_MODE && MODE > MAX_PIECE_SIZE)
+	{
+
+		float multi = (float)MAX_PIECE_SIZE / (float)MODE;
+		int width = SDL_ceil((float)*nextText_Width * multi);
+		int height = SDL_ceil((float)*nextText_Height * multi);
+
+		drawTexture(Texture_Next, getNextX(MODE, width), getNextY(MODE, height), multi);
+
+	}
+	else
+		drawTexture(Texture_Next, getNextX(MODE, *nextText_Width), getNextY(MODE, *nextText_Height), 1.0);
+
+
+	if (CUSTOM_MODE && MODE > MAX_PIECE_SIZE)
+	{
+
+		float multi = (float)MAX_PIECE_SIZE / (float)MODE;
+		int width = SDL_ceil((float)*holdText_Width * multi);
+		int height = SDL_ceil((float)*holdText_Height * multi);
+
+		drawTexture(Texture_Hold, getHoldX(MODE, width), getHoldY(MODE, height), HOLD_TEXTURE_MULTI * multi);
+
+	}
+	else
+		drawTexture(Texture_Hold, getHoldX(MODE, *holdText_Width), getHoldY(MODE, *holdText_Height), HOLD_TEXTURE_MULTI);
+
 	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
 	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE), 1.0);
 	drawTexture(Texture_Lines, getLinesX(MODE, calcLinesUntilLevelup(*linesAtCurrentLevel, *Level)), getLinesY(MODE), 1.0);
