@@ -450,12 +450,6 @@ SDL_Texture* createPieceTexture(piece Piece)
 	//Pretty simple, we just draw the piece to the texture
 	drawPiece(Piece, texture, 0, 0);
 
-	int centerX = Piece.centerBlock->X - Piece.minX;
-	int centerY = Piece.centerBlock->Y - Piece.minY;
-	int drawX = (SPRITE_WIDTH / 2) + (SPRITE_WIDTH * centerX) - 2;
-	int drawY = (SPRITE_HEIGHT / 2) + (SPRITE_HEIGHT * centerY) - 2;
-	drawSimpleRect(texture, drawX, drawY, 4, 4, WHITE);
-
 	return texture;
 
 }
