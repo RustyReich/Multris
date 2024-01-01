@@ -11,7 +11,7 @@ CC = 	x86_64-w64-mingw32-gcc	 												\
 		-ISDL2_image-devel-2.8.1-mingw/SDL2_image-2.8.1/x86_64-w64-mingw32/include
 
 CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
-LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lssp -mwindows -lm
+LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lssp -lm
 
 # Makefile settings - Can be customized.
 APPNAME = build_windows/Multris

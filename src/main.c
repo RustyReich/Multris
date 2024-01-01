@@ -70,6 +70,11 @@ int main(int argc, char *argv[]) {
 
 	}
 
+	// Force openGL on Windows because somewhere there is a bug when resizing the window on Direc3D
+	#ifdef _WIN32
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+	#endif
+
 	//Set MAP_WIDTH and MAP_HEIGHT
 	MAP_WIDTH = calcMapWidth();
 	MAP_HEIGHT = calcMapHeight();
