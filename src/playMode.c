@@ -416,9 +416,9 @@ unsigned short playMode(piece* firstPiece)
 			{
 
 				//Create holdPiece by copying currentPiece
-				holdPiece = malloc(sizeof(*holdPiece));
-				holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
-				holdPiece->centerBlock = calloc(1, sizeof(block));
+				holdPiece = SDL_malloc(sizeof(*holdPiece));
+				holdPiece->blocks = SDL_malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+				holdPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(currentPiece, holdPiece);
 				Texture_Hold = createPieceTexture(*holdPiece);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
@@ -450,17 +450,17 @@ unsigned short playMode(piece* firstPiece)
 
 				//Store current holdPiece in tempPeiece
 				piece* tempPiece;
-				tempPiece = malloc(sizeof(*tempPiece));
-				tempPiece->blocks = malloc(holdPiece->numOfBlocks * sizeof(*tempPiece->blocks));
-				tempPiece->centerBlock = calloc(1, sizeof(block));
+				tempPiece = SDL_malloc(sizeof(*tempPiece));
+				tempPiece->blocks = SDL_malloc(holdPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+				tempPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(holdPiece, tempPiece);
 
 				//Recreate holdPiece
 				delPiece(&holdPiece);
 				SDL_DestroyTexture(Texture_Hold);
-				holdPiece = malloc(sizeof(*holdPiece));
-				holdPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
-				holdPiece->centerBlock = calloc(1, sizeof(block));
+				holdPiece = SDL_malloc(sizeof(*holdPiece));
+				holdPiece->blocks = SDL_malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
+				holdPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(currentPiece, holdPiece);
 				Texture_Hold = createPieceTexture(*holdPiece);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
@@ -471,9 +471,9 @@ unsigned short playMode(piece* firstPiece)
 				Texture_Current = NULL;
 
 				//Copy tempPiece to currentPiece
-				currentPiece = malloc(sizeof(*currentPiece));
-				currentPiece->blocks = malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
-				currentPiece->centerBlock = calloc(1, sizeof(block));
+				currentPiece = SDL_malloc(sizeof(*currentPiece));
+				currentPiece->blocks = SDL_malloc(tempPiece->numOfBlocks * sizeof(*tempPiece->blocks));
+				currentPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(tempPiece, currentPiece);
 				adjustNewPiece(currentPiece, X, MAP_WIDTH);
 
@@ -785,16 +785,16 @@ unsigned short playMode(piece* firstPiece)
 		{
 
 			unsigned short* tempRows;
-			tempRows = malloc(*numCompleted * sizeof(*tempRows));
+			tempRows = SDL_malloc(*numCompleted * sizeof(*tempRows));
 			for (unsigned short i = 0; i < *numCompleted; i++)
 				*(tempRows + i) = *(completedRows + i + 1);
 
-			free(completedRows);
-			completedRows = malloc(*numCompleted * sizeof(*completedRows));
+			SDL_free(completedRows);
+			completedRows = SDL_malloc(*numCompleted * sizeof(*completedRows));
 			for (unsigned short i = 0; i < *numCompleted; i++)
 				*(completedRows + i) = *(tempRows + i);
 
-			free(tempRows);
+			SDL_free(tempRows);
 
 		}
 
@@ -913,8 +913,8 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 	{
 
 		//Allocate memory for storing time values
-		time_start = malloc(sizeof(*time_start));
-		time_now = malloc(sizeof(*time_now));
+		time_start = SDL_malloc(sizeof(*time_start));
+		time_now = SDL_malloc(sizeof(*time_now));
 		if (time_start != NULL)
 			*time_start = SDL_GetTicks();
 
@@ -938,7 +938,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 				if (row == NULL)
 				{
 
-					row = malloc(sizeof(*row));
+					row = SDL_malloc(sizeof(*row));
 					if (row != NULL)
 						*row = 0;
 
@@ -963,7 +963,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 						animationOver = true;
 						
 						//Free memory used to store the row 
-						free(row);
+						SDL_free(row);
 						row = NULL;
 
 					}
@@ -971,9 +971,9 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 				}
 
 				//Free time variables
-				free(time_start);
+				SDL_free(time_start);
 				time_start = NULL;
-				free(time_now);
+				SDL_free(time_now);
 				time_now = NULL;
 
 			}
@@ -1055,8 +1055,8 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 	if (time_start == NULL)
 	{
 
-		time_start = malloc(sizeof(*time_start));
-		time_now = malloc(sizeof(*time_now));
+		time_start = SDL_malloc(sizeof(*time_start));
+		time_now = SDL_malloc(sizeof(*time_now));
 		if (time_start != NULL)
 			*time_start = SDL_GetTicks();
 
@@ -1083,7 +1083,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 				if (column == NULL)
 				{
 
-					column = malloc(sizeof(*column));
+					column = SDL_malloc(sizeof(*column));
 					*column = 0;
 
 					//When 'column' == NULL, that means we are on a new line, so play a sound
@@ -1106,7 +1106,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 					if (*column > MAP_WIDTH / 2)
 					{
 
-						free(column);
+						SDL_free(column);
 						column = NULL;
 
 						*numCompleted = *numCompleted - 1;
@@ -1119,9 +1119,9 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 
 				}
 
-				free(time_start);
+				SDL_free(time_start);
 				time_start = NULL;
-				free(time_now);
+				SDL_free(time_now);
 				time_now = NULL;
 
 				SDL_SetRenderTarget(globalInstance->renderer, NULL);
@@ -1206,8 +1206,8 @@ unsigned short completedLine(bool* mapData, int Y, piece Piece, int** returnRows
 	if (numCompleted > 0)
 	{
 
-		free(*returnRows);
-		*returnRows = malloc(numCompleted * sizeof(**returnRows));
+		SDL_free(*returnRows);
+		*returnRows = SDL_malloc(numCompleted * sizeof(**returnRows));
 
 		//Get the row numbers of each row completed
 		unsigned short currentReturnRow = 0;
@@ -1332,11 +1332,11 @@ piece* getFirstPiece(piece* firstPiece)
 {
 	
 	piece* currentPiece;
-	currentPiece = malloc(sizeof(*currentPiece));
+	currentPiece = SDL_malloc(sizeof(*currentPiece));
 	if (currentPiece != NULL)
 	{
 
-		currentPiece = malloc(sizeof(*currentPiece));
+		currentPiece = SDL_malloc(sizeof(*currentPiece));
 		if (currentPiece != NULL)
 		{
 
@@ -1350,8 +1350,8 @@ piece* getFirstPiece(piece* firstPiece)
 
 			//Copy over all blocks from firstPiece into currentPiece
 			if (currentPiece->numOfBlocks > 0)
-				currentPiece->blocks = malloc(currentPiece->numOfBlocks * sizeof(*currentPiece->blocks));
-			currentPiece->centerBlock = calloc(1, sizeof(block));
+				currentPiece->blocks = SDL_malloc(currentPiece->numOfBlocks * sizeof(*currentPiece->blocks));
+			currentPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				
 			for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
 			{

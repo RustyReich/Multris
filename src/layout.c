@@ -105,7 +105,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 	unsigned short zeroLength = 7 - getIntLength(topScore);
 	
 	//top_zeros is the string of zeros that prepend the score
-	top_zeros = malloc(zeroLength * sizeof(*top_zeros));
+	top_zeros = SDL_malloc(zeroLength * sizeof(*top_zeros));
 	*(top_zeros + zeroLength) = '\0';
 	for (unsigned short i = 0; i < zeroLength; i++)
 		*(top_zeros + i) = '0';
@@ -192,7 +192,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free memory
-    free(top_zeros);
+    SDL_free(top_zeros);
 	SDL_DestroyTexture(content);
 
 	//Reset rendering target
@@ -891,17 +891,19 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 		printToTexture(name, texture, x, y, 1.0, WHITE);
 
 		//Underline the name
-		char underlines[SDL_strlen(name) + 1];
+		char* underlines = SDL_calloc(SDL_strlen(name) + 1, sizeof(char));
 		underlines[SDL_strlen(name)] = '\0';
 		for (unsigned short j = 0; j < SDL_strlen(name); j++)
 			underlines[j] = '_';
 
 		printToTexture(underlines, texture, x, y + STRING_GAP + 2, 1.0, WHITE);
+		
+		SDL_free(underlines);
 
 		//Get the button for the control
 		char* button = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(globalInstance->controls[i].button));
 		int len = SDL_strlen(button) + 2;
-		char button_string[len + 1];
+		char* button_string = SDL_calloc(len + 1, sizeof(char));
 		//Surround the button name with brackets
 		SDL_strlcpy(button_string, "[", len + 1);
 		SDL_strlcat(button_string, button, len + 1);
@@ -914,6 +916,8 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 			printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, RED);
 		else
 			printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, YELLOW);
+
+		SDL_free(button_string);
 
 	}
 
@@ -973,8 +977,8 @@ UI_list* _create_list(unsigned short color, const char* strings, ...)
 		return NULL;
 
 	//Allocate memory for list and underlying UI element
-	UI_list* list = calloc(1, sizeof(UI_list));
-	list->ui = calloc(1, sizeof(UI));
+	UI_list* list = SDL_calloc(1, sizeof(UI_list));
+	list->ui = SDL_calloc(1, sizeof(UI));
 
 	//Store each argument into entry_texts array
 	va_list valist;
@@ -991,14 +995,14 @@ UI_list* _create_list(unsigned short color, const char* strings, ...)
 
 			//Resize entry_texts array
 			if (list->num_entries == 0)
-				list->entry_texts = calloc(list->num_entries + 1, sizeof(char*));
+				list->entry_texts = SDL_calloc(list->num_entries + 1, sizeof(char*));
 			else
-				list->entry_texts = realloc(list->entry_texts, (list->num_entries + 2) * sizeof(char*));
+				list->entry_texts = SDL_realloc(list->entry_texts, (list->num_entries + 2) * sizeof(char*));
 
 			//Copy current_string into the entry_texts array
 				//Append a termination character to the end of it
 			int len = SDL_strlen(current_string);
-			list->entry_texts[list->num_entries] = calloc(len + 1, sizeof(char));
+			list->entry_texts[list->num_entries] = SDL_calloc(len + 1, sizeof(char));
 			for (int i = 0; i < len; i++)
 				list->entry_texts[list->num_entries][i] = current_string[i];
 			list->entry_texts[list->num_entries][len] = '\0';
@@ -1166,22 +1170,22 @@ void delete_UI_list(UI_list** list)
 	//Free underlying UI element
 	SDL_DestroyTexture((*list)->ui->texture);
 	(*list)->ui->texture = NULL;
-	free((*list)->ui);
+	SDL_free((*list)->ui);
 	(*list)->ui = NULL;
 
 	//Free all entries
 	for (int i = 0; i < (*list)->num_entries; i++)
 	{
 
-		free((*list)->entry_texts[i]);
+		SDL_free((*list)->entry_texts[i]);
 		(*list)->entry_texts[i] = NULL;
 
 	}
-	free((*list)->entry_texts);
+	SDL_free((*list)->entry_texts);
 	(*list)->entry_texts = NULL;
 
 	//Free list itself
-	free(*list);
+	SDL_free(*list);
 	*list = NULL;
 
 }
@@ -1207,7 +1211,7 @@ piece** makeTitlePieces()
 	srand((int)title_time);
 
 	//Allocate memory for array of pieces
-	piece** titlePieces = calloc(NUM_OF_TITLE_PIECES, sizeof(piece));
+	piece** titlePieces = SDL_calloc(NUM_OF_TITLE_PIECES, sizeof(piece));
 
 	piece* currentPiece = NULL;
 
@@ -1219,9 +1223,9 @@ piece** makeTitlePieces()
 	{
 
 		//Allocate memory for piece and for pieces array of blocks
-		currentPiece = malloc(sizeof(*currentPiece));
+		currentPiece = SDL_malloc(sizeof(*currentPiece));
 		currentPiece->numOfBlocks = sizes[i];
-		currentPiece->blocks = malloc(currentPiece->numOfBlocks*sizeof(*currentPiece->blocks));
+		currentPiece->blocks = SDL_malloc(currentPiece->numOfBlocks*sizeof(*currentPiece->blocks));
 
 		if (currentPiece != NULL && currentPiece->blocks != NULL)
 		{
@@ -1446,7 +1450,7 @@ SDL_Texture* create_Title_Text()
 	//free titlePieces
 	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
 		delPiece(&titlePieces[i]);
-	free(titlePieces);
+	SDL_free(titlePieces);
 	titlePieces = NULL;
 
 	return texture;
@@ -1462,7 +1466,7 @@ piece** getMovingPieces(piece** titlePieces)
 {
 
 	//Only 14 pieces continue falling when the title hits the bottom of the screen
-	piece** movingPieces = malloc(NUM_MOVING_TITLE_PIECES * sizeof(**movingPieces));
+	piece** movingPieces = SDL_malloc(NUM_MOVING_TITLE_PIECES * sizeof(**movingPieces));
 	
 	if (movingPieces != NULL)
 	{
@@ -1472,23 +1476,23 @@ piece** getMovingPieces(piece** titlePieces)
 			//and [18] are the pieces that must continue falling even after the rest of the
 			//title has finished
 		for (unsigned short i = 0; i < NUM_MOVING_TITLE_PIECES; i++)
-			movingPieces[i] = malloc(sizeof(*movingPieces[i]));
+			movingPieces[i] = SDL_malloc(sizeof(*movingPieces[i]));
 
 		//Allocate memory for the correct number of blocks for each movingPiece
-		movingPieces[0]->blocks = malloc(titlePieces[0]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[1]->blocks = malloc(titlePieces[1]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[2]->blocks = malloc(titlePieces[2]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[3]->blocks = malloc(titlePieces[3]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[4]->blocks = malloc(titlePieces[4]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[5]->blocks = malloc(titlePieces[5]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[6]->blocks = malloc(titlePieces[6]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[7]->blocks = malloc(titlePieces[7]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[8]->blocks = malloc(titlePieces[8]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[9]->blocks = malloc(titlePieces[9]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[10]->blocks = malloc(titlePieces[10]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[11]->blocks = malloc(titlePieces[12]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[12]->blocks = malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
-		movingPieces[13]->blocks = malloc(titlePieces[18]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[0]->blocks = SDL_malloc(titlePieces[0]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[1]->blocks = SDL_malloc(titlePieces[1]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[2]->blocks = SDL_malloc(titlePieces[2]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[3]->blocks = SDL_malloc(titlePieces[3]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[4]->blocks = SDL_malloc(titlePieces[4]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[5]->blocks = SDL_malloc(titlePieces[5]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[6]->blocks = SDL_malloc(titlePieces[6]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[7]->blocks = SDL_malloc(titlePieces[7]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[8]->blocks = SDL_malloc(titlePieces[8]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[9]->blocks = SDL_malloc(titlePieces[9]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[10]->blocks = SDL_malloc(titlePieces[10]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[11]->blocks = SDL_malloc(titlePieces[12]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[12]->blocks = SDL_malloc(titlePieces[14]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
+		movingPieces[13]->blocks = SDL_malloc(titlePieces[18]->numOfBlocks * sizeof(*movingPieces[0]->blocks));
 
 		// Create the centerBlocks for all movingPieces
 		createCenterBlock(movingPieces[0]);
@@ -1527,7 +1531,7 @@ piece** getMovingPieces(piece** titlePieces)
 	//Delete the title pieces that got passed
 	for (unsigned short i = 0; i < NUM_OF_TITLE_PIECES; i++)
 		delPiece(&titlePieces[i]);
-	free(titlePieces);
+	SDL_free(titlePieces);
 	titlePieces = NULL;
 
 	return movingPieces;
@@ -1555,7 +1559,7 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces)
         pushAddress((void**)&Y, VARIABLE);
 
 		//Initialize the starting Y values of each movingPiece
-		Y = malloc(NUM_MOVING_TITLE_PIECES * sizeof(Y[0]));
+		Y = SDL_malloc(NUM_MOVING_TITLE_PIECES * sizeof(Y[0]));
 		memcpy(Y,(double[]){0,1,0,1,0,1,0,0,2,2,4,4,4,4},NUM_MOVING_TITLE_PIECES*sizeof(Y[0]));
 
 	}

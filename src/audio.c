@@ -24,7 +24,7 @@ sound* loadSound(char* file)
 
 	//Allocate memory for the sound 
 	sound* newSound;
-	newSound = malloc(sizeof(*newSound));
+	newSound = SDL_malloc(sizeof(*newSound));
 
 	//Load the sound into the allocated memory
 	if (newSound != NULL)
@@ -43,7 +43,7 @@ void delSound(sound** Sound)
 	(*Sound)->buffer = NULL;
 	
 	//Now free memory taken by the actual sound struct itself
-	free(*Sound);
+	SDL_free(*Sound);
 	*Sound = NULL;
 
 }
@@ -54,7 +54,7 @@ void setVolume(sound** Sound, unsigned short volume)
 
 	//Buffer that stores audio after volume adjustment
 	Uint8* dstStream;
-	dstStream = calloc((*Sound)->length, sizeof(*dstStream));
+	dstStream = SDL_calloc((*Sound)->length, sizeof(*dstStream));
 
 	//Mix audio with volume adjustment
 	volume = SDL_MIX_MAXVOLUME * (volume / 100.0);
@@ -66,7 +66,7 @@ void setVolume(sound** Sound, unsigned short volume)
 			(*Sound)->buffer[i] = dstStream[i];
 	
 	//Free dstStream
-	free(dstStream);
+	SDL_free(dstStream);
 	dstStream = NULL;
 	
 }

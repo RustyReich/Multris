@@ -70,8 +70,8 @@ void createFile(char* file_path)
 			break;
 
 	//Get name of file as string as well as directory path
-	char file_name[file_name_length + 1];
-	char file_dir[SDL_strlen(file_path) - file_name_length + 1];
+	char* file_name = SDL_calloc(file_name_length + 1, sizeof(char));
+	char* file_dir = SDL_calloc(SDL_strlen(file_path) - file_name_length + 1, sizeof(char));
 	SDL_strlcpy(file_name, (file_path + (SDL_strlen(file_path) - file_name_length)), file_name_length + 1);
 	SDL_strlcpy(file_dir, file_path, SDL_strlen(file_path) - file_name_length);
 
@@ -99,6 +99,10 @@ void createFile(char* file_path)
 	//Finally, create the actual file
 	file = fopen(file_path, "w");
 	fclose(file);
+
+	SDL_free(file_name);
+	SDL_free(file_dir);
+
 }
 
 //Function for creating the "progress.md" file
@@ -271,7 +275,7 @@ char* getNameAtLine(const char* file_path, int line)
 					len++;
 
 				//Copy name into returnString
-				returnString = calloc(len + 1, sizeof(char));
+				returnString = SDL_calloc(len + 1, sizeof(char));
 				returnString[len] = '\0';
 				for (unsigned short i = 0; i < len; i++)
 					returnString[i] = currentLine[i];
@@ -349,7 +353,7 @@ int getFileValue(const char* file_path, const char* name)
 				int value_length = i - value_start_index;
 
 				//Create string to store value in
-				char* value = calloc((value_length + 1), sizeof(char));
+				char* value = SDL_calloc((value_length + 1), sizeof(char));
 				value[value_length] = '\0';
 
 				//Copy value from currentLine into value string
@@ -369,16 +373,11 @@ int getFileValue(const char* file_path, const char* name)
 	if (returnValue != NULL)
 	{
 
-		//Copy returnValue over into a non-dynamically allocated string
-		char non_dynamic[strlen(returnValue) + 1];
-		strcpy(non_dynamic, returnValue);
+		int returnInt = SDL_atoi(returnValue);
+		
+		SDL_free(returnValue);
 
-		//That way we can free the memory taken up by runtime_string and avoid
-		//memory leaks
-		free(returnValue);
-
-		//Return runtime_string as an integer
-		return SDL_atoi(non_dynamic);
+		return returnInt;
 
 	}
 	else	
@@ -499,7 +498,7 @@ void saveToFile(const char* file_path, const char* str, int value)
 
 	unsigned short lineCount = getLineCount((char*)file_path);
 
-	char** fileLines = calloc(lineCount, sizeof(char*));
+	char** fileLines = SDL_calloc(lineCount, sizeof(char*));
 	
 	//Read all lines from file and store in fileLines array
 	file = fopen(file_path, "r");
@@ -521,16 +520,18 @@ void saveToFile(const char* file_path, const char* str, int value)
 
 					//Allocate memory for rewriting the line
 					int len = SDL_strlen(currName) + SDL_strlen("=") + getIntLength(value);
-					fileLines[count] = calloc(len + 1, sizeof(char));
+					fileLines[count] = SDL_calloc(len + 1, sizeof(char));
 
 					//Convert value to string
-					char valueAsString[getIntLength(value)];
+					char* valueAsString = SDL_calloc(getIntLength(value), sizeof(char));
 					SDL_itoa(value, valueAsString, 10);
 
 					//Combine all aspects into a single string
 					strcpy(fileLines[count], currName);
 					strcat(fileLines[count], "=");
 					strcat(fileLines[count], valueAsString);
+
+					SDL_free(valueAsString);
 
 				}
 				else	//If its not the name we're looking for, just store it as-is in
@@ -543,12 +544,12 @@ void saveToFile(const char* file_path, const char* str, int value)
 						currentLine[SDL_strlen(currentLine) - 1] = '\0';
 
 					//Copy currentLine into fileLines array
-					fileLines[count] = calloc(SDL_strlen(currentLine) + 1, sizeof(char));
+					fileLines[count] = SDL_calloc(SDL_strlen(currentLine) + 1, sizeof(char));
 					strcpy(fileLines[count], currentLine);
 
 				}
 
-				free(currName);
+				SDL_free(currName);
 				
 				count++;
 
@@ -574,8 +575,8 @@ void saveToFile(const char* file_path, const char* str, int value)
 
 	//Free memory taken up by fileLines
 	for (unsigned short i = 0; i < lineCount; i++)
-		free(fileLines[i]);
-	free(fileLines);
+		SDL_free(fileLines[i]);
+	SDL_free(fileLines);
 	fileLines = NULL;
 	
 }
@@ -585,7 +586,23 @@ void saveToFile(const char* file_path, const char* str, int value)
 unsigned int loadTop(unsigned short size, bool inCustomMode)
 {
 
-	char sizeAsString[getIntLength(size)];
+	// Create the top file if it doesn't exist
+	if (inCustomMode == false)
+	{
+
+		if (!fileExists("SAVES/top.md"))
+			createTopFile();
+
+	}
+	else
+	{
+
+		if (!fileExists("SAVES/custom_top.md"))
+			createCustomTopFile();
+
+	}
+
+	char* sizeAsString = SDL_calloc(getIntLength(size), sizeof(char));
 	SDL_itoa(size, sizeAsString, 10);
 
 	// Different save files depending on if playing in CUSTOM_MODE or not
@@ -594,6 +611,8 @@ unsigned int loadTop(unsigned short size, bool inCustomMode)
 		top = getFileValue("SAVES/top.md", sizeAsString);
 	else
 		top = getFileValue("SAVES/custom_top.md", sizeAsString);
+
+	SDL_free(sizeAsString);
 
 	if (top == INT_MAX)
 		return 0;
@@ -635,13 +654,15 @@ void saveTop(unsigned int score, unsigned short size, bool inCustomMode)
 
 	}
 
-	char sizeAsString[getIntLength(size)];
+	char* sizeAsString = SDL_calloc(getIntLength(size), sizeof(char));
 	SDL_itoa(size, sizeAsString, 10);
 
 	if (inCustomMode == false)
 		saveToFile("SAVES/top.md", sizeAsString, score);
 	else
 		saveToFile("SAVES/custom_top.md", sizeAsString, score);
+
+	SDL_free(sizeAsString);
 
 }
 

@@ -4,7 +4,7 @@
 void createCenterBlock(piece* piece)
 {
 
-	piece->centerBlock = calloc(1, sizeof(block));
+	piece->centerBlock = SDL_calloc(1, sizeof(block));
 	piece->centerBlock->X = piece->minX + SDL_floor((float)piece->width / (float)2);
 	piece->centerBlock->Y = piece->minY + SDL_floor((float)piece->height / (float)2);
 
@@ -52,15 +52,15 @@ void delPiece(piece** Piece)
 {
 
 	// Delete the centerBlock
-	free((*Piece)->centerBlock);
+	SDL_free((*Piece)->centerBlock);
 	(*Piece)->centerBlock = NULL;
 
 	//Delete blocks
-	free((*Piece)->blocks);
+	SDL_free((*Piece)->blocks);
 	(*Piece)->blocks = NULL;
 
 	//Delete Piece itself
-	free(*Piece);
+	SDL_free(*Piece);
 	*Piece = NULL;
 
 }
@@ -199,7 +199,7 @@ piece* generateGamePiece(unsigned short size)
 
 	piece* Piece = NULL;
 
-	Piece = malloc(sizeof(*Piece));
+	Piece = SDL_malloc(sizeof(*Piece));
 	
 	if (Piece != NULL)
 	{
@@ -211,7 +211,7 @@ piece* generateGamePiece(unsigned short size)
 
 		//Allocate memory for all blocks
 		if (size > 0)
-			Piece->blocks = malloc(size * sizeof(*Piece->blocks));
+			Piece->blocks = SDL_malloc(size * sizeof(*Piece->blocks));
 		
 		if (Piece->blocks != NULL)
 		{

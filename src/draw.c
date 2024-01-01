@@ -182,7 +182,7 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multipli
 		length = getIntLength(num);
 
 	//Convert integer to a string
-	char* string = malloc((length + 1) * sizeof(*string));
+	char* string = SDL_malloc((length + 1) * sizeof(*string));
 	if (string != NULL)
 	{
 
@@ -207,7 +207,7 @@ void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multipli
 	printToTexture(string, dstTexture, X, Y, multiplier, color);
 
 	//Delete string from memory
-	free(string);
+	SDL_free(string);
 
 }
 
@@ -339,10 +339,16 @@ int getIntStringLength(int num, float multiplier)
 {
 
 	//Convert integer to string
-	char str[getIntLength(num) + 1];
+	char* str = SDL_calloc(getIntLength(num) + 1, sizeof(char));
 	SDL_itoa(num, str, 10);
 
-	return getStringLength(str, multiplier);
+	//Get length of string
+	int stringLength = getStringLength(str, multiplier);
+
+	// Free string
+	SDL_free(str);
+
+	return stringLength;
 
 }
 

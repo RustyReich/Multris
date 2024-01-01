@@ -37,7 +37,7 @@ varVector** pushAddress(void** ptr, unsigned short type)
     if (vector == NULL) {
         
         //Allocate memory for the varVector
-        vector = calloc(1, sizeof(*vector));
+        vector = SDL_calloc(1, sizeof(*vector));
         vector->count = 0;
 
     }
@@ -53,15 +53,15 @@ varVector** pushAddress(void** ptr, unsigned short type)
         {
 
             //Allocate memory for the ptrs array and the types array
-            vector->ptrs = calloc(1, sizeof(void*));
-            vector->types = calloc(1, sizeof(unsigned short));
+            vector->ptrs = SDL_calloc(1, sizeof(void*));
+            vector->types = SDL_calloc(1, sizeof(unsigned short));
 
         }
         else    //Otherwise, we need to reallocate ptrs and types to increase their size by 1
         {
 
-            vector->ptrs = realloc(vector->ptrs, (vector->count + 1) * sizeof(void*));
-            vector->types = realloc(vector->types, (vector->count + 1) * sizeof(unsigned short));
+            vector->ptrs = SDL_realloc(vector->ptrs, (vector->count + 1) * sizeof(void*));
+            vector->types = SDL_realloc(vector->types, (vector->count + 1) * sizeof(unsigned short));
 
         }
         
@@ -98,7 +98,7 @@ void declare_short(void** ptr, short value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(short));
+        *ptr = SDL_calloc(1, sizeof(short));
         **(short**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -115,7 +115,7 @@ void declare_unsigned_short(void** ptr, unsigned short value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(unsigned short));
+        *ptr = SDL_calloc(1, sizeof(unsigned short));
         **(unsigned short**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -132,7 +132,7 @@ void declare_double(void** ptr, double value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(double));
+        *ptr = SDL_calloc(1, sizeof(double));
         **(double**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -149,7 +149,7 @@ void declare_int(void** ptr, int value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(int));
+        *ptr = SDL_calloc(1, sizeof(int));
         **(int**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -166,7 +166,7 @@ void declare_char(void** ptr, char value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(char));
+        *ptr = SDL_calloc(1, sizeof(char));
         **(char**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -183,7 +183,7 @@ void declare_bool(void** ptr, bool value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(bool));
+        *ptr = SDL_calloc(1, sizeof(bool));
         **(bool**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -200,7 +200,7 @@ void declare_unsigned_int(void** ptr, unsigned int value)
     if (*ptr == NULL)
     {
 
-        *ptr = calloc(1, sizeof(unsigned int));
+        *ptr = SDL_calloc(1, sizeof(unsigned int));
         **(unsigned int**)(ptr) = value;
         
         if (!inVector(ptr))
@@ -220,9 +220,9 @@ void declare_Piece(piece** ptr, piece* Piece)
         if (Piece != NULL)
         {
 
-            *ptr = calloc(1, sizeof(piece));
-            (*ptr)->blocks = calloc(Piece->numOfBlocks, sizeof(*(*ptr)->blocks));
-            (*ptr)->centerBlock = calloc(1, sizeof(block));
+            *ptr = SDL_calloc(1, sizeof(piece));
+            (*ptr)->blocks = SDL_calloc(Piece->numOfBlocks, sizeof(*(*ptr)->blocks));
+            (*ptr)->centerBlock = SDL_calloc(1, sizeof(block));
             copyPiece(Piece, *ptr);
 
         }
@@ -296,7 +296,7 @@ void declare_map_matrix(bool** ptr)
     if (*ptr == NULL)
     {
 
-        *ptr = (bool*)(malloc(MAP_HEIGHT * MAP_WIDTH * sizeof(**ptr)));
+        *ptr = (bool*)(SDL_malloc(MAP_HEIGHT * MAP_WIDTH * sizeof(**ptr)));
         if (*ptr != NULL)
             for (unsigned short i = 0; i < MAP_HEIGHT; i++)
                 for (unsigned short j = 0; j < MAP_WIDTH; j++)
@@ -367,7 +367,7 @@ void freeVars()
                 //We call different freeing methods depending on the type of variable or
                 //object
             if ((*vector)->types[i] == VARIABLE)
-                free(*(void**)((*vector)->ptrs[i]));
+                SDL_free(*(void**)((*vector)->ptrs[i]));
             else if ((*vector)->types[i] == PIECE)
                 delPiece((piece**)&*(void**)((*vector)->ptrs[i]));
             else if ((*vector)->types[i] == TEXTURE)
@@ -377,7 +377,7 @@ void freeVars()
 
                 for (unsigned short j = 0; j < NUM_MOVING_TITLE_PIECES; j++)
                     delPiece(&((piece**)*(void**)(*vector)->ptrs[i])[j]);
-                free((piece**)*(void**)(*vector)->ptrs[i]);
+                SDL_free((piece**)*(void**)(*vector)->ptrs[i]);
 
             }
             else if ((*vector)->types[i] == UI_LIST)
@@ -391,11 +391,11 @@ void freeVars()
     }   
 
     //Free ptrs and types arrays
-    free((*vector)->ptrs);
-    free((*vector)->types);
+    SDL_free((*vector)->ptrs);
+    SDL_free((*vector)->types);
 
     //Free the memory taken by the varVector
-    free(*vector);
+    SDL_free(*vector);
     *vector = NULL;
 
 }

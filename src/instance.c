@@ -17,7 +17,7 @@ SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)
 {
 
     //Populate wavSpec structure
-    *wavSpec = calloc(1, sizeof(**wavSpec));
+    *wavSpec = SDL_calloc(1, sizeof(**wavSpec));
     Uint32 wavLength;
     Uint8* wavBuffer;
     //All sound files have the same specs as specs.wav, so we can use it to load
@@ -26,7 +26,7 @@ SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)
 
     //Open the Audio device
     SDL_AudioDeviceID* device;
-    device = calloc(1, sizeof(*device));
+    device = SDL_calloc(1, sizeof(*device));
     *device = SDL_OpenAudioDevice(NULL, 0, *wavSpec, NULL, 0);
 
     //Free the memory taken by loading "specs.wav"
@@ -41,7 +41,7 @@ control* initControls()
 
     //Allocate memory for controls
     control* controls;
-    controls = calloc(NUM_OF_CONTROLS, sizeof(*controls));
+    controls = SDL_calloc(NUM_OF_CONTROLS, sizeof(*controls));
 
     //Set default controls
         //Control ID's are defined in Definitions.h
@@ -66,9 +66,9 @@ sound** initSounds()
 {
 
     //Allocate memory for sounds
-    sound** sounds = calloc(NUM_OF_SOUNDS, sizeof(**sounds));
+    sound** sounds = SDL_calloc(NUM_OF_SOUNDS, sizeof(**sounds));
     for (unsigned short i = 0; i < NUM_OF_SOUNDS; i++)
-        sounds[i] = calloc(1, sizeof(*sounds));
+        sounds[i] = SDL_calloc(1, sizeof(*sounds));
 
     //Load all sounds
     sounds[COMPLETE_SOUND] = loadSound("AUDIO/complete.wav");
@@ -136,7 +136,7 @@ void initInstance(gameInstance** instance)
 {
 
     //Allocate memory for instance
-    *instance = calloc(1, sizeof(**instance));
+    *instance = SDL_calloc(1, sizeof(**instance));
 
     (*instance)->running = true;
 
@@ -211,7 +211,7 @@ void updateVolume()
     {
 
         //Buffer that stores audio after volume adjustment
-        Uint8* dstStream = calloc(globalInstance->masterSounds[i]->length, sizeof(*dstStream));
+        Uint8* dstStream = SDL_calloc(globalInstance->masterSounds[i]->length, sizeof(*dstStream));
 
         //Mix audio with volume adjustment
         SDL_AudioFormat format = globalInstance->wavSpec->format;
@@ -224,7 +224,7 @@ void updateVolume()
             globalInstance->sounds[i]->buffer[j] = dstStream[j];
 
         //Free dstStream memory
-        free(dstStream);
+        SDL_free(dstStream);
 
     }
 
