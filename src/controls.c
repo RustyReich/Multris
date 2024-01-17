@@ -10,7 +10,7 @@ void _playSound(int id);
 
 //memory.c
 void declare_HUD_Text(SDL_Texture** ptr, int type);
-void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
 void declare_unsigned_short(void** ptr, unsigned short value);
 void declare_double(void** ptr, double value);
 void declare_int(void** ptr, int value);
@@ -65,7 +65,7 @@ unsigned short controlsScreen(piece** Piece)
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
     static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
     static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
-    static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *Piece);
+    static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *Piece, false);
     static SDL_Texture* Texture_Controls; declare_HUD_Text(&Texture_Controls, CONTROLS_TEXT);
     static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
 

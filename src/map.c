@@ -20,7 +20,7 @@ void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
 void declare_short(void** ptr, short value);
 void declare_Piece(piece** ptr, piece* Piece);
-void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
 void declare_map_matrix(bool** ptr);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
 void declare_moving_title_pieces(piece*** ptr);
@@ -56,7 +56,7 @@ unsigned short drawTitle(piece** firstPiece)
 	DECLARE_VARIABLE(unsigned short, customModeSize, 1);
 
 	//Textures
-	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *firstPiece);
+	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *firstPiece, false);
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);

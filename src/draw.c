@@ -24,6 +24,8 @@ unsigned short getColor_R(unsigned short color)
 		return 194;
 	else if (color == BLACK)
 		return 0;
+	else if (color == DARK_GRAY)
+		return 100;
 	else
 		return -1;
 
@@ -53,6 +55,8 @@ unsigned short getColor_G(unsigned short color)
 		return 59;
 	else if (color == BLACK)
 		return 0;
+	else if (color == DARK_GRAY)
+		return 100;
 	else
 		return -1;
 
@@ -82,6 +86,8 @@ unsigned short getColor_B(unsigned short color)
 		return 34;
 	else if (color == BLACK)
 		return 0;
+	else if (color == DARK_GRAY)
+		return 100;
 	else
 		return -1;
 
@@ -440,7 +446,7 @@ void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned 
 }
 
 //Create a texture from the given piece
-SDL_Texture* createPieceTexture(piece Piece)
+SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot)
 {
 
 	SDL_Rect DestR;
@@ -455,6 +461,20 @@ SDL_Texture* createPieceTexture(piece Piece)
 
 	//Pretty simple, we just draw the piece to the texture
 	drawPiece(Piece, texture, 0, 0);
+
+	// Draw center dot if specified
+	if (drawCenterDot == true)
+	{
+
+		int centerX = Piece.centerBlock->X - Piece.minX;
+		int centerY = Piece.centerBlock->Y - Piece.minY;
+
+
+		int drawX = (SPRITE_WIDTH / 2) + (SPRITE_WIDTH * centerX) - 2;
+		int drawY = (SPRITE_HEIGHT / 2) + (SPRITE_HEIGHT * centerY) - 2;
+		drawSimpleRect(texture, drawX, drawY, 4, 4, DARK_GRAY);
+
+	}
 
 	return texture;
 

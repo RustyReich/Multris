@@ -13,7 +13,7 @@ void printToTexture(char* string,SDL_Texture* dstTexture,int X,int Y,float multi
 SDL_Texture* createTexture(int width, int height);
 void drawToTexture(int SpriteID,SDL_Texture* dstTexture,int X,int Y,float multiplier,Uint8 color);
 void clearTexture(SDL_Texture* texture);
-SDL_Texture* createPieceTexture(piece Piece);
+SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot);
 int getStringLength(char* str, float multiplier);
 int getIntStringLength(int num, float multiplier);
 void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
@@ -42,7 +42,7 @@ void declare_bool(void** ptr, bool value);
 void declare_unsigned_int(void** ptr, unsigned int value);
 void declare_short(void** ptr, short value);
 void declare_Piece(piece** ptr, piece* Piece);
-void declare_Piece_Text(SDL_Texture** ptr, piece* Piece);
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
 void declare_map_matrix(bool** ptr);
 
@@ -115,9 +115,10 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
 
 	//Texutures
-	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece);
-	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece);
-	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece);
+	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, true);
+	static SDL_Texture* Texture_Ghost; declare_Piece_Text(&Texture_Ghost, currentPiece, false);
+	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece, false);
+	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece, false);
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
@@ -386,6 +387,8 @@ unsigned short playMode(piece* firstPiece)
 					playSound(ROTATE_SOUND);
 					SDL_DestroyTexture(Texture_Current);
 					Texture_Current = NULL;
+					SDL_DestroyTexture(Texture_Ghost);
+					Texture_Ghost = NULL;
 
 				}
 
@@ -397,6 +400,8 @@ unsigned short playMode(piece* firstPiece)
 				playSound(ROTATE_SOUND);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
+				SDL_DestroyTexture(Texture_Ghost);
+				Texture_Ghost = NULL;
 
 			}
 
@@ -420,13 +425,15 @@ unsigned short playMode(piece* firstPiece)
 				holdPiece->blocks = SDL_malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
 				holdPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(currentPiece, holdPiece);
-				Texture_Hold = createPieceTexture(*holdPiece);
+				Texture_Hold = createPieceTexture(*holdPiece, false);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
 
 				//Delete currentPiece
 				delPiece(&currentPiece);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
+				SDL_DestroyTexture(Texture_Ghost);
+				Texture_Ghost = NULL;
 
 				//Move nextPiece to currentPiece
 				currentPiece = nextPiece;
@@ -462,13 +469,15 @@ unsigned short playMode(piece* firstPiece)
 				holdPiece->blocks = SDL_malloc(currentPiece->numOfBlocks * sizeof(*holdPiece->blocks));
 				holdPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(currentPiece, holdPiece);
-				Texture_Hold = createPieceTexture(*holdPiece);
+				Texture_Hold = createPieceTexture(*holdPiece, false);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
 
 				//Delete currentPiece
 				delPiece(&currentPiece);
 				SDL_DestroyTexture(Texture_Current);
 				Texture_Current = NULL;
+				SDL_DestroyTexture(Texture_Ghost);
+				Texture_Ghost = NULL;
 
 				//Copy tempPiece to currentPiece
 				currentPiece = SDL_malloc(sizeof(*currentPiece));
@@ -546,7 +555,7 @@ unsigned short playMode(piece* firstPiece)
 		if (Texture_Next == NULL)
 		{
 			
-			Texture_Next = createPieceTexture(*nextPiece);
+			Texture_Next = createPieceTexture(*nextPiece, false);
 			SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
 
 		}
@@ -648,6 +657,8 @@ unsigned short playMode(piece* firstPiece)
 			delPiece(&currentPiece);
 			SDL_DestroyTexture(Texture_Current);
 			Texture_Current = NULL;
+			SDL_DestroyTexture(Texture_Ghost);
+			Texture_Ghost = NULL;
 
 			//Grab the next piece and store it in currentPiece
 			currentPiece = nextPiece;
@@ -738,13 +749,13 @@ unsigned short playMode(piece* firstPiece)
 		
 		drawY = SDL_ceil((float)FONT_HEIGHT * (float)(int)*ghostY * multiplier + (float)*foregroundY);
 
-		//Make Texture_Current transparent
-		SDL_SetTextureAlphaMod(Texture_Current, 255 / 3);
-		//Draw Texture_Current at ghostY
+		//Make Texture_Ghost transparent
+		SDL_SetTextureAlphaMod(Texture_Ghost, 255 / 3);
+		//Draw Texture_Ghost at ghostY
 		if ((int)*ghostY >= 0)
-			drawTexture(Texture_Current, drawX, drawY, multiplier);
-		//Reset Texture_Current opacity
-		SDL_SetTextureAlphaMod(Texture_Current, 255);
+			drawTexture(Texture_Ghost, drawX, drawY, multiplier);
+		//Reset Texture_Ghost opacity
+		SDL_SetTextureAlphaMod(Texture_Ghost, 255);
 
 	}
 

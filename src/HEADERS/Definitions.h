@@ -35,16 +35,17 @@
 #define ROTATE_SOUND	6
 #define UNLOCK_SOUND	7
 
-#define GRAY	0
-#define WHITE	1
-#define YELLOW	2
-#define GREEN	3
-#define CYAN	4
-#define MAGENTA	5
-#define ORANGE	6
-#define BLUE	7
-#define RED		8
-#define BLACK	9
+#define GRAY		0
+#define WHITE		1
+#define YELLOW		2
+#define GREEN		3
+#define CYAN		4
+#define MAGENTA		5
+#define ORANGE		6
+#define BLUE		7
+#define RED			8
+#define BLACK		9
+#define DARK_GRAY 	10
 
 #define MAX_PIECE_SIZE 8
 

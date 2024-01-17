@@ -5,7 +5,7 @@ void delPiece(piece** Piece);
 void copyPiece(piece* piece1, piece* piece2);
 
 //draw.c
-SDL_Texture* createPieceTexture(piece Piece);
+SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot);
 
 //layout.c
 SDL_Texture* create_Score_Text();
@@ -235,14 +235,14 @@ void declare_Piece(piece** ptr, piece* Piece)
 }
 
 //Function for declaring a Piece Texture on the varVector array
-void declare_Piece_Text(SDL_Texture** ptr, piece* Piece)
+void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot)
 {
 
     if (*ptr == NULL)
     {
 
         if (Piece != NULL)
-            *ptr = createPieceTexture(*Piece);
+            *ptr = createPieceTexture(*Piece, drawCenterDot);
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
