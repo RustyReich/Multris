@@ -122,4 +122,12 @@ typedef struct piece
 
 } piece;
 
+typedef struct SizeBag
+{
+
+    unsigned short size;
+    unsigned short* sizesInBag;
+
+} SizeBag;
+
 #endif

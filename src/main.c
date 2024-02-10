@@ -182,6 +182,11 @@ int main(int argc, char *argv[]) {
 
 			}
 
+			// Show the cursor if it is currently hidden and it moves
+			if (globalInstance->event.type == SDL_MOUSEMOTION)
+				if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
+					SDL_ShowCursor(SDL_ENABLE);
+
 		}
 
 		//Update 'controls' states

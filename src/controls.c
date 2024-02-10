@@ -209,6 +209,10 @@ void updateControls()
                 //onPress is only true for a single frame
                 globalInstance->controls[i].onPress = false;
 
+            // Hide cursor if a button is pressed and the cursor is currently visible
+            if (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE)
+                SDL_ShowCursor(SDL_DISABLE);
+
         }
         else
         {

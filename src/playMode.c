@@ -45,6 +45,7 @@ void declare_Piece(piece** ptr, piece* Piece);
 void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
 void declare_map_matrix(bool** ptr);
+void declare_size_bag(SizeBag** ptr, unsigned short mode, bool customMode);
 
 //layout.c
 int getScoreDrawX(unsigned short size);
@@ -62,7 +63,6 @@ int getHoldY(unsigned short size, int height);
 int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
 
-piece* getFirstPiece(piece*);
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight);
 void adjustNewPiece(piece* Piece, signed short* X, unsigned short mapWidth);
@@ -76,6 +76,8 @@ void updateLines(unsigned short lines, SDL_Texture** linesTexture);
 bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight);
 unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int mapWidth, int mapHeight);
 unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel);
+double calcSpeed(unsigned short level);
+void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode);
 
 unsigned short playMode(piece* firstPiece)
 {
@@ -129,6 +131,9 @@ unsigned short playMode(piece* firstPiece)
 		//Initialize completedRows to only include a row that is offscreen
 	static int* completedRows; declareStart(completedRows, MAP_HEIGHT + 1);
 	static bool* mapData; declare_map_matrix(&mapData);
+
+	// Declare the bag holding the possible sizes for bag shuffling of sizes
+	static SizeBag* sizeBag; declare_size_bag(&sizeBag, MODE, CUSTOM_MODE);
 	
 	//First frame
 	if (*firstLoop)
@@ -142,6 +147,16 @@ unsigned short playMode(piece* firstPiece)
 		if (MODE != 0)
 			if (getStringLength("PAUSED", 1.0) > SDL_round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH)
 				*pausedMulti = SDL_round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH / getStringLength("PAUSED", 1.0);
+
+		// Calc speed at start incase want to start at different level (for debugging)
+		*speed = calcSpeed(*Level);
+
+		// Remove the size of the firstPiece from the sizeBag
+		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE);
+
+		for (unsigned short i = 0; i < sizeBag->size; i++)
+			printf("%d,", sizeBag->sizesInBag[i]);
+		printf("\n");
 
 		*firstLoop = false;
 
@@ -574,10 +589,12 @@ unsigned short playMode(piece* firstPiece)
 			if (!*clearingLine)
 			{
 
-				if (*softDrop == false)
+				// Soft drop drops at 1 cell per 2 frames (in 60HZ)
+					// Soft drop doesn't work past level 28 because base speed is higher than soft drop
+				if (*softDrop == false || *Level > 28)
 					*Y = *Y + *speed * globalInstance->frame_time;
-				else
-					*Y = *Y + 20 * *speed * globalInstance->frame_time;
+				else if (*softDrop == true)
+					*Y = *Y + ((double)60.0988 / (double)2) * globalInstance->frame_time;
 
 			}
 
@@ -644,7 +661,7 @@ unsigned short playMode(piece* firstPiece)
 					}
 
 					//Increase speed
-					*speed = (double)(60.0988 / (48 - 5 * *Level));
+					*speed = calcSpeed(*Level);
 
 				}
 
@@ -886,6 +903,86 @@ unsigned short playMode(piece* firstPiece)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
+
+}
+
+// Function for removing a size from the sizeBag
+	// Also resets the sizeBag if the last size is removed
+void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode)
+{
+
+	// If there is more that one size currently in the bag
+	if (sizeBag->size > 1)
+	{
+
+		// Create a new array to hold the sizes. Size is decreased by 1 since we are removing a size
+		unsigned short* newSizesInBag = SDL_calloc(sizeBag->size - 1, sizeof(unsigned short));
+
+		// Then copy all sizes from old array to new array, skipping the specified size we are removing
+		unsigned short index = 0;
+		for (unsigned short i = 0; i < sizeBag->size; i++)
+		{
+
+			if (sizeBag->sizesInBag[i] != size)
+			{
+
+				newSizesInBag[index] = sizeBag->sizesInBag[i];
+				index++;
+
+			}
+
+		}
+
+		// Then delete the old array, and update sizeBag to point to the new array
+		SDL_free(sizeBag->sizesInBag);
+		sizeBag->sizesInBag = newSizesInBag;
+		
+		// Decrease size of bag by 1
+		sizeBag->size -= 1;
+
+	}
+
+}
+
+// Speed is calculated as if the game is running at ~60 FPS
+double calcSpeed(unsigned short level)
+{
+
+	unsigned short framesPerCell = 48;
+
+	// Speed table taken from NES Tetris
+	if (level == 0)
+		framesPerCell = 48;
+	else if (level == 1)
+		framesPerCell = 43;
+	else if (level == 2)
+		framesPerCell = 38;
+	else if (level == 3)
+		framesPerCell = 33;
+	else if (level == 4)
+		framesPerCell = 28;
+	else if (level == 5)
+		framesPerCell = 23;
+	else if (level == 6)
+		framesPerCell = 18;
+	else if (level == 7)
+		framesPerCell = 13;
+	else if (level == 8)
+		framesPerCell = 8;
+	else if (level == 9)
+		framesPerCell = 6;
+	else if (level <= 12)
+		framesPerCell = 5;
+	else if (level <= 15)
+		framesPerCell = 4;
+	else if (level <= 18)
+		framesPerCell = 3;
+	else if (level <= 28)
+		framesPerCell = 2;
+	else
+		framesPerCell = 1;
+
+	return (double)60.0988 / (double)framesPerCell;
 
 }
 
@@ -1335,55 +1432,5 @@ void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth)
 			*X = *X + 1;
 
 	}
-
-}
-
-//Function for getting the first piece from the title screen
-piece* getFirstPiece(piece* firstPiece)
-{
-	
-	piece* currentPiece;
-	currentPiece = SDL_malloc(sizeof(*currentPiece));
-	if (currentPiece != NULL)
-	{
-
-		currentPiece = SDL_malloc(sizeof(*currentPiece));
-		if (currentPiece != NULL)
-		{
-
-			//Copy over all attributes of the firstPiece
-			currentPiece->width = firstPiece->width;
-			currentPiece->height = firstPiece->height;
-			currentPiece->numOfBlocks = firstPiece->numOfBlocks;
-			currentPiece->color = firstPiece->color;
-			currentPiece->minX = firstPiece->minX;
-			currentPiece->minY = firstPiece->minY;
-
-			//Copy over all blocks from firstPiece into currentPiece
-			if (currentPiece->numOfBlocks > 0)
-				currentPiece->blocks = SDL_malloc(currentPiece->numOfBlocks * sizeof(*currentPiece->blocks));
-			currentPiece->centerBlock = SDL_calloc(1, sizeof(block));
-				
-			for (unsigned short i = 0; i < currentPiece->numOfBlocks; i++)
-			{
-				if (currentPiece->blocks != NULL)
-				{
-
-					currentPiece->blocks[i].X = firstPiece->blocks[i].X;
-					currentPiece->blocks[i].Y = firstPiece->blocks[i].Y;
-
-				}
-
-			}
-
-			// Copy over the centerBlock from firstPiece
-			currentPiece->centerBlock->X = firstPiece->centerBlock->X;
-			currentPiece->centerBlock->Y = firstPiece->centerBlock->Y;
-
-		}
-
-	}
-
-	return currentPiece;
 
 }

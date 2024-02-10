@@ -81,6 +81,7 @@
 #define TEXTURE             3
 #define MOVING_TITLE_PIECES 4
 #define UI_LIST				5
+#define SIZE_BAG			6
 
 #define MOVEMENT_WAIT	500
 #define MOVEMENT_TIME	50

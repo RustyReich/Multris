@@ -1422,7 +1422,9 @@ piece** makeTitlePieces()
 	}
 
 	//Reset random seed to current time
-	srand((int)time(NULL));
+		// Add 1 to current time to address bug where first and second piece can be the same if player
+		// starts game too quickly after opening the game (within 1 second)
+	srand((int)time(NULL) + 1);
 
 	return titlePieces;
 

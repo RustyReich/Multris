@@ -309,6 +309,65 @@ void declare_map_matrix(bool** ptr)
 
 }
 
+// Declare the size bag for bag shuffling the sizes
+void declare_size_bag(SizeBag** ptr, unsigned short mode, bool customMode)
+{
+
+    if (*ptr == NULL)
+    {
+
+        *ptr = (SizeBag*)(SDL_calloc(1, sizeof(SizeBag)));
+
+        if (mode == 0)
+        {
+
+            if (*ptr != NULL)
+            {
+
+                // In MULTRIS mode, sizes 1 - MAX_PIECE_SIZE are in the bag
+                (*ptr)->sizesInBag = SDL_calloc(MAX_PIECE_SIZE, sizeof(unsigned short));
+                (*ptr)->size = MAX_PIECE_SIZE;
+
+                for (unsigned short i = 1; i <= MAX_PIECE_SIZE; i++)
+                    (*ptr)->sizesInBag[i - 1] = i;
+
+            }
+
+        }
+        else if (mode != 0 && customMode == true)
+        {
+
+            if (*ptr != NULL)
+            {
+
+                // In CUSTOM mode, sizes 1 - MODE are in the bag
+                (*ptr)->sizesInBag = SDL_calloc(mode, sizeof(unsigned short));
+                (*ptr)->size = mode;
+
+                for (unsigned short i = 1; i <= mode; i++)
+                    (*ptr)->sizesInBag[i - 1] = i;
+
+            }
+
+        }
+        else if (mode != 0 && customMode == false)
+        {
+
+            // In NUMERICAL mode, only size MODE is in the bag
+            (*ptr)->sizesInBag = SDL_calloc(1, sizeof(unsigned short));
+            (*ptr)->size = 1;
+
+            (*ptr)->sizesInBag[0] = mode;
+
+        }
+
+        if (!inVector((void**)ptr))
+            pushAddress((void**)ptr, SIZE_BAG);
+
+    }
+
+}
+
 //Declare the array of moving pieces in the title
 void declare_moving_title_pieces(piece*** ptr)
 {
@@ -382,7 +441,14 @@ void freeVars()
             }
             else if ((*vector)->types[i] == UI_LIST)
                 delete_UI_list((UI_list**)&*(void**)((*vector)->ptrs[i]));
-            
+            else if ((*vector)->types[i] == SIZE_BAG)
+            {
+
+                SDL_free(((SizeBag*)*(void**)(*vector)->ptrs[i])->sizesInBag);
+                SDL_free(((SizeBag*)*(void**)(*vector)->ptrs[i]));
+
+            } 
+
         }
 
         //Reset the ptr to NULL
