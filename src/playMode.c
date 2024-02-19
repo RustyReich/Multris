@@ -154,10 +154,6 @@ unsigned short playMode(piece* firstPiece)
 		// Remove the size of the firstPiece from the sizeBag
 		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE);
 
-		for (unsigned short i = 0; i < sizeBag->size; i++)
-			printf("%d,", sizeBag->sizesInBag[i]);
-		printf("\n");
-
 		*firstLoop = false;
 
 	}
@@ -559,12 +555,17 @@ unsigned short playMode(piece* firstPiece)
 	if (nextPiece == NULL)
 	{
 
+		// Pick random size from the sizeBag to generate next piece
+		nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
+
+		/*
 		if (MODE == 0)
 			nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
 		else if (CUSTOM_MODE == true)
 			nextPiece = generateGamePiece(rand() % MODE + 1);
 		else
 			nextPiece = generateGamePiece(MODE);
+		*/
 
 		//And create a new texture for it as well
 		if (Texture_Next == NULL)
@@ -574,6 +575,9 @@ unsigned short playMode(piece* firstPiece)
 			SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
 
 		}
+
+		// Remove size of nextPiece from sizeBag
+		removeSizeFromBag(sizeBag, nextPiece->numOfBlocks, MODE, CUSTOM_MODE);
 
 	}
 
@@ -941,6 +945,10 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 		sizeBag->size -= 1;
 
 	}
+
+	for (unsigned short i = 0; i < sizeBag->size; i++)
+		printf("%d,", sizeBag->sizesInBag[i]);
+	printf("\n");
 
 }
 
