@@ -945,6 +945,27 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 		sizeBag->size -= 1;
 
 	}
+	else if (sizeBag->size == 1)
+	{
+
+		if (mode == 0)
+		{
+
+			// Reset sizeBag to have all sizes up to MAX_PIECE_SIZE
+			unsigned short* newSizesInBag = SDL_calloc(MAX_PIECE_SIZE, sizeof(unsigned short));
+			for (unsigned short i = 0; i < MAX_PIECE_SIZE; i++)
+				newSizesInBag[i] = i + 1;
+
+			// Then detel the old array, and update sizeBag to point to the new array
+			SDL_free(sizeBag->sizesInBag);
+			sizeBag->sizesInBag = newSizesInBag;
+
+			// And reset the size of the bag to MAX_PIECE_SIZE
+			sizeBag->size = MAX_PIECE_SIZE;
+
+		}
+
+	}
 
 	for (unsigned short i = 0; i < sizeBag->size; i++)
 		printf("%d,", sizeBag->sizesInBag[i]);
