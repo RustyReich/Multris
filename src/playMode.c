@@ -915,6 +915,10 @@ unsigned short playMode(piece* firstPiece)
 void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode)
 {
 
+	// If in NUMERICAL mode, don't take size out of bag
+	if (customMode == false && mode != 0)
+		return;
+
 	// If there is more that one size currently in the bag
 	if (sizeBag->size > 1)
 	{
@@ -982,10 +986,6 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 		}
 
 	}
-
-	for (unsigned short i = 0; i < sizeBag->size; i++)
-		printf("%d,", sizeBag->sizesInBag[i]);
-	printf("\n");
 
 }
 
