@@ -566,15 +566,6 @@ unsigned short playMode(piece* firstPiece)
 		// Pick random size from the sizeBag to generate next piece
 		nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
 
-		/*
-		if (MODE == 0)
-			nextPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
-		else if (CUSTOM_MODE == true)
-			nextPiece = generateGamePiece(rand() % MODE + 1);
-		else
-			nextPiece = generateGamePiece(MODE);
-		*/
-
 		//And create a new texture for it as well
 		if (Texture_Next == NULL)
 		{
