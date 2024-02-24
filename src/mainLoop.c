@@ -6,6 +6,8 @@ SDL_Texture* createTexture(int width, int height);
 void clearTexture(SDL_Texture* texture);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 int getStringLength(char* str, float multiplier);
+void clearTextureWithColor(SDL_Texture* texture, Uint8 colorR, Uint8 colorG, Uint8 colorB, Uint8 colorA);
+int getIntStringLength(int num, float multiplier);
 
 //map.c
 unsigned short drawTitle(piece** firstPiece);
@@ -30,8 +32,6 @@ void drawHoldBox(SDL_Texture* background, unsigned short size);
 void drawFPSBox(SDL_Texture* background, unsigned short size);
 int calcMapWidth();
 int calcMapHeight();
-int getFpsX(unsigned short size);
-int getFpsY(unsigned short size);
 void drawBackgroundExtras(SDL_Texture* background, unsigned short size);
 int getGameWidth(unsigned short size);
 int getGameHeight(unsigned short size);
@@ -66,11 +66,25 @@ void mainLoop()
 		drawBackgroundExtras(Texture_Background, MODE);
 
 	}
+
+	static bool firstFrame = true;
 	
+	static float fpsSizeMultiplier = 0.75;
+	static int fpsTextureWidth;
+
+	if (firstFrame)
+	{
+
+		fpsTextureWidth = getStringLength("00000", fpsSizeMultiplier);
+
+		firstFrame = false;
+
+	}
+
 	//Create texture for FPS
 	static SDL_Texture* Texture_FPS;
 	if (Texture_FPS == NULL)
-		Texture_FPS = createTexture(getStringLength("00000", 1.0), FONT_HEIGHT);
+		Texture_FPS = createTexture(fpsTextureWidth, FONT_HEIGHT * fpsSizeMultiplier);
 
 	//The piece that shows up in the NEXT box on the title screen will be the first piece that is placed if
 	//playing a mode that supports the size of that piece
@@ -88,18 +102,23 @@ void mainLoop()
 	static unsigned short game_state = TITLE_SCREEN;
 	
 	//Display frame rate
+		// Get width of current frame rate in pixels
+	int fpsWidth = getIntStringLength(globalInstance->FPS, fpsSizeMultiplier);
 	if (globalInstance->frame_time != 0.0)
 	{
 
-		clearTexture(Texture_FPS);
-		intToTexture(globalInstance->FPS, Texture_FPS, 0, 0, 1.0, YELLOW);
+		// Clear FPS texture with black
+		clearTextureWithColor(Texture_FPS, 0, 0, 0, 255);
+		// Print current FPS to the right side of the FPS texture
+		intToTexture(globalInstance->FPS, Texture_FPS, fpsTextureWidth - fpsWidth, 0, fpsSizeMultiplier, YELLOW);
 
 	}
 
 	// RENDERING --------------------------------------------------------------
 	
 	drawTexture(Texture_Background, 0, 0, 1.0);
-	drawTexture(Texture_FPS, getFpsX(MODE), getFpsY(MODE), 1.0);
+	// Draw FPS texture so that any unusued space is outside of the drawable area
+	drawTexture(Texture_FPS, 0 - (fpsTextureWidth - fpsWidth), 0, 1.0);
 
 	if (game_state == TITLE_SCREEN) {
 

@@ -358,7 +358,7 @@ int getIntStringLength(int num, float multiplier)
 
 }
 
-//Clear a texture with the current renderer's draw color
+//Clear a texture
 void clearTexture(SDL_Texture* texture)
 {
 
@@ -373,6 +373,31 @@ void clearTexture(SDL_Texture* texture)
 
 	//Clear texture with "clear" color
 	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
+	SDL_SetRenderTarget(globalInstance->renderer, texture);
+	SDL_RenderClear(globalInstance->renderer);
+
+	//Reset rendering draw color
+	SDL_SetRenderDrawColor(globalInstance->renderer, currentR, currentG, currentB, currentA);
+	//Reset rendering target
+	SDL_SetRenderTarget(globalInstance->renderer, currentTarget);
+
+}
+
+// Clear a texture with a given color
+void clearTextureWithColor(SDL_Texture* texture, Uint8 colorR, Uint8 colorG, Uint8 colorB, Uint8 colorA)
+{
+
+	//Save current rendering target
+	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
+	//Save current rendering draw color
+	Uint8 currentR;
+	Uint8 currentG;
+	Uint8 currentB;
+	Uint8 currentA;
+	SDL_GetRenderDrawColor(globalInstance->renderer, &currentR, &currentG, &currentB, &currentA);
+
+	//Clear texture with given color
+	SDL_SetRenderDrawColor(globalInstance->renderer, colorR, colorG, colorB, colorA);
 	SDL_SetRenderTarget(globalInstance->renderer, texture);
 	SDL_RenderClear(globalInstance->renderer);
 

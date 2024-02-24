@@ -1896,47 +1896,6 @@ int getHoldY(unsigned short size, int height)
 
 }
 
-//Get the X coord of where to draw the FPS to the screen depending on the current game mode
-int getFpsX(unsigned short size)
-{
-
-	int base, offset;
-	offset = getIntStringLength(globalInstance->FPS, 1.0) / 2;
-
-	if (size == 0 || size == MAX_PIECE_SIZE)
-		base = 318;
-	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6 || size == 7)
-		base = 66;
-	else	
-		base = 318;
-
-	return (base - offset);
-
-}
-
-//Get the Y coord of where to draw the FPS to the screen depending on the current game mode
-int getFpsY(unsigned short size)
-{
-
-	if (size == 0 || size == MAX_PIECE_SIZE)
-		return 474;
-	else if (size == 1 || size == 2)
-		return 150;
-	else if (size == 3)
-		return 174;
-	else if (size == 4)
-		return 186;
-	else if (size == 5)
-		return 222;
-	else if (size == 6)
-		return 246;
-	else if (size == 7)
-		return 282;
-	else
-		return 474;
-
-}
-
 //Draw extra background tiles to fill in gaps
 void drawBackgroundExtras(SDL_Texture* background, unsigned short size)
 {
