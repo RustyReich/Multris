@@ -535,6 +535,14 @@ unsigned short playMode(piece* firstPiece)
 			*paused = !*paused;
 
 		}
+		// Also pause if window loses focus
+		if (!(SDL_GetWindowFlags(globalInstance->window) & SDL_WINDOW_INPUT_FOCUS) && !*paused)
+		{
+		
+			playSound(PAUSE_SOUND);
+			*paused = true;
+
+		}
 
 		// Exit if press ESCAPE_BUTTON while paused
 		if (*paused && onPress(EXIT_BUTTON))
