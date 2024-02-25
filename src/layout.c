@@ -947,8 +947,8 @@ SDL_Texture* create_SizeBag_Text()
 
 	SDL_Texture* texture;
 
-	int height = 0;
-	int width = 0;
+	int height = 1;
+	int width = 1;
 
 	if (MODE == 0 && CUSTOM_MODE == false)
 	{
