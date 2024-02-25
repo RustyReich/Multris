@@ -65,6 +65,7 @@
 #define VOLSLIDE_TEXT	8
 #define CONTROLS_TEXT	9
 #define CUSTOM_TEXT		10
+#define SIZEBAG_TEXT	11
 
 #define MODES_LIST		0
 #define NUMERICAL_LIST	1

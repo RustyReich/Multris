@@ -62,6 +62,8 @@ int getHoldX(unsigned short size, int width);
 int getHoldY(unsigned short size, int height);
 int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
+int getSizeBagX(unsigned short size, float multiplier);
+int getSizeBagY(unsigned short size);
 
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight);
@@ -77,7 +79,9 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int mapWidth, int mapHeight);
 unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel);
 double calcSpeed(unsigned short level);
-void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode);
+void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode, SDL_Texture* sizeBagTexture);
+void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size, unsigned short mode, bool customMode);
+void resetSizeBagTexture(SDL_Texture* sizeBagTexture);
 
 unsigned short playMode(piece* firstPiece)
 {
@@ -125,6 +129,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
+	static SDL_Texture* Texture_SizeBag; declare_HUD_Text(&Texture_SizeBag, SIZEBAG_TEXT);
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
 
 	//Arrays
@@ -152,7 +157,7 @@ unsigned short playMode(piece* firstPiece)
 		*speed = calcSpeed(*Level);
 
 		// Remove the size of the firstPiece from the sizeBag
-		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE);
+		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
 		*firstLoop = false;
 
@@ -576,7 +581,7 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		// Remove size of nextPiece from sizeBag
-		removeSizeFromBag(sizeBag, nextPiece->numOfBlocks, MODE, CUSTOM_MODE);
+		removeSizeFromBag(sizeBag, nextPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
 	}
 
@@ -746,6 +751,7 @@ unsigned short playMode(piece* firstPiece)
 	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
 	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE), 1.0);
 	drawTexture(Texture_Lines, getLinesX(MODE, calcLinesUntilLevelup(*linesAtCurrentLevel, *Level)), getLinesY(MODE), 1.0);
+	drawTexture(Texture_SizeBag, getSizeBagX(MODE, 0.75), getSizeBagY(MODE), 0.75);
 
 	//Draw the foreground
 	if (CUSTOM_MODE == false || MODE < MAX_PIECE_SIZE)
@@ -911,7 +917,7 @@ unsigned short playMode(piece* firstPiece)
 
 // Function for removing a size from the sizeBag
 	// Also resets the sizeBag if the last size is removed
-void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode)
+void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode, SDL_Texture* sizeBagTexture)
 {
 
 	// If in NUMERICAL mode, don't take size out of bag
@@ -947,6 +953,9 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 		// Decrease size of bag by 1
 		sizeBag->size -= 1;
 
+		// Remove size from sizeBag texture
+		removeSizeFromBagTexture(sizeBagTexture, size, mode, customMode);
+
 	}
 	else if (sizeBag->size == 1)
 	{
@@ -965,6 +974,9 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 
 			// And reset the size of the bag to MAX_PIECE_SIZE
 			sizeBag->size = MAX_PIECE_SIZE;
+
+			// Reset the sizeBag texture
+			resetSizeBagTexture(sizeBagTexture);
 
 		}
 		else if (customMode == true)
@@ -985,6 +997,32 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 		}
 
 	}
+
+}
+
+// Function for placing an X over a size in the sizeBag texture
+void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size, unsigned short mode, bool customMode)
+{
+
+	if (mode == 0 && customMode == false)
+	{
+
+		if (size <= MAX_PIECE_SIZE / 2)
+			printToTexture("X", sizeBagTexture, (size - 1) * 2 * (FONT_WIDTH + STRING_GAP), 0, 1.0, RED);
+		else
+			printToTexture("X", sizeBagTexture, (size - 1 - 4) * 2 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1.0, RED);
+
+	}
+
+}
+
+// Function for resetting the texture of the sizeBag
+void resetSizeBagTexture(SDL_Texture* sizeBagTexture)
+{
+
+	clearTexture(sizeBagTexture);
+	printToTexture("1 2 3 4", sizeBagTexture, 0, 0, 1.0, WHITE);
+	printToTexture("5 6 7 8", sizeBagTexture, 0, FONT_HEIGHT + STRING_GAP, 1.0, WHITE);
 
 }
 

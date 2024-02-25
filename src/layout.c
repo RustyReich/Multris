@@ -623,7 +623,7 @@ void drawSizeBagBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
 	//Print all content to 'content' texture
-	printToTexture("SIZES", content, 0.5 * (contentWidth - getStringLength("SIZES", 1.0)), STRING_GAP * 2, 1, WHITE);
+	printToTexture("SIZES", content, 0.5 * (contentWidth - getStringLength("SIZES", 1.0)), STRING_GAP, 1, WHITE);
 
 	int X = 0;
 	int Y = 0;
@@ -941,6 +941,31 @@ void updateCustomText(SDL_Texture* texture, unsigned short value)
 
 }
 
+// Create the texture that displays the sizes currently in the size bag
+SDL_Texture* create_SizeBag_Text()
+{
+
+	SDL_Texture* texture;
+
+	int height = 0;
+	int width = 0;
+
+	if (MODE == 0 && CUSTOM_MODE == false)
+	{
+
+		width = getStringLength("1 2 3 4 5 6 7 8", 1.0);
+		height = getStringLength("00", 1.0);
+
+	}
+
+	texture = createTexture(width, height);
+	printToTexture("1 2 3 4", texture, 0, 0, 1.0, WHITE);
+	printToTexture("5 6 7 8", texture, 0, FONT_HEIGHT + STRING_GAP, 1.0, WHITE);
+
+	return texture;
+
+}
+
 // Create the texture that displays for playing custom mode
 SDL_Texture* create_Custom_Text()
 {
@@ -1138,6 +1163,48 @@ UI_list* create_Options_List()
 	list->ui->currentlyInteracting = false;
 
 	return list;
+
+}
+
+//Get the X coord of where to draw the SizeBag to the screen depending on the current game mode
+int getSizeBagX(unsigned short size, float multiplier)
+{
+
+	int base, offset = 0;
+	if (MODE == 0 && CUSTOM_MODE == false)
+		offset = getStringLength("1 2 3 4", multiplier) / 2;
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		base = 318;
+	else if (size == 1 || size == 2 || size == 3 || size == 4 || size == 5 || size == 6 || size == 7)
+		base = 66;
+	else	
+		base = 318;
+
+	return (base - offset);
+
+}
+
+//Get the Y coord of where to draw the SizeBag to the screen depending on the current game mode
+int getSizeBagY(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 472;
+	else if (size == 1 || size == 2)
+		return 148;
+	else if (size == 3)
+		return 172;
+	else if (size == 4)
+		return 184;
+	else if (size == 5)
+		return 220;
+	else if (size == 6)
+		return 244;
+	else if (size == 7)
+		return 280;
+	else
+		return 472;
 
 }
 

@@ -26,6 +26,7 @@ SDL_Texture* create_Values_Text();
 SDL_Texture* create_volSlide_Text();
 SDL_Texture* create_Controls_Text();
 SDL_Texture* create_Custom_Text();
+SDL_Texture* create_SizeBag_Text();
 
 //Function for pushing a variable or object onto a varVector structure 
 //designed to make freeing variables at the end of a game_state easier
@@ -281,6 +282,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Controls_Text();
         else if (type == CUSTOM_TEXT)
             *ptr = create_Custom_Text();
+        else if (type == SIZEBAG_TEXT)
+            *ptr = create_SizeBag_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
