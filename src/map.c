@@ -383,6 +383,14 @@ unsigned short drawTitle(piece** firstPiece)
 				return CONTROLS_SCREEN;
 
 			}
+			else if (SDL_strcmp(selected_option, "SHOW FPS") == 0)
+			{
+
+				SHOW_FPS = !SHOW_FPS;
+
+				updateValuesText(Texture_Values);
+
+			}
 
 		}
 
@@ -426,6 +434,7 @@ unsigned short drawTitle(piece** firstPiece)
 				saveToFile("SAVES/options.cfg", "FULLSCREEN", FULLSCREEN_MODE);
 				saveToFile("SAVES/options.cfg", "VOLUME", VOLUME);
 				saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
+				saveToFile("SAVES/options.cfg", "SHOW FPS", SHOW_FPS);
 
 			}
 

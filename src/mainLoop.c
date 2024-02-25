@@ -118,7 +118,8 @@ void mainLoop()
 	
 	drawTexture(Texture_Background, 0, 0, 1.0);
 	// Draw FPS texture so that any unusued space is outside of the drawable area
-	drawTexture(Texture_FPS, 0 - (fpsTextureWidth - fpsWidth), 0, 1.0);
+	if (SHOW_FPS)
+		drawTexture(Texture_FPS, 0 - (fpsTextureWidth - fpsWidth), 0, 1.0);
 
 	if (game_state == TITLE_SCREEN) {
 

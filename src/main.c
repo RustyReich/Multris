@@ -38,6 +38,7 @@ bool UPDATE_FULLSCREEN_MODE = true;
 bool FULLSCREEN_MODE = false;
 unsigned short VOLUME = 10;
 bool LIMIT_FPS = true;
+bool SHOW_FPS = true;
 
 int PROGRESS = 1;
 
@@ -155,6 +156,7 @@ int main(int argc, char *argv[]) {
 		FULLSCREEN_MODE = getFileValue("SAVES/options.cfg", "FULLSCREEN");
 		VOLUME = getFileValue("SAVES/options.cfg", "VOLUME");
 		LIMIT_FPS = getFileValue("SAVES/options.cfg", "LIMIT FPS");
+		SHOW_FPS = getFileValue("SAVES/options.cfg", "SHOW FPS");
 
 	}
 
