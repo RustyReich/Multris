@@ -29,7 +29,7 @@ void drawLevelBox(SDL_Texture* background, unsigned short size);
 void drawUntilBox(SDL_Texture* background, unsigned short size);
 void drawNextBox(SDL_Texture* background, unsigned short size);
 void drawHoldBox(SDL_Texture* background, unsigned short size);
-void drawFPSBox(SDL_Texture* background, unsigned short size);
+void drawSizeBagBox(SDL_Texture* background, unsigned short size);
 int calcMapWidth();
 int calcMapHeight();
 void drawBackgroundExtras(SDL_Texture* background, unsigned short size);
@@ -62,7 +62,7 @@ void mainLoop()
 		drawUntilBox(Texture_Background, MODE);
 		drawNextBox(Texture_Background, MODE);
 		drawHoldBox(Texture_Background, MODE);
-		drawFPSBox(Texture_Background, MODE);
+		drawSizeBagBox(Texture_Background, MODE);
 		drawBackgroundExtras(Texture_Background, MODE);
 
 	}

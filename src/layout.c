@@ -607,8 +607,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 
 }
 
-//Function for drawing the FPS box
-void drawFPSBox(SDL_Texture* background, unsigned short size)
+//Function for drawing the sizeBag box
+void drawSizeBagBox(SDL_Texture* background, unsigned short size)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -618,12 +618,12 @@ void drawFPSBox(SDL_Texture* background, unsigned short size)
 	SDL_Texture* currentTarget = SDL_GetRenderTarget(globalInstance->renderer);
 
 	//Create the 'content' texture
-	int contentWidth = getStringLength("FPS", 1.0);
+	int contentWidth = getStringLength("SIZES", 1.0);
 	int contentHeight = SPRITE_HEIGHT * 3;
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
 	//Print all content to 'content' texture
-	printToTexture("FPS", content, 0.5 * (contentWidth - getStringLength("FPS", 1.0)), STRING_GAP * 2, 1, WHITE);
+	printToTexture("SIZES", content, 0.5 * (contentWidth - getStringLength("SIZES", 1.0)), STRING_GAP * 2, 1, WHITE);
 
 	int X = 0;
 	int Y = 0;
