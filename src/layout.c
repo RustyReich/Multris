@@ -950,17 +950,66 @@ SDL_Texture* create_SizeBag_Text()
 	int height = 1;
 	int width = 1;
 
-	if (MODE == 0 && CUSTOM_MODE == false)
+	// For MULTRIS and CUSTOM mode
+	if (MODE == 0 || CUSTOM_MODE == true)
 	{
 
-		width = getStringLength("1 2 3 4 5 6 7 8", 1.0);
+		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
+		int maxSize = MODE;
+		if (MODE == 0)
+			maxSize = MAX_PIECE_SIZE;
+
+		// Create string for the top line of sizes
+		int maxNumOne = SDL_ceil((float)maxSize / (float)2);
+		char* stringOne = SDL_calloc(2 * maxNumOne, sizeof(char));
+		stringOne[2 * maxNumOne - 1] = '\0';
+		for (unsigned short i = 1; i <= maxNumOne; i++)
+		{
+
+			int index = i - 1;
+			stringOne[index * 2] = '0' + (char)i;
+			if (i != maxNumOne)
+				stringOne[index * 2 + 1] = ' ';
+
+		}
+
+		// Create string for the bottom line of sizes
+		char* stringTwo = SDL_calloc(2 * (maxSize - maxNumOne), sizeof(char));
+		stringTwo[2 * (maxSize - maxNumOne) - 1] = '\0';
+		for (unsigned short i = maxNumOne + 1; i <= maxSize; i++)
+		{
+
+			int index = i - maxNumOne - 1;
+			stringTwo[index * 2] = '0' + (char)i;
+			if (i != maxSize)
+				stringTwo[index * 2 + 1] = ' ';
+
+		}
+
+		// Width of texture is the width of the top line and height is length of two characters
+		width = getStringLength(stringOne, 1.0);
 		height = getStringLength("00", 1.0);
 
-	}
+		// Create texture and print sizes two it
+		texture = createTexture(width, height);
+		printToTexture(stringOne, texture, 0, 0, 1.0, WHITE);
+		printToTexture(stringTwo, texture, 0, FONT_HEIGHT + STRING_GAP, 1.0, WHITE);
 
-	texture = createTexture(width, height);
-	printToTexture("1 2 3 4", texture, 0, 0, 1.0, WHITE);
-	printToTexture("5 6 7 8", texture, 0, FONT_HEIGHT + STRING_GAP, 1.0, WHITE);
+		// Free strings
+		SDL_free(stringOne);
+		SDL_free(stringTwo);
+
+	}
+	else	// In NUMERICAL mode, just print the one size
+	{
+
+		width = getIntStringLength(MODE, 1.0);
+		height = getStringLength("0", 1.0);
+
+		texture = createTexture(width, height);
+		intToTexture(MODE, texture, 0, 0, 1.0, WHITE);
+
+	}
 
 	return texture;
 
@@ -1171,8 +1220,39 @@ int getSizeBagX(unsigned short size, float multiplier)
 {
 
 	int base, offset = 0;
-	if (MODE == 0 && CUSTOM_MODE == false)
-		offset = getStringLength("1 2 3 4", multiplier) / 2;
+
+	// For MULTRIS and CUSTOM mode
+	if (MODE == 0 || CUSTOM_MODE == true)
+	{
+
+		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
+		int maxSize = MODE;
+		if (MODE == 0)
+			maxSize = MAX_PIECE_SIZE;
+
+		// Create string for the top line of sizes
+		int maxNumOne = SDL_ceil((float)maxSize / (float)2);
+		char* stringOne = SDL_calloc(2 * maxNumOne, sizeof(char));
+		stringOne[2 * maxNumOne - 1] = '\0';
+		for (unsigned short i = 1; i <= maxNumOne; i++)
+		{
+
+			int index = i - 1;
+			stringOne[index * 2] = '0' + (char)i;
+			if (i != maxNumOne)
+				stringOne[index * 2 + 1] = ' ';
+
+		}
+
+		// Calcuate the offset based on length of the top string, as it will alwasy be the longest
+		offset = getStringLength(stringOne, multiplier) / 2;
+
+		// Free the top string
+		SDL_free(stringOne);
+
+	}
+	else	// In NUMERICAL mode, only one size is printed
+		offset = getIntStringLength(MODE, multiplier) / 2;
 
 	if (size == 0 || size == MAX_PIECE_SIZE)
 		base = 318;
