@@ -64,6 +64,7 @@ int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
 int getSizeBagX(unsigned short size, float multiplier);
 int getSizeBagY(unsigned short size);
+float getSizeBagMulti(unsigned short size);
 
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight);
@@ -751,7 +752,7 @@ unsigned short playMode(piece* firstPiece)
 	drawTexture(Texture_Score, getScoreDrawX(MODE), getScoreDrawY(MODE), 1.0);
 	drawTexture(Texture_Level, getLevelX(MODE, *Level), getLevelY(MODE), 1.0);
 	drawTexture(Texture_Lines, getLinesX(MODE, calcLinesUntilLevelup(*linesAtCurrentLevel, *Level)), getLinesY(MODE), 1.0);
-	drawTexture(Texture_SizeBag, getSizeBagX(MODE, 0.75), getSizeBagY(MODE), 0.75);
+	drawTexture(Texture_SizeBag, getSizeBagX(MODE, getSizeBagMulti(MODE)), getSizeBagY(MODE), getSizeBagMulti(MODE));
 
 	//Draw the foreground
 	if (CUSTOM_MODE == false || MODE < MAX_PIECE_SIZE)

@@ -974,20 +974,48 @@ SDL_Texture* create_SizeBag_Text()
 		}
 
 		// Create string for the bottom line of sizes
-		char* stringTwo = SDL_calloc(2 * (maxSize - maxNumOne), sizeof(char));
-		stringTwo[2 * (maxSize - maxNumOne) - 1] = '\0';
+		char* stringTwo;
+		if (maxSize < 10)
+		{
+
+			stringTwo = SDL_calloc(2 * (maxSize - maxNumOne), sizeof(char));
+			stringTwo[2 * (maxSize - maxNumOne) - 1] = '\0';
+
+		}
+		else
+		{
+
+			stringTwo = SDL_calloc(2 * (9 - maxNumOne) + 3 * (maxSize - 9), sizeof(char));
+			stringTwo[2 * (9 - maxNumOne) + 3 * (maxSize - 9) - 1] = '\0';
+
+		}
 		for (unsigned short i = maxNumOne + 1; i <= maxSize; i++)
 		{
 
 			int index = i - maxNumOne - 1;
-			stringTwo[index * 2] = '0' + (char)i;
-			if (i != maxSize)
-				stringTwo[index * 2 + 1] = ' ';
+
+			if (i < 10)
+			{
+
+				stringTwo[index * 2] = '0' + (char)i;
+				if (i != maxSize)
+					stringTwo[index * 2 + 1] = ' ';
+
+			}
+			else
+			{
+
+				stringTwo[index * 2] = '0' + (char)(i / 10);
+				stringTwo[index * 2 + 1] = '0' + (char)(i % 10);
+				if (i != maxSize)
+					stringTwo[index * 2 + 2] = ' ';
+
+			}
 
 		}
 
-		// Width of texture is the width of the top line and height is length of two characters
-		width = getStringLength(stringOne, 1.0);
+		// Width of texture is the width of the longer line and height is length of two characters
+		width = SDL_max(getStringLength(stringOne, 1.0), getStringLength(stringTwo, 1.0));
 		height = getStringLength("00", 1.0);
 
 		// Create texture and print sizes two it
@@ -1215,6 +1243,16 @@ UI_list* create_Options_List()
 
 }
 
+float getSizeBagMulti(unsigned short size)
+{
+
+	if (size < 10)
+		return 0.75;
+	else
+		return 0.70;
+
+}
+
 //Get the X coord of where to draw the SizeBag to the screen depending on the current game mode
 int getSizeBagX(unsigned short size, float multiplier)
 {
@@ -1244,8 +1282,49 @@ int getSizeBagX(unsigned short size, float multiplier)
 
 		}
 
-		// Calcuate the offset based on length of the top string, as it will alwasy be the longest
-		offset = getStringLength(stringOne, multiplier) / 2;
+		// Create string for the bottom line of sizes
+		char* stringTwo;
+		if (maxSize < 10)
+		{
+
+			stringTwo = SDL_calloc(2 * (maxSize - maxNumOne), sizeof(char));
+			stringTwo[2 * (maxSize - maxNumOne) - 1] = '\0';
+
+		}
+		else
+		{
+
+			stringTwo = SDL_calloc(2 * (9 - maxNumOne) + 3 * (maxSize - 9), sizeof(char));
+			stringTwo[2 * (9 - maxNumOne) + 3 * (maxSize - 9) - 1] = '\0';
+
+		}
+		for (unsigned short i = maxNumOne + 1; i <= maxSize; i++)
+		{
+
+			int index = i - maxNumOne - 1;
+
+			if (i < 10)
+			{
+
+				stringTwo[index * 2] = '0' + (char)i;
+				if (i != maxSize)
+					stringTwo[index * 2 + 1] = ' ';
+
+			}
+			else
+			{
+
+				stringTwo[index * 2] = '0' + (char)(i / 10);
+				stringTwo[index * 2 + 1] = '0' + (char)(i % 10);
+				if (i != maxSize)
+					stringTwo[index * 2 + 2] = ' ';
+
+			}
+
+		}
+
+		// Calcuate the offset based on length of the longest string
+		offset = SDL_max(getStringLength(stringOne, multiplier), getStringLength(stringTwo, multiplier)) / 2;
 
 		// Free the top string
 		SDL_free(stringOne);
