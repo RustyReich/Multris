@@ -941,6 +941,151 @@ void updateCustomText(SDL_Texture* texture, unsigned short value)
 
 }
 
+// Create top string of sizeBagTexture
+char* createSizeBagStringOne()
+{
+
+	if (MODE == 0 || CUSTOM_MODE == true)
+	{
+		
+		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
+		int maxSize = MODE;
+		if (MODE == 0)
+			maxSize = MAX_PIECE_SIZE;
+
+		// Create string for the top line of sizes
+		switch (maxSize)
+		{
+
+		case 1:
+			return SDL_strdup("1");
+			break;
+		case 2:
+			return SDL_strdup("1");
+			break;
+		case 3:
+			return SDL_strdup("1 2");
+			break;
+		case 4:
+			return SDL_strdup("1 2");
+			break;
+		case 5:
+			return SDL_strdup("1 2 3");
+			break;
+		case 6:
+			return SDL_strdup("1 2 3");
+			break;
+		case 7:
+			return SDL_strdup("1 2 3 4");
+			break;
+		case 8:
+			return SDL_strdup("1 2 3 4");
+			break;
+		case 9:
+			return SDL_strdup("1 2 3 4 5");
+			break;
+		case 10:
+			return SDL_strdup("1 2 3 4 5");
+			break;
+		case 11:
+			return SDL_strdup("1 2 3 4 5 6");
+			break;
+		case 12:
+			return SDL_strdup("1 2 3 4 5 6 7");
+			break;
+		case 13:
+			return SDL_strdup("1 2 3 4 5 6 7 8");
+			break;
+		case 14:
+			return SDL_strdup("1 2 3 4 5 6 7 8");
+			break;
+		case 15:
+			return SDL_strdup("1 2 3 4 5 6 7 8 9");
+			break;
+		default:
+			break;
+
+		}
+
+	}
+
+	return NULL;
+
+}
+
+// Create bottom string of sizeBagTexture
+char* createSizeBagStringTwo()
+{
+
+	// For MULTRIS and CUSTOM mode
+	if (MODE == 0 || CUSTOM_MODE == true)
+	{
+
+		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
+		int maxSize = MODE;
+		if (MODE == 0)
+			maxSize = MAX_PIECE_SIZE;
+
+		// Create string for the bottom line of sizes
+		switch (maxSize)
+		{
+
+		case 1:
+			return SDL_strdup("");
+			break;
+		case 2:
+			return SDL_strdup("2");
+			break;
+		case 3:
+			return SDL_strdup("3");
+			break;
+		case 4:
+			return SDL_strdup("3 4");
+			break;
+		case 5:
+			return SDL_strdup("4 5");
+			break;
+		case 6:
+			return SDL_strdup("4 5 6");
+			break;
+		case 7:
+			return SDL_strdup("5 6 7");
+			break;
+		case 8:
+			return SDL_strdup("5 6 7 8");
+			break;
+		case 9:
+			return SDL_strdup("6 7 8 9");
+			break;
+		case 10:
+			return SDL_strdup("6 7 8 9 10");
+			break;
+		case 11:
+			return SDL_strdup("7 8 9 10 11");
+			break;
+		case 12:
+			return SDL_strdup("8 9 10 11 12");
+			break;
+		case 13:
+			return SDL_strdup("9 10 11 12 13");
+			break;
+		case 14:
+			return SDL_strdup("9 10 11 12 13 14");
+			break;
+		case 15:
+			return SDL_strdup("10 11 12 13 14 15");
+			break;
+		default:
+			break;
+
+		}
+
+	}
+
+	return NULL;
+
+}
+
 // Create the texture that displays the sizes currently in the size bag
 SDL_Texture* create_SizeBag_Text()
 {
@@ -954,65 +1099,8 @@ SDL_Texture* create_SizeBag_Text()
 	if (MODE == 0 || CUSTOM_MODE == true)
 	{
 
-		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
-		int maxSize = MODE;
-		if (MODE == 0)
-			maxSize = MAX_PIECE_SIZE;
-
-		// Create string for the top line of sizes
-		int maxNumOne = SDL_ceil((float)maxSize / (float)2);
-		char* stringOne = SDL_calloc(2 * maxNumOne, sizeof(char));
-		stringOne[2 * maxNumOne - 1] = '\0';
-		for (unsigned short i = 1; i <= maxNumOne; i++)
-		{
-
-			int index = i - 1;
-			stringOne[index * 2] = '0' + (char)i;
-			if (i != maxNumOne)
-				stringOne[index * 2 + 1] = ' ';
-
-		}
-
-		// Create string for the bottom line of sizes
-		char* stringTwo;
-		if (maxSize < 10)
-		{
-
-			stringTwo = SDL_calloc(2 * (maxSize - maxNumOne), sizeof(char));
-			stringTwo[2 * (maxSize - maxNumOne) - 1] = '\0';
-
-		}
-		else
-		{
-
-			stringTwo = SDL_calloc(2 * (9 - maxNumOne) + 3 * (maxSize - 9), sizeof(char));
-			stringTwo[2 * (9 - maxNumOne) + 3 * (maxSize - 9) - 1] = '\0';
-
-		}
-		for (unsigned short i = maxNumOne + 1; i <= maxSize; i++)
-		{
-
-			int index = i - maxNumOne - 1;
-
-			if (i < 10)
-			{
-
-				stringTwo[index * 2] = '0' + (char)i;
-				if (i != maxSize)
-					stringTwo[index * 2 + 1] = ' ';
-
-			}
-			else
-			{
-
-				stringTwo[index * 2] = '0' + (char)(i / 10);
-				stringTwo[index * 2 + 1] = '0' + (char)(i % 10);
-				if (i != maxSize)
-					stringTwo[index * 2 + 2] = ' ';
-
-			}
-
-		}
+		char* stringOne = createSizeBagStringOne();
+		char* stringTwo =  createSizeBagStringTwo();
 
 		// Width of texture is the width of the longer line and height is length of two characters
 		width = SDL_max(getStringLength(stringOne, 1.0), getStringLength(stringTwo, 1.0));
@@ -1243,13 +1331,18 @@ UI_list* create_Options_List()
 
 }
 
+// Get the multiplier for the size of the sizeBag Texture
 float getSizeBagMulti(unsigned short size)
 {
 
 	if (size < 10)
 		return 0.75;
+	else if (size < 12)
+		return 0.65;
+	else if (size < 14)
+		return 0.50;
 	else
-		return 0.70;
+		return 0.40;
 
 }
 
@@ -1263,71 +1356,16 @@ int getSizeBagX(unsigned short size, float multiplier)
 	if (MODE == 0 || CUSTOM_MODE == true)
 	{
 
-		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
-		int maxSize = MODE;
-		if (MODE == 0)
-			maxSize = MAX_PIECE_SIZE;
-
-		// Create string for the top line of sizes
-		int maxNumOne = SDL_ceil((float)maxSize / (float)2);
-		char* stringOne = SDL_calloc(2 * maxNumOne, sizeof(char));
-		stringOne[2 * maxNumOne - 1] = '\0';
-		for (unsigned short i = 1; i <= maxNumOne; i++)
-		{
-
-			int index = i - 1;
-			stringOne[index * 2] = '0' + (char)i;
-			if (i != maxNumOne)
-				stringOne[index * 2 + 1] = ' ';
-
-		}
-
-		// Create string for the bottom line of sizes
-		char* stringTwo;
-		if (maxSize < 10)
-		{
-
-			stringTwo = SDL_calloc(2 * (maxSize - maxNumOne), sizeof(char));
-			stringTwo[2 * (maxSize - maxNumOne) - 1] = '\0';
-
-		}
-		else
-		{
-
-			stringTwo = SDL_calloc(2 * (9 - maxNumOne) + 3 * (maxSize - 9), sizeof(char));
-			stringTwo[2 * (9 - maxNumOne) + 3 * (maxSize - 9) - 1] = '\0';
-
-		}
-		for (unsigned short i = maxNumOne + 1; i <= maxSize; i++)
-		{
-
-			int index = i - maxNumOne - 1;
-
-			if (i < 10)
-			{
-
-				stringTwo[index * 2] = '0' + (char)i;
-				if (i != maxSize)
-					stringTwo[index * 2 + 1] = ' ';
-
-			}
-			else
-			{
-
-				stringTwo[index * 2] = '0' + (char)(i / 10);
-				stringTwo[index * 2 + 1] = '0' + (char)(i % 10);
-				if (i != maxSize)
-					stringTwo[index * 2 + 2] = ' ';
-
-			}
-
-		}
+		// Get the top and bottom strings
+		char* stringOne = createSizeBagStringOne();
+		char* stringTwo = createSizeBagStringTwo();
 
 		// Calcuate the offset based on length of the longest string
 		offset = SDL_max(getStringLength(stringOne, multiplier), getStringLength(stringTwo, multiplier)) / 2;
 
-		// Free the top string
+		// Free strings
 		SDL_free(stringOne);
+		SDL_free(stringTwo);
 
 	}
 	else	// In NUMERICAL mode, only one size is printed

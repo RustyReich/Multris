@@ -17,6 +17,7 @@ SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot);
 int getStringLength(char* str, float multiplier);
 int getIntStringLength(int num, float multiplier);
 void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
+unsigned short getIntLength(int num);
 
 //rotate.c
 void rotatePiece(piece *Piece, unsigned short direction);
@@ -65,6 +66,8 @@ int getPausedY(unsigned short size, float multi);
 int getSizeBagX(unsigned short size, float multiplier);
 int getSizeBagY(unsigned short size);
 float getSizeBagMulti(unsigned short size);
+char* createSizeBagStringOne();
+char* createSizeBagStringTwo();
 
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight);
@@ -81,7 +84,7 @@ unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int ma
 unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel);
 double calcSpeed(unsigned short level);
 void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode, SDL_Texture* sizeBagTexture);
-void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size, unsigned short mode, bool customMode);
+void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size);
 void resetSizeBagTexture(SDL_Texture* sizeBagTexture);
 
 unsigned short playMode(piece* firstPiece)
@@ -955,65 +958,80 @@ void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mod
 		sizeBag->size -= 1;
 
 		// Remove size from sizeBag texture
-		removeSizeFromBagTexture(sizeBagTexture, size, mode, customMode);
+		removeSizeFromBagTexture(sizeBagTexture, size);
 
-	}
+	}	// If there is only one size left in the bag
 	else if (sizeBag->size == 1)
 	{
 
-		if (mode == 0)
-		{
+		// maxSize is MAX_PIECE_SIZE if in MULTRIS mode
+		int maxSize = MODE;
+		if (MODE == 0)
+			maxSize = MAX_PIECE_SIZE;
 
-			// Reset sizeBag to have all sizes up to MAX_PIECE_SIZE
-			unsigned short* newSizesInBag = SDL_calloc(MAX_PIECE_SIZE, sizeof(unsigned short));
-			for (unsigned short i = 0; i < MAX_PIECE_SIZE; i++)
-				newSizesInBag[i] = i + 1;
+		// Reset sizeBag to have all sizes up to maxSize
+		unsigned short* newSizesInBag = SDL_calloc(maxSize, sizeof(unsigned short));
+		for (unsigned short i = 0; i < maxSize; i++)
+			newSizesInBag[i] = i + 1;
 
-			// Then detel the old array, and update sizeBag to point to the new array
-			SDL_free(sizeBag->sizesInBag);
-			sizeBag->sizesInBag = newSizesInBag;
+		// Then delete the old array, and update sizeBag to point to the new array
+		SDL_free(sizeBag->sizesInBag);
+		sizeBag->sizesInBag = newSizesInBag;
 
-			// And reset the size of the bag to MAX_PIECE_SIZE
-			sizeBag->size = MAX_PIECE_SIZE;
+		// And reset the size of the bag to MAX_PIECE_SIZE
+		sizeBag->size = maxSize;
 
-			// Reset the sizeBag texture
-			resetSizeBagTexture(sizeBagTexture);
-
-		}
-		else if (customMode == true)
-		{
-
-			// Reset sizeBag to have all sizes up to MODE
-			unsigned short* newSizesInBag = SDL_calloc(mode, sizeof(unsigned short));
-			for (unsigned short i = 0; i < mode; i++)
-				newSizesInBag[i] = i + 1;
-
-			// Then detel the old array, and update sizeBag to point to the new array
-			SDL_free(sizeBag->sizesInBag);
-			sizeBag->sizesInBag = newSizesInBag;
-
-			// And reset the size of the bag to MODE
-			sizeBag->size = mode;
-
-		}
+		// Reset the sizeBag texture
+		resetSizeBagTexture(sizeBagTexture);
 
 	}
 
 }
 
 // Function for placing an X over a size in the sizeBag texture
-void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size, unsigned short mode, bool customMode)
+void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size)
 {
 
-	if (mode == 0 && customMode == false)
+	// Get the top and bottom strings
+	char* stringOne = createSizeBagStringOne();
+	char* stringTwo = createSizeBagStringTwo();
+	
+	// Convert the size to a string
+	char* sizeAsString = SDL_calloc(getIntLength(size) + 1, sizeof(char));;
+	SDL_itoa(size, sizeAsString, 10);
+
+	// Look for sizeAsString in stringOne
+	if (SDL_strstr(stringOne, sizeAsString) != NULL)
 	{
 
-		if (size <= MAX_PIECE_SIZE / 2)
-			printToTexture("X", sizeBagTexture, (size - 1) * 2 * (FONT_WIDTH + STRING_GAP), 0, 1.0, RED);
+		// Get position of sizeAsString
+		int pos = SDL_strstr(stringOne, sizeAsString) - stringOne;
+
+		// Print red X's covering up sizeAsString
+		if (size < 10)
+			printToTexture("X", sizeBagTexture, pos * (FONT_WIDTH + STRING_GAP), 0, 1.0, RED);
 		else
-			printToTexture("X", sizeBagTexture, (size - 1 - 4) * 2 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT + STRING_GAP, 1.0, RED);
+			printToTexture("XX", sizeBagTexture, pos * (FONT_WIDTH + STRING_GAP), 0, 1.0, RED);
+
+	}	// Look for sizeAsString in string Two
+	else if (SDL_strstr(stringTwo, sizeAsString) != NULL)
+	{
+
+		// Get position of sizeAsString
+		int pos = SDL_strstr(stringTwo, sizeAsString) - stringTwo;
+
+		// Print red X's covering up sizeAsString
+		if (size < 10)
+			printToTexture("X", sizeBagTexture, pos * (FONT_WIDTH + STRING_GAP), FONT_WIDTH + STRING_GAP, 1.0, RED);
+		else
+			printToTexture("XX", sizeBagTexture, pos * (FONT_WIDTH + STRING_GAP), FONT_WIDTH + STRING_GAP, 1.0, RED);
 
 	}
+
+	// Free strings
+	SDL_free(stringOne);
+	SDL_free(stringTwo);
+	SDL_free(sizeAsString);
 
 }
 
@@ -1021,9 +1039,18 @@ void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size, 
 void resetSizeBagTexture(SDL_Texture* sizeBagTexture)
 {
 
+	// Get top and bottoms strings
+	char* stringOne = createSizeBagStringOne();
+	char* stringTwo =  createSizeBagStringTwo();
+
+	// Re-print strings to sizeBagTexture
 	clearTexture(sizeBagTexture);
-	printToTexture("1 2 3 4", sizeBagTexture, 0, 0, 1.0, WHITE);
-	printToTexture("5 6 7 8", sizeBagTexture, 0, FONT_HEIGHT + STRING_GAP, 1.0, WHITE);
+	printToTexture(stringOne, sizeBagTexture, 0, 0, 1.0, WHITE);
+	printToTexture(stringTwo, sizeBagTexture, 0, FONT_HEIGHT + STRING_GAP, 1.0, WHITE);
+
+	// Free strings
+	SDL_free(stringOne);
+	SDL_free(stringTwo);
 
 }
 
