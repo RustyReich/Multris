@@ -729,7 +729,7 @@ SDL_Texture* create_Lines_Text()
 	SDL_Texture* texture;
 	
 	texture = createTexture(FONT_WIDTH, FONT_HEIGHT);
-	printToTexture("5", texture, 0, 0, 1, ORANGE);
+	intToTexture(LEVELUP_INCREASE, texture, 0, 0, 1, ORANGE);
 
 	return texture;
 

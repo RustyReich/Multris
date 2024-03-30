@@ -111,4 +111,6 @@
 
 #define MAX_CUSTOM_SIZE 15
 
+#define LEVELUP_INCREASE 3
+
 #endif

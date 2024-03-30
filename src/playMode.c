@@ -646,12 +646,13 @@ unsigned short playMode(piece* firstPiece)
 				//Keep track of the number of lines that have been cleared on the current 
 				//level
 				*linesAtCurrentLevel += *numCompleted;
-				if (*linesAtCurrentLevel >= 5 * (*Level + 1))
+				// Loop in case of passing multiple levels with the same placement
+				while (*linesAtCurrentLevel >= LEVELUP_INCREASE * (*Level + 1))
 				{
 					
 					//If the player completes more lines than is needed to level up, the completed lines will
 					//carry-over between levels
-					*linesAtCurrentLevel = *linesAtCurrentLevel - 5 * (*Level + 1);
+					*linesAtCurrentLevel = *linesAtCurrentLevel - LEVELUP_INCREASE * (*Level + 1);
 
 					//Increase level count and update Texture_Level
 					*Level += 1;
@@ -1100,7 +1101,7 @@ double calcSpeed(unsigned short level)
 unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel)
 {
 
-	return 5 * (currentLevel + 1) - linesAtCurrentLevel;
+	return LEVELUP_INCREASE * (currentLevel + 1) - linesAtCurrentLevel;
 
 }
 
