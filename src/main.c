@@ -39,6 +39,7 @@ bool FULLSCREEN_MODE = false;
 unsigned short VOLUME = 10;
 bool LIMIT_FPS = true;
 bool SHOW_FPS = true;
+bool CENTER_DOT = true;
 
 int PROGRESS = 1;
 
@@ -157,6 +158,7 @@ int main(int argc, char *argv[]) {
 		VOLUME = getFileValue("SAVES/options.cfg", "VOLUME");
 		LIMIT_FPS = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 		SHOW_FPS = getFileValue("SAVES/options.cfg", "SHOW FPS");
+		CENTER_DOT = getFileValue("SAVES/options.cfg", "CENTER DOT");
 
 	}
 

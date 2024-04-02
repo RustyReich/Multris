@@ -391,6 +391,14 @@ unsigned short drawTitle(piece** firstPiece)
 				updateValuesText(Texture_Values);
 
 			}
+			else if (SDL_strcmp(selected_option, "CENTER DOT") == 0)
+			{
+
+				CENTER_DOT = !CENTER_DOT;
+
+				updateValuesText(Texture_Values);
+
+			}
 
 		}
 
@@ -435,6 +443,7 @@ unsigned short drawTitle(piece** firstPiece)
 				saveToFile("SAVES/options.cfg", "VOLUME", VOLUME);
 				saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
 				saveToFile("SAVES/options.cfg", "SHOW FPS", SHOW_FPS);
+				saveToFile("SAVES/options.cfg", "CENTER DOT", CENTER_DOT);
 
 			}
 

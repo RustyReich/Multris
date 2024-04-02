@@ -125,8 +125,8 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
 
 	//Texutures
-	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, true);
-	static SDL_Texture* Texture_Ghost; declare_Piece_Text(&Texture_Ghost, currentPiece, false);
+	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
+	static SDL_Texture* Texture_Ghost; declare_Piece_Text(&Texture_Ghost, currentPiece, CENTER_DOT);
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece, false);
 	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece, false);
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);

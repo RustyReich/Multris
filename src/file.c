@@ -182,7 +182,8 @@ void createOptions()
 		fprintf(optionsFile, "FULLSCREEN=0\n");
 		fprintf(optionsFile, "VOLUME=10\n");
 		fprintf(optionsFile, "LIMIT FPS=1\n");
-		fprintf(optionsFile, "SHOW FPS=1");
+		fprintf(optionsFile, "SHOW FPS=1\n");
+		fprintf(optionsFile, "CENTER DOT=1");
 
 		fclose(optionsFile);
 
@@ -409,13 +410,14 @@ bool brokenProgress()
 bool brokenOptions()
 {
 
-	if (getLineCount("SAVES/options.cfg") != 4)
+	if (getLineCount("SAVES/options.cfg") != NUM_OF_OPTIONS)
 		return true;
 
 	int fullscreen_value = getFileValue("SAVES/options.cfg", "FULLSCREEN");
 	int volume_value = getFileValue("SAVES/options.cfg", "VOLUME");
 	int fps_value = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 	int show_fps_value = getFileValue("SAVES/options.cfg", "SHOW FPS");
+	int center_dot_value = getFileValue("SAVES/options.cfg", "CENTER DOT");
 
 	if (fullscreen_value != 0 && fullscreen_value != 1)
 		return true;
@@ -424,6 +426,8 @@ bool brokenOptions()
 	if (fps_value != 0 && fps_value != 1)
 		return true;
 	if (show_fps_value != 0 && show_fps_value != 1)
+		return true;
+	if (center_dot_value != 0 && center_dot_value != 1)
 		return true;
 
 	return false;

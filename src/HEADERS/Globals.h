@@ -12,6 +12,7 @@ extern bool FULLSCREEN_MODE;
 extern unsigned short VOLUME;
 extern bool LIMIT_FPS;
 extern bool SHOW_FPS;
+extern bool CENTER_DOT;
 
 extern int PROGRESS;
 
