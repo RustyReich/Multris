@@ -1149,7 +1149,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 
 			//When enough time has lapsed since the last frame in the animation, play 
 			//another frame
-			if ((*time_now - *time_start) > (Uint32)(OVER_SOUND_LENGTH / MAP_HEIGHT))
+			if ((*time_now - *time_start) > (Uint32)(getAudioLengthInMS(globalInstance->sounds[OVER_SOUND]) * 0.75 / MAP_HEIGHT))
 			{
 
 				//row stores the y value of the current row that is being animated
