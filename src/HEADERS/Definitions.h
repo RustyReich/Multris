@@ -145,10 +145,15 @@ enum Rotation_Type {
 
 };
 
-#define NONE	0
-#define UP		0
-#define RIGHT	1
-#define DOWN	2
-#define LEFT	3
+enum Direction_Type {
+
+	UP,
+	RIGHT,
+	DOWN,
+	LEFT,
+	NONE,
+	NUM_OF_DIRECTIONS
+
+};
 
 #endif
