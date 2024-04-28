@@ -17,6 +17,8 @@ unsigned short getIntLength(int num);
 //controls.c
 bool invalidKey(int key);
 
+void saveTop(unsigned int score, unsigned short size, bool inCustomMode);
+
 //Get the number of lines in a file
 unsigned short getLineCount(char* fileName)
 {
@@ -372,6 +374,10 @@ int getFileValue(const char* file_path, const char* name)
 
 	}
 
+	// Return error INT_MAX value if the length of the returnValue is zero
+	if (SDL_strlen(returnValue) == 0)
+		return INT_MAX;
+
 	if (returnValue != NULL)
 	{
 
@@ -623,7 +629,13 @@ unsigned int loadTop(unsigned short size, bool inCustomMode)
 	SDL_free(sizeAsString);
 
 	if (top == INT_MAX)
+	{
+
+		// If value of top is error INT_MAX value, save score as 0 and return 0
+		saveTop(0, size, inCustomMode);
 		return 0;
+
+	}
 	else
 		return top;
 
