@@ -1,10 +1,7 @@
-#include <stdbool.h>
+#ifndef STRUCTURES_H_
+#define STRUCTURES_H_
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#include "MGF.h"
 
 typedef struct UI
 {

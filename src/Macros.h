@@ -1,5 +1,7 @@
-#ifndef MACROS_H
-#define MACROS_H
+#ifndef MACROS_H_
+#define MACROS_H_
+
+#include "MGF.h"
 
 //Declare a variable on the varVector array
 #define declareEnd(val) _Generic((val),                             \

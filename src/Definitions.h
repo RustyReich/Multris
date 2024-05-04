@@ -1,5 +1,7 @@
-#ifndef DEFINITIONS_H
-#define DEFINITIONS_H
+#ifndef DEFINITIONS_H_
+#define DEFINITIONS_H_
+
+#include "MGF.h"
 
 #define FONT_WIDTH 	12
 #define FONT_HEIGHT 12

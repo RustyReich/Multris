@@ -1,7 +1,4 @@
-#include "HEADERS/MGF.h"
-
-void inversePiece(piece* Piece);
-void mirrorPieceOverY(piece* Piece);
+#include "MGF.h"
 
 //Rotate a piece
 void rotatePiece(piece *Piece, unsigned short direction) {

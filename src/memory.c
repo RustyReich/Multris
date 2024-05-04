@@ -1,32 +1,4 @@
-#include "HEADERS/MGF.h"
-
-//generate.c
-void delPiece(piece** Piece);
-void copyPiece(piece* piece1, piece* piece2);
-
-//draw.c
-SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot);
-
-//layout.c
-SDL_Texture* create_Score_Text();
-SDL_Texture* create_Level_Text();
-SDL_Texture* create_Lines_Text();
-SDL_Texture* create_Pause_Text();
-SDL_Texture* create_Foreground_Text();
-SDL_Texture* create_Title_Text();
-piece** getMovingPieces(piece** titlePieces);
-piece** makeTitlePieces();
-UI_list* create_Modes_List();
-SDL_Texture* create_Cursor_Text();
-void delete_UI_list(UI_list** list);
-UI_list* create_Numerical_List();
-UI_list* create_Custom_List();
-UI_list* create_Options_List();
-SDL_Texture* create_Values_Text();
-SDL_Texture* create_volSlide_Text();
-SDL_Texture* create_Controls_Text();
-SDL_Texture* create_Custom_Text();
-SDL_Texture* create_SizeBag_Text();
+#include "MGF.h"
 
 //Function for pushing a variable or object onto a varVector structure 
 //designed to make freeing variables at the end of a game_state easier

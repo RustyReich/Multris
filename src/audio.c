@@ -1,4 +1,4 @@
-#include "HEADERS/MGF.h"
+#include "MGF.h"
 
 //Play a sound
 	//Only one sound can be played at a time.

@@ -1,35 +1,4 @@
-#include <stdbool.h>
-
-#include "HEADERS/MGF.h"
-
-//draw.c
-void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-
-//audio.c
-void _playSound(int id);
-
-//memory.c
-void declare_HUD_Text(SDL_Texture** ptr, int type);
-void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
-void declare_unsigned_short(void** ptr, unsigned short value);
-void declare_double(void** ptr, double value);
-void declare_int(void** ptr, int value);
-void declare_char(void** ptr, char value);
-void declare_bool(void** ptr, bool value);
-void declare_unsigned_int(void** ptr, unsigned int value);
-void declare_short(void** ptr, short value);
-void declare_UI_list(UI_list** ptr, int type);
-void freeVars();
-
-//layout.c
-void updateControlsText(SDL_Texture* texture, int selected_control, bool editing);
-int getScoreDrawX(unsigned short size);
-int getScoreDrawY(unsigned short size);
-
-//file.c
-void saveToFile(const char* file_path, const char* str, int value);
-
-int getPressedKey();
+#include "MGF.h"
 
 //Lookup table for control names
 static const char* control_name[] =

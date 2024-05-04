@@ -1,43 +1,4 @@
-#include "HEADERS/MGF.h"
-
-//draw.c
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
-SDL_Texture* createTexture(int width, int height);
-void clearTexture(SDL_Texture* texture);
-void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-int getStringLength(char* str, float multiplier);
-void clearTextureWithColor(SDL_Texture* texture, Uint8 colorR, Uint8 colorG, Uint8 colorB, Uint8 colorA);
-int getIntStringLength(int num, float multiplier);
-
-//map.c
-unsigned short drawTitle(piece** firstPiece);
-
-//playMode.c
-unsigned short playMode(piece* firstPiece);
-
-//generate.c
-void delPiece(piece** Piece);
-piece* generateGamePiece(unsigned short size);
-
-//controls.c
-unsigned short controlsScreen(piece** Piece);
-
-//layout.c
-void drawPlayField(SDL_Texture* background, unsigned short size);
-void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode);
-void drawLevelBox(SDL_Texture* background, unsigned short size);
-void drawUntilBox(SDL_Texture* background, unsigned short size);
-void drawNextBox(SDL_Texture* background, unsigned short size);
-void drawHoldBox(SDL_Texture* background, unsigned short size);
-void drawSizeBagBox(SDL_Texture* background, unsigned short size);
-int calcMapWidth();
-int calcMapHeight();
-void drawBackgroundExtras(SDL_Texture* background, unsigned short size);
-int getGameWidth(unsigned short size);
-int getGameHeight(unsigned short size);
-
-//instance.c
-void scaleRenderer();
+#include "MGF.h"
 
 //The main game loop
 void mainLoop()

@@ -1,4 +1,4 @@
-#include "HEADERS/MGF.h"
+#include "MGF.h"
 
 // Function for finding and creating the centerBlock for a piece
 void createCenterBlock(piece* piece)

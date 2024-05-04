@@ -1,36 +1,4 @@
-#include <time.h>
-#include <stdio.h>
-
-#include "HEADERS/MGF.h"
-
-//mainLoop.c
-void mainLoop();
-
-//file.c
-bool fileExists(char* fileName);
-void createOptions();
-int getFileValue(const char* file_path, const char* name);
-bool brokenOptions();
-void createControls();
-bool brokenControls();
-void createWindowFile();
-bool brokenWindowFile();
-void saveWindowSettings();
-bool brokenProgress();
-void createProgressFile();
-
-//instance.c
-void initInstance(gameInstance** instance);
-void scaleRenderer();
-void setWindowMode(unsigned short mode);
-void updateVolume();
-
-//controls.c
-void updateControls();
-
-//layout.c
-int calcMapWidth();
-int calcMapHeight();
+#include "MGF.h"
 
 //Initialize global variables
 bool UPDATE_FULLSCREEN_MODE = true;

@@ -1,4 +1,4 @@
-#include "HEADERS/MGF.h"
+#include "MGF.h"
 
 //Return the "Red" value for a given color
 unsigned short getColor_R(unsigned short color)

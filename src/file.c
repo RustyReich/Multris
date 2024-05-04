@@ -1,23 +1,4 @@
-#include <sys/stat.h>
-#include <limits.h>
-#include <stdio.h>
-
-//Fix for cross-compiling mkdir() for windows on linux
-#ifdef _WIN32
-#include <windows.h>
-#define mkdir(dir, mode) mkdir(dir)
-#endif
-
-
-#include "HEADERS/MGF.h"
-
-//draw.c
-unsigned short getIntLength(int num);
-
-//controls.c
-bool invalidKey(int key);
-
-void saveTop(unsigned int score, unsigned short size, bool inCustomMode);
+#include "MGF.h"
 
 //Get the number of lines in a file
 unsigned short getLineCount(char* fileName)

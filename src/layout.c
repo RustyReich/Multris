@@ -1,37 +1,8 @@
-#include <time.h>
-
-#include "HEADERS/MGF.h"
+#include "MGF.h"
 
 #define TITLE_TEXTURE_HEIGHT	84
 #define TITLE_TEXTURE_WIDTH		240
 #define NUM_OF_TITLE_PIECES		19
-
-//draw.c
-void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill);
-void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
-void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
-unsigned short getIntLength(int num);
-int getStringLength(char* str, float multiplier);
-int getIntStringLength(int num, float multiplier);
-SDL_Texture* createTexture(int width, int height);
-void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
-void clearTexture(SDL_Texture* texture);
-void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
-
-//file.c
-unsigned int loadTop(unsigned short size, bool inCustomMode);
-unsigned short getLineCount(char* fileName);
-
-//generate.c
-void delPiece(piece** Piece);
-unsigned short calcWidth(piece* Piece);
-unsigned short calcHeight(piece* Piece);
-void copyPiece(piece* piece1, piece* piece2);
-void createCenterBlock(piece* piece);
-
-//memory.c
-varVector** pushAddress(void** ptr, unsigned short type);
 
 //Draw the playfield
 void drawPlayField(SDL_Texture* background, unsigned short size)

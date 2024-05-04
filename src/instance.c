@@ -1,16 +1,8 @@
-#include <stdio.h>
-
-#include "HEADERS/MGF.h"
+#include "MGF.h"
 
 //The internal resolution of the game on the title screen
 #define INITIAL_INTERNAL_WIDTH	384
 #define INITIAL_INTERNAL_HEIGHT	504
-
-//audio.c
-sound* loadSound(char* file);
-
-//file.c
-void saveWindowSettings();
 
 //Function for initializing an audio device
 SDL_AudioDeviceID* prepareAudioDevice(SDL_AudioSpec** wavSpec)

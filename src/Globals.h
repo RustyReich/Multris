@@ -1,7 +1,7 @@
-#include "Structures.h"
+#ifndef GLOBALS_H_
+#define GLOBALS_H_
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#include "MGF.h"
 
 extern gameInstance *globalInstance;
 

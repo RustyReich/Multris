@@ -1,42 +1,4 @@
-#include "HEADERS/MGF.h"
-
-//draw.c
-void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
-int getIntStringLength(int num, float multiplier);
-
-//file.c
-void saveToFile(const char* file_path, const char* str, int value);
-
-//instance.c
-void updateVolume();
-
-//memory.c
-void freeVars();
-void declare_unsigned_short(void** ptr, unsigned short value);
-void declare_double(void** ptr, double value);
-void declare_int(void** ptr, int value);
-void declare_char(void** ptr, char value);
-void declare_bool(void** ptr, bool value);
-void declare_unsigned_int(void** ptr, unsigned int value);
-void declare_short(void** ptr, short value);
-void declare_Piece(piece** ptr, piece* Piece);
-void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
-void declare_map_matrix(bool** ptr);
-void declare_HUD_Text(SDL_Texture** ptr, int type);
-void declare_moving_title_pieces(piece*** ptr);
-void declare_UI_list(UI_list** ptr, int type);
-
-//layout.c
-bool updateTitle(SDL_Texture* texture, piece** movingPieces);
-int getListSelectedEntryY(UI_list* list);
-const char* getListSelectedString(UI_list* list);
-void updateValuesText(SDL_Texture* texture);
-int getScoreDrawX(unsigned short size);
-int getScoreDrawY(unsigned short size);
-void updateCustomText(SDL_Texture* texture, unsigned short value);
-
-//audio.c
-void _playSound(int id);
+#include "MGF.h"
 
 unsigned short drawTitle(piece** firstPiece)
 {
