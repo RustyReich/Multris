@@ -185,10 +185,15 @@ void createWindowFile()
 	if (windowFile != NULL)
 	{
 
-		fprintf(windowFile, "WIDTH=%d\n", globalInstance->DM.w / 2);
-		fprintf(windowFile, "HEIGHT=%d\n", globalInstance->DM.h / 2);
-		fprintf(windowFile, "X=%d\n", globalInstance->DM.w / 4);
-		fprintf(windowFile, "Y=%d", globalInstance->DM.h / 4);
+		// Get display bounds of the primary display
+        SDL_Rect mainDisplayBounds;
+        SDL_GetDisplayBounds(0, &mainDisplayBounds);
+
+		// Create window dimensions and position in the center of the primary display
+		fprintf(windowFile, "WIDTH=%d\n", mainDisplayBounds.w / 2);
+		fprintf(windowFile, "HEIGHT=%d\n", mainDisplayBounds.h / 2);
+		fprintf(windowFile, "X=%d\n", mainDisplayBounds.x + mainDisplayBounds.w / 4);
+		fprintf(windowFile, "Y=%d", mainDisplayBounds.y + mainDisplayBounds.h / 4);
 
 		fclose(windowFile);
 
@@ -465,17 +470,18 @@ bool brokenWindowFile()
 	if (getLineCount("SAVES/window.cfg") != 4)
 		return true;
 
+	// Check if window dimensions and position are unreasonably outside of the possible display bounds
 	if (getFileValue("SAVES/window.cfg", "WIDTH") <= 0 || 
-		getFileValue("SAVES/window.cfg", "WIDTH") > globalInstance->DM.w)
+		getFileValue("SAVES/window.cfg", "WIDTH") > globalInstance->maxDisplayX)
 		return true;
-	if (getFileValue("SAVES/window.cfg", "X") < -1 * globalInstance->DM.w || 
-		getFileValue("SAVES/window.cfg", "X") > globalInstance->DM.w)
+	if (getFileValue("SAVES/window.cfg", "X") < -1 * globalInstance->maxDisplayX || 
+		getFileValue("SAVES/window.cfg", "X") > globalInstance->maxDisplayX)
 		return true;
 	if (getFileValue("SAVES/window.cfg", "HEIGHT") <= 0 ||
-		getFileValue("SAVES/window.cfg", "HEIGHT") > globalInstance->DM.h)
+		getFileValue("SAVES/window.cfg", "HEIGHT") > globalInstance->maxDisplayY)
 		return true;
-	if (getFileValue("SAVES/window.cfg", "Y") <= -1 * globalInstance->DM.h ||
-		getFileValue("SAVES/window.cfg", "Y") > globalInstance->DM.h)
+	if (getFileValue("SAVES/window.cfg", "Y") <= -1 * globalInstance->maxDisplayY ||
+		getFileValue("SAVES/window.cfg", "Y") > globalInstance->maxDisplayY)
 		return true;
 
 	return false;

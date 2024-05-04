@@ -67,8 +67,8 @@ int main(int argc, char *argv[]) {
 
 	//Variables for limiting FPS
 	Uint32 ticksLastFrame = SDL_GetTicks();
-	//targetFrameTime will be roughly double the refresh rate of the monitor
-	double targetFrameTime = (double)1 / (double)(globalInstance->DM.refresh_rate * 2);
+	//targetFrameTime will be roughly double the refresh rate of the primary display
+	double targetFrameTime = (double)1 / (double)(globalInstance->DM[0].refresh_rate * 2);
 
 	//Create SAVES files if they do not exist or are broken
 	if (!fileExists("SAVES/options.cfg") || brokenOptions())

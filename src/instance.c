@@ -132,16 +132,23 @@ void initInstance(gameInstance** instance)
 
     (*instance)->running = true;
 
-    //Get screen information
-    SDL_GetCurrentDisplayMode(0, &(*instance)->DM);
+    // Get number of displays and create array of DisplayModes
+    (*instance)->numDisplays = SDL_GetNumVideoDisplays();
+    (*instance)->DM = SDL_calloc((*instance)->numDisplays, sizeof(SDL_DisplayMode));
+
+    // Get screen information for each display
+    for (unsigned short i = 0; i < (*instance)->numDisplays; i++)
+        SDL_GetCurrentDisplayMode(i, &(*instance)->DM[i]);
+    // Find the combined screen bounds across all displays
+    findDisplayBounds(*instance);
 
     //Initialize window
         //Initialize in top left of screen
         //Window will be half the width and half the height of the screen
     int x = SDL_WINDOWPOS_CENTERED;
     int y = SDL_WINDOWPOS_CENTERED;
-    int w = (*instance)->DM.w / 2;
-    int h = (*instance)->DM.h / 2;
+    int w = (*instance)->DM[0].w / 2;
+    int h = (*instance)->DM[0].h / 2;
     Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS;
     (*instance)->window = SDL_CreateWindow("Multris", x, y, w, h, flags);
 
@@ -191,6 +198,35 @@ void initInstance(gameInstance** instance)
     //Initialize FPS and frame_time to 0
     (*instance)->FPS = 0;
     (*instance)->frame_time = 0;
+
+}
+
+void findDisplayBounds(gameInstance* instance)
+{
+
+    instance->minDisplayX = 0;
+    instance->minDisplayY = 0;
+    instance->maxDisplayX = 0;
+    instance->maxDisplayY = 0;
+
+    // Go through each display and find the minimum and maximum X and Y coordinates
+    for (unsigned short i = 0; i < SDL_GetNumVideoDisplays(); i++)
+    {
+
+        SDL_Rect currentBounds;
+        SDL_GetDisplayBounds(i, &currentBounds);
+
+        if (currentBounds.x < instance->minDisplayX)
+            instance->minDisplayX = currentBounds.x;
+        else if (currentBounds.x + currentBounds.w > instance->maxDisplayX)
+            instance->maxDisplayX = currentBounds.x + currentBounds.w;
+
+        if (currentBounds.y < instance->minDisplayY)
+            instance->minDisplayY = currentBounds.y;
+        else if (currentBounds.y + currentBounds.h > instance->maxDisplayY)
+            instance->maxDisplayY = currentBounds.y + currentBounds.h;     
+
+    }
 
 }
 
@@ -261,10 +297,15 @@ void setWindowMode(unsigned short mode)
         //Save window settings to file
         saveWindowSettings();
 
-        //Set window size to display size
-        SDL_SetWindowSize(globalInstance->window, globalInstance->DM.w, globalInstance->DM.h);
-        //Set window position to 0,0
-        SDL_SetWindowPosition(globalInstance->window, 0, 0);
+        // Get the bounds of the current disply
+        int currentDisplayIndex = SDL_GetWindowDisplayIndex(globalInstance->window);
+        SDL_Rect currentDisplayBounds;
+        SDL_GetDisplayBounds(currentDisplayIndex, &currentDisplayBounds);
+
+        //Set window size to size of current display
+        SDL_SetWindowSize(globalInstance->window, currentDisplayBounds.w, currentDisplayBounds.h);
+        //Set window position to top left of current display
+        SDL_SetWindowPosition(globalInstance->window, currentDisplayBounds.x, currentDisplayBounds.y);
 
         SDL_SetWindowFullscreen(globalInstance->window, SDL_WINDOW_FULLSCREEN);
 

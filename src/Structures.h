@@ -59,10 +59,17 @@ typedef struct gameInstance
 {
 
     SDL_Window* window;
-    SDL_DisplayMode DM;
+    SDL_DisplayMode* DM;
     SDL_Renderer* renderer;
     SDL_Event event;
     SDL_Surface* windowSurface;
+
+    int numDisplays;
+
+    int minDisplayX;
+    int minDisplayY;
+    int maxDisplayX;
+    int maxDisplayY;
 
     int minimizedWindow_W;
     int minimizedWindow_H;

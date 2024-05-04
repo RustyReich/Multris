@@ -10,5 +10,6 @@ void scaleRenderer();
 void initInstance(gameInstance** instance);
 void updateVolume();
 void setWindowMode(unsigned short mode);
+void findDisplayBounds(gameInstance* instance);
 
 #endif
