@@ -52,16 +52,51 @@ unsigned short controlsScreen(piece** Piece)
     if (onPress(SELECT_BUTTON))
     {
 
-        //If you press SELECT when you're not currently editing a control, you start editing the currently
-        //selected control
-        if ((*editing_control) == false)
+        // Start editing the control as long as you dont have "RESET CONTROLS" selected
+        if ((*selected_control) != NUM_OF_CONTROLS)
         {
 
-            playSound(ROTATE_SOUND);
-            *editing_control = true;
+            //If you press SELECT when you're not currently editing a control, you start editing the currently
+            //selected control
+            if ((*editing_control) == false)
+            {
 
-            //Update controls texture, which will make the currently edited control red
-            updateControlsText(Texture_Controls, *selected_control, *editing_control);
+                playSound(ROTATE_SOUND);
+                *editing_control = true;
+
+                //Update controls texture, which will make the currently edited control red
+                updateControlsText(Texture_Controls, *selected_control, *editing_control);
+
+            }
+
+        }
+        else {  // If you have "RESET CONTROLS" selected
+
+            playSound(ROTATE_SOUND);
+
+            // Just recreate the controls.cfg file with the default values
+            createControls();
+
+            // Then reload all of the controls from the file
+            if (fileExists("SAVES/controls.cfg")) {
+
+                globalInstance->controls[LEFT_BUTTON].button = getFileValue("SAVES/controls.cfg", "LEFT");
+                globalInstance->controls[RIGHT_BUTTON].button = getFileValue("SAVES/controls.cfg", "RIGHT");
+                globalInstance->controls[SOFT_DROP_BUTTON].button = getFileValue("SAVES/controls.cfg", "SOFT DROP");
+                globalInstance->controls[HARD_DROP_BUTTON].button = getFileValue("SAVES/controls.cfg", "HARD DROP");
+                globalInstance->controls[HOLD_BUTTON].button = getFileValue("SAVES/controls.cfg", "HOLD");
+                globalInstance->controls[ROTATE_CCW_BUTTON].button = getFileValue("SAVES/controls.cfg", "ROTATE CCW");
+                globalInstance->controls[ROTATE_CW_BUTTON].button = getFileValue("SAVES/controls.cfg", "ROTATE CW");
+                globalInstance->controls[MIRROR_BUTTON].button = getFileValue("SAVES/controls.cfg", "MIRROR");
+                globalInstance->controls[SELECT_BUTTON].button = getFileValue("SAVES/controls.cfg", "SELECT");
+                globalInstance->controls[EXIT_BUTTON].button = getFileValue("SAVES/controls.cfg", "EXIT");
+                globalInstance->controls[DOWN_BUTTON].button = getFileValue("SAVES/controls.cfg", "DOWN");
+                globalInstance->controls[UP_BUTTON].button = getFileValue("SAVES/controls.cfg", "UP");
+
+            }
+
+            // And then update the controls texture
+            updateControlsText(Texture_Controls, NUM_OF_CONTROLS, false);
 
         }
     
@@ -112,7 +147,7 @@ unsigned short controlsScreen(piece** Piece)
     //Controls for moving up and down the list of controls
     if (onPress(DOWN_BUTTON) && !(*editing_control))
     {
-        if (*selected_control < NUM_OF_CONTROLS - 1)
+        if (*selected_control < NUM_OF_CONTROLS)
         {
             playSound(MOVE_SOUND);
             (*selected_control)++;

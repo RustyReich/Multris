@@ -834,8 +834,8 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 
 	clearTexture(texture);
 
-	//Iterate throught every control
-	for (unsigned short i = 0; i < NUM_OF_CONTROLS; i++)
+	//Iterate throught every control (+1 for the "RESET CONTROLS" option)
+	for (unsigned short i = 0; i < NUM_OF_CONTROLS + 1; i++)
 	{
 
 		//Calculate position for current control
@@ -868,6 +868,8 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 			SDL_strlcpy(name, "DOWN", 16);
 		else if (i == 11)
 			SDL_strlcpy(name, "UP", 16);
+		else if (i == 12)
+			SDL_strlcpy(name, "RESET CONTROLS", 16);
 
 		name[SDL_strlen(name)] = '\0';
 
@@ -884,24 +886,30 @@ void updateControlsText(SDL_Texture* texture, int selected_control, bool editing
 		
 		SDL_free(underlines);
 
-		//Get the button for the control
-		char* button = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(globalInstance->controls[i].button));
-		int len = SDL_strlen(button) + 2;
-		char* button_string = SDL_calloc(len + 1, sizeof(char));
-		//Surround the button name with brackets
-		SDL_strlcpy(button_string, "[", len + 1);
-		SDL_strlcat(button_string, button, len + 1);
-		SDL_strlcat(button_string, "]", len + 1);
-		button_string[len] = '\0';
+		// Don't print a button for the "RESET CONTROLS" option
+		if (i != 12)
+		{
 
-		//Print the button for the control
-			//It's yellow if it's not currently being edited. It's red if it is currently being edited.
-		if (editing == true && selected_control == i)
-			printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, RED);
-		else
-			printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, YELLOW);
+			//Get the button for the control
+			char* button = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(globalInstance->controls[i].button));
+			int len = SDL_strlen(button) + 2;
+			char* button_string = SDL_calloc(len + 1, sizeof(char));
+			//Surround the button name with brackets
+			SDL_strlcpy(button_string, "[", len + 1);
+			SDL_strlcat(button_string, button, len + 1);
+			SDL_strlcat(button_string, "]", len + 1);
+			button_string[len] = '\0';
 
-		SDL_free(button_string);
+			//Print the button for the control
+				//It's yellow if it's not currently being edited. It's red if it is currently being edited.
+			if (editing == true && selected_control == i)
+				printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, RED);
+			else
+				printToTexture(button_string, texture, x, y + FONT_HEIGHT + 2 + 2 * STRING_GAP, 1.0, YELLOW);
+
+			SDL_free(button_string);
+
+		}
 
 	}
 
@@ -1132,7 +1140,7 @@ SDL_Texture* create_Controls_Text()
 	SDL_Texture* texture;
 
 	int width = MAX_PIECE_SIZE * BASE_PLAYFIELD_WIDTH * FONT_WIDTH;
-	int height = NUM_OF_CONTROLS * 3 * FONT_HEIGHT + (NUM_OF_CONTROLS * 3 - 1) * STRING_GAP;
+	int height = (NUM_OF_CONTROLS + 1) * 3 * FONT_HEIGHT + (NUM_OF_CONTROLS * 3) * STRING_GAP;
 
 	texture = createTexture(width, height);
 
