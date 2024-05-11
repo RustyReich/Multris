@@ -13,6 +13,7 @@ extern unsigned short VOLUME;
 extern bool LIMIT_FPS;
 extern bool SHOW_FPS;
 extern bool CENTER_DOT;
+extern bool GRAPHICS;
 
 extern int PROGRESS;
 
@@ -21,5 +22,8 @@ extern int MAP_WIDTH;
 extern int MAP_HEIGHT;
 
 extern bool CUSTOM_MODE;
+
+extern int BLOCK_SPRITE_ID;
+extern int WALL_SPRITE_ID;
 
 #endif

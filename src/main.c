@@ -8,6 +8,7 @@ unsigned short VOLUME = 10;
 bool LIMIT_FPS = true;
 bool SHOW_FPS = true;
 bool CENTER_DOT = true;
+bool GRAPHICS = true;
 
 int PROGRESS = 1;
 
@@ -16,6 +17,9 @@ int MAP_WIDTH = 0;
 int MAP_HEIGHT = 0;
 
 bool CUSTOM_MODE = false;
+
+int BLOCK_SPRITE_ID = 1;
+int WALL_SPRITE_ID = 2;
 
 //Global Instance
 gameInstance *globalInstance;
@@ -127,6 +131,23 @@ int main(int argc, char *argv[]) {
 		LIMIT_FPS = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 		SHOW_FPS = getFileValue("SAVES/options.cfg", "SHOW FPS");
 		CENTER_DOT = getFileValue("SAVES/options.cfg", "CENTER DOT");
+		GRAPHICS = getFileValue("SAVES/options.cfg", "GRAPHICS");
+
+		// Change sprite IDs depending on if using new or old graphics
+		if (GRAPHICS == false)
+		{
+
+			WALL_SPRITE_ID = 0;
+			BLOCK_SPRITE_ID = 3;
+
+		}
+		else if (GRAPHICS == true)
+		{
+
+			WALL_SPRITE_ID = 2;
+			BLOCK_SPRITE_ID = 1;
+
+		}
 
 	}
 
@@ -253,6 +274,13 @@ int main(int argc, char *argv[]) {
 	if (!FULLSCREEN_MODE)
 		saveWindowSettings();
 
+	//Save option values to optionsFile when game closes
+	saveToFile("SAVES/options.cfg", "FULLSCREEN", FULLSCREEN_MODE);
+	saveToFile("SAVES/options.cfg", "VOLUME", VOLUME);
+	saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
+	saveToFile("SAVES/options.cfg", "SHOW FPS", SHOW_FPS);
+	saveToFile("SAVES/options.cfg", "CENTER DOT", CENTER_DOT);
+	saveToFile("SAVES/options.cfg", "GRAPHICS", GRAPHICS);
 
 	//Close SDL stuff 
 	SDL_DestroyRenderer(globalInstance->renderer);

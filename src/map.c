@@ -361,6 +361,33 @@ unsigned short drawTitle(piece** firstPiece)
 				updateValuesText(Texture_Values);
 
 			}
+			else if (SDL_strcmp(selected_option, "GRAPHICS") == 0)
+			{
+
+				GRAPHICS = !GRAPHICS;
+
+				updateValuesText(Texture_Values);
+
+				// Change sprite IDs depending on if using new or old graphics
+				if (GRAPHICS == false)
+				{
+
+					WALL_SPRITE_ID = 0;
+					BLOCK_SPRITE_ID = 3;
+
+				}
+				else if (GRAPHICS == true)
+				{
+
+					WALL_SPRITE_ID = 2;
+					BLOCK_SPRITE_ID = 1;
+
+				}
+
+				freeVars();
+				return RESET;
+
+			}
 
 		}
 
@@ -406,6 +433,7 @@ unsigned short drawTitle(piece** firstPiece)
 				saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
 				saveToFile("SAVES/options.cfg", "SHOW FPS", SHOW_FPS);
 				saveToFile("SAVES/options.cfg", "CENTER DOT", CENTER_DOT);
+				saveToFile("SAVES/options.cfg", "GRAPHICS", GRAPHICS);
 
 			}
 

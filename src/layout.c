@@ -778,6 +778,7 @@ void updateValuesText(SDL_Texture* texture)
 	printToTexture(":", texture, 0, 28, 1.0, WHITE);
 	printToTexture(":", texture, 0, 42, 1.0, WHITE);
 	printToTexture(":", texture, 0, 56, 1.0, WHITE);
+	printToTexture(":", texture, 0, 70, 1.0, WHITE);
 
 	//Print FULLSCREEN value
 	if (FULLSCREEN_MODE == 0)
@@ -800,10 +801,18 @@ void updateValuesText(SDL_Texture* texture)
 	else
 		printToTexture("ON", texture, 14, 42, 1.0, GREEN);
 
+	//Print CENTER_DOT value
 	if (CENTER_DOT == 0)
 		printToTexture("OFF", texture, 14, 56, 1.0, RED);
 	else
 		printToTexture("ON", texture, 14, 56, 1.0, GREEN);
+
+	//Print GRAPHICS value
+		// OLD == 0. NEW == 1.
+	if (GRAPHICS == 0)
+		printToTexture("OLD", texture, 14, 70, 1.0, RED);
+	else
+		printToTexture("NEW", texture, 14, 70, 1.0, GREEN);
 
 }
 
@@ -1303,7 +1312,7 @@ UI_list* create_Custom_List()
 UI_list* create_Options_List()
 {
 
-	UI_list* list = create_list(WHITE, "FULLSCREEN", "VOLUME", "LIMIT FPS", "SHOW FPS", "CENTER DOT", "CONTROLS");
+	UI_list* list = create_list(WHITE, "FULLSCREEN", "VOLUME", "LIMIT FPS", "SHOW FPS", "CENTER DOT", "GRAPHICS", "CONTROLS");
 
 	list->selected_entry = 0;
 

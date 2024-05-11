@@ -10,9 +10,6 @@
 #define SPRITE_WIDTH  12
 #define SPRITE_HEIGHT 12
 
-#define BLOCK_SPRITE_ID 	1
-#define WALL_SPRITE_ID		2
-
 #define MAX_PIECE_SIZE 8
 
 #define OPTIONS	9
@@ -37,7 +34,7 @@
 
 #define LEVELUP_INCREASE 3
 
-#define NUM_OF_OPTIONS 5
+#define NUM_OF_OPTIONS 6
 
 enum Control_Types {
 	

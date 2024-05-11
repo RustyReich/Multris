@@ -166,7 +166,8 @@ void createOptions()
 		fprintf(optionsFile, "VOLUME=10\n");
 		fprintf(optionsFile, "LIMIT FPS=1\n");
 		fprintf(optionsFile, "SHOW FPS=1\n");
-		fprintf(optionsFile, "CENTER DOT=1");
+		fprintf(optionsFile, "CENTER DOT=1\n");
+		fprintf(optionsFile, "GRAPHICS=1");
 
 		fclose(optionsFile);
 
@@ -360,6 +361,10 @@ int getFileValue(const char* file_path, const char* name)
 
 	}
 
+	// Return error INT_MAX value if the name cannot be found in the file
+	if (returnValue == NULL)
+		return INT_MAX;
+
 	// Return error INT_MAX value if the length of the returnValue is zero
 	if (SDL_strlen(returnValue) == 0)
 		return INT_MAX;
@@ -410,6 +415,7 @@ bool brokenOptions()
 	int fps_value = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 	int show_fps_value = getFileValue("SAVES/options.cfg", "SHOW FPS");
 	int center_dot_value = getFileValue("SAVES/options.cfg", "CENTER DOT");
+	int graphics_value = getFileValue("SAVES/options.cfg", "GRAPHICS");
 
 	if (fullscreen_value != 0 && fullscreen_value != 1)
 		return true;
@@ -420,6 +426,8 @@ bool brokenOptions()
 	if (show_fps_value != 0 && show_fps_value != 1)
 		return true;
 	if (center_dot_value != 0 && center_dot_value != 1)
+		return true;
+	if (graphics_value != 0 && graphics_value != 1)
 		return true;
 
 	return false;
