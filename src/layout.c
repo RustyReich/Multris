@@ -766,6 +766,19 @@ SDL_Texture* create_volSlide_Text()
 
 }
 
+// Update the PAUSED texture between saying "PAUSED" and "EXIT?"
+void updatePausedText(SDL_Texture* texture, bool exit)
+{
+
+	clearTexture(texture);
+
+	if (exit == true)
+		printToTexture("EXIT?", texture, 10, 0, 1, WHITE);
+	else if (exit == false)
+		printToTexture("PAUSED", texture, 0, 0, 1, WHITE);
+
+}
+
 //Function for redrawing the values texture
 void updateValuesText(SDL_Texture* texture)
 {

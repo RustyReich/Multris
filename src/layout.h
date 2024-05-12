@@ -61,5 +61,6 @@ int getGameWidth(unsigned short size);
 int getGameHeight(unsigned short size);
 int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
+void updatePausedText(SDL_Texture* texture, bool exit);
 
 #endif

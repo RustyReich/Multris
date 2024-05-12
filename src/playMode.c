@@ -36,6 +36,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(bool, playing_progress_sound, false);
 	DECLARE_VARIABLE(unsigned int, progress_sound_start, 0);
 	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
+	DECLARE_VARIABLE(bool, aboutToExit, false);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -453,8 +454,21 @@ unsigned short playMode(piece* firstPiece)
 		if (onPress(SELECT_BUTTON))
 		{
 
-			playSound(PAUSE_SOUND);
-			*paused = !*paused;
+			// If aboutToExit and press SELECT_BUTTON, exit to main menu
+			if (*aboutToExit == true)
+			{
+
+				freeVars();
+				return RESET;
+
+			}
+			else {
+
+				// If not aboutToExit, just pause the game normally
+				playSound(PAUSE_SOUND);
+				*paused = !*paused;	
+
+			}
 
 		}
 		// Also pause if window loses focus
@@ -466,12 +480,25 @@ unsigned short playMode(piece* firstPiece)
 
 		}
 
-		// Exit if press ESCAPE_BUTTON while paused
 		if (*paused && onPress(EXIT_BUTTON))
 		{
 
-			freeVars();
-			return RESET;
+			// When press EXIT_BUTTON while paused, switch between aboutToExit and not
+			*aboutToExit = !*aboutToExit;
+
+			playSound(ROTATE_SOUND);
+
+			// Updpate the PAUSED texture with the aboutToExit value
+			updatePausedText(Texture_Paused, *aboutToExit);
+
+			// If you press EXIT_BUTTON while aboutToExit, leave the pause menu
+			if (*aboutToExit == false)
+			{
+
+				playSound(PAUSE_SOUND);
+				*paused = !*paused;
+
+			}
 
 		}
 
