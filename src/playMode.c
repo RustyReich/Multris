@@ -533,6 +533,8 @@ unsigned short playMode(piece* firstPiece)
 	if (currentPiece != NULL && !*gameOver && !*paused)
 	{
 		
+		bool pieceIsPlaced = false;
+
 		//Piece is falling
 		if (!isColliding(*currentPiece, *X, Y, DOWN, mapData, MAP_WIDTH, MAP_HEIGHT))
 		{
@@ -548,10 +550,18 @@ unsigned short playMode(piece* firstPiece)
 				else if (*softDrop == true)
 					*Y = *Y + ((double)60.0988 / (double)2) * globalInstance->frame_time;
 
+				// Check again if piece now colliding after moving down and place piece if it is
+				if (isColliding(*currentPiece, *X, Y, DOWN, mapData, MAP_WIDTH, MAP_HEIGHT))
+					pieceIsPlaced = true;
+
 			}
 
 		}
-		else     //Piece is placed
+		else
+			pieceIsPlaced = true;
+
+
+		if (pieceIsPlaced)     //Piece is placed
 		{
 
 			playSound(LAND_SOUND);
