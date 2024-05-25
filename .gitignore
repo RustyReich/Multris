@@ -22,3 +22,7 @@
 
 !unix_obj/
 !win_obj/
+
+!server/
+!server/src
+!server/src/*

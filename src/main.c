@@ -21,6 +21,8 @@ bool CUSTOM_MODE = false;
 int BLOCK_SPRITE_ID = 1;
 int WALL_SPRITE_ID = 2;
 
+bool DEBUG = false;
+
 //Global Instance
 gameInstance *globalInstance;
 

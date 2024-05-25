@@ -62,5 +62,8 @@ int getGameHeight(unsigned short size);
 int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
 void updatePausedText(SDL_Texture* texture, bool exit);
+UI_list* create_Connect_List();
+SDL_Texture* create_ConnectionValues_Text();
+void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port);
 
 #endif

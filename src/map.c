@@ -273,6 +273,14 @@ unsigned short drawTitle(piece** firstPiece)
 				numerical->ui->currentlyInteracting = true;
 
 			}
+			else if (SDL_strcmp(selected_mode, "MULTIPLAYER") == 0)
+			{
+
+				// Go to the Multiplayer lobby screen where the player connects to a server
+				freeVars();
+				return MULTIPLAYERLOBBY_SCREEN;
+
+			}
 			else if (SDL_strcmp(selected_mode, "CUSTOM") == 0)
 			{
 

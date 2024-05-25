@@ -14,7 +14,7 @@ CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
 LDFLAGS = -lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_net -lssp -lm
 
 # Makefile settings - Can be customized.
-APPNAME = build_windows/Multris
+APPNAME = build/Multris_Dedicated_Server
 EXT = .c
 SRCDIR = src
 OBJDIR = win_obj

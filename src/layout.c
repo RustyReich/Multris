@@ -779,6 +779,22 @@ void updatePausedText(SDL_Texture* texture, bool exit)
 
 }
 
+// Function for redrawing the values on the multiplayer lobby screen
+void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port)
+{
+
+	clearTexture(texture);
+
+	// Print ":" after each modifiable options
+	printToTexture(":", texture, 0, 0, 1.0, WHITE);
+	printToTexture(":", texture, 0, 14, 1.0, WHITE);
+
+	// Print the values of the options
+	printToTexture(ip, texture, 14, 0, 1.0, WHITE);
+	printToTexture(port, texture, 14, 14, 1.0, WHITE);
+
+}
+
 //Function for redrawing the values texture
 void updateValuesText(SDL_Texture* texture)
 {
@@ -826,6 +842,26 @@ void updateValuesText(SDL_Texture* texture)
 		printToTexture("OLD", texture, 14, 70, 1.0, RED);
 	else
 		printToTexture("NEW", texture, 14, 70, 1.0, GREEN);
+
+}
+
+// Create the texture that displays on the multiplayer lobby screen to connect to a server
+SDL_Texture* create_ConnectionValues_Text()
+{
+
+	SDL_Texture* texture;
+
+	// There are two options on this screen, "IP" and "PORT"
+	int num_options = 2;
+	int height = num_options * FONT_HEIGHT + (num_options - 1) * STRING_GAP;
+	int widht = 16 * FONT_WIDTH + 15 * STRING_GAP;
+
+	texture = createTexture(widht, height);
+
+	// Initial values for IP and PORT are empty strings
+	updateConnectionValuesText(texture, "\0", "\0");
+
+	return texture;
 
 }
 
@@ -1249,12 +1285,36 @@ UI_list* _create_list(unsigned short color, const char* strings, ...)
 
 }
 
+// Create the "Connect" UI element that is displayed on the multiplayer lobby screen for connecting to a server
+UI_list* create_Connect_List()
+{
+
+	// Initialize the list
+	UI_list* list;
+	list = create_list(WHITE, "IP", "PORT", "CONNECT");
+
+	list->selected_entry = 0;
+
+	list->ui->x = 28;
+	list->ui->y = 14;
+
+	list->ui->currentlyInteracting = true;
+
+	return list;
+
+}
+
 //Create the "Modes" UI element on the title screen
 UI_list* create_Modes_List()
 {
 
 	//Initialize list
-	UI_list* list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "OPTIONS", "EXIT");
+		// Add "MULTIPLAYER" mode if DEBUG = 1 since this is still an experimental feature
+	UI_list* list;
+	if (DEBUG == false)
+		list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "OPTIONS", "EXIT");
+	else
+		list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "MULTIPLAYER", "OPTIONS", "EXIT");
 
 	//First entry is selected by default
 	list->selected_entry = 0;
@@ -1330,7 +1390,7 @@ UI_list* create_Options_List()
 	list->selected_entry = 0;
 
 	list->ui->x = 42;
-	list->ui->y = 84;
+	list->ui->y = 98;
 
 	list->ui->currentlyInteracting = false;
 
@@ -1415,6 +1475,7 @@ int getSizeBagY(unsigned short size)
 //Get the Y position, relative to the renderer, of an entry in a UI list
 	//Refers to the top left of the entry string
 	//Returns -1 if the given string is not found in the list
+	//This doesn't account for the list being rendered at multiplier other than 1.0
 int getListEntryY(UI_list* list, const char* str)
 {
 

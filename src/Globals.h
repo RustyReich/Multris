@@ -26,4 +26,6 @@ extern bool CUSTOM_MODE;
 extern int BLOCK_SPRITE_ID;
 extern int WALL_SPRITE_ID;
 
+extern bool DEBUG;
+
 #endif

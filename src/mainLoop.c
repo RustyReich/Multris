@@ -129,6 +129,8 @@ void mainLoop()
 	}
 	else if (game_state == CONTROLS_SCREEN)
 		game_state = controlsScreen(&firstPiece);
+	else if (game_state == MULTIPLAYERLOBBY_SCREEN)
+		game_state = multiplayerLobby(&firstPiece);
 	else if (game_state == RESET)	//Reset the game to the main menu
 	{
 		

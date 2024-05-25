@@ -256,6 +256,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Custom_Text();
         else if (type == SIZEBAG_TEXT)
             *ptr = create_SizeBag_Text();
+        else if (type == CONNECTIONVALUES_TEXT)
+            *ptr = create_ConnectionValues_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
@@ -375,6 +377,8 @@ void declare_UI_list(UI_list** ptr, int type)
             *ptr = create_Custom_List();
         else if (type == OPTIONS_LIST)
             *ptr = create_Options_List();
+        else if (type == CONNECTION_LIST)
+            *ptr = create_Connect_List();
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, UI_LIST);
