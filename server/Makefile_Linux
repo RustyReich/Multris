@@ -5,7 +5,7 @@
 # Compiler settings - Can be customized.
 CC = gcc
 CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
-LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_net -lm
+LDFLAGS = '-Wl,-rpath,$$ORIGIN' -lSDL2 -lSDL2_image -lSDL2_net -lm
 
 # Makefile settings - Can be customized.
 APPNAME = build/Multris_Dedicated_Server
