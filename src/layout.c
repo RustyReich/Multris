@@ -706,6 +706,18 @@ SDL_Texture* create_Lines_Text()
 
 }
 
+// Function for creating the texture for the ConnectionMessage in the multiplayer lobby
+SDL_Texture* create_ConnectionMessage_Text()
+{
+
+	SDL_Texture* texture;
+
+	texture = createTexture(1, 1);
+
+	return texture;
+
+}
+
 //Function for creating the texture for the PAUSED text
 SDL_Texture* create_Pause_Text()
 {
@@ -764,6 +776,20 @@ SDL_Texture* create_volSlide_Text()
 
 	return texture;
 
+}
+
+// Update the ConnectionMessge texture with the passed message
+void updateConnectionMessageText(SDL_Texture** texture, char* message)
+{
+
+	SDL_DestroyTexture(*texture);
+
+	int width = getStringLength(message, 1.0);
+	int height = FONT_HEIGHT;
+	*texture = createTexture(width, height);
+
+	printToTexture(message, *texture, 0, 0, 1.0, WHITE);
+		
 }
 
 // Update the PAUSED texture between saying "PAUSED" and "EXIT?"
@@ -2358,6 +2384,28 @@ int getGameHeight(unsigned short size)
 		return 444;
 	else
 		return 504;
+
+}
+
+// Get the X coord of where to draw the ConnectionMessage text to the screen in the multiplayer lobby
+int getConnectionMessageX(char* message, float multi)
+{
+
+	int start = getForegroundX(MAX_PIECE_SIZE);
+	int width = SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) * SPRITE_WIDTH;
+
+	return (start + 0.5 * (width - getStringLength(message, multi)));
+
+}
+
+// Get the Y coord of where to draw the ConnectionMessage text to the screen in the multiplayer lobby
+int getConnectionMessageY(float multi)
+{
+
+	int start = getForegroundY(MAX_PIECE_SIZE);
+	int height = SDL_round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE) * SPRITE_HEIGHT;
+
+	return (start + 0.5 * (height - FONT_HEIGHT * multi));
 
 }
 

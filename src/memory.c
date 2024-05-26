@@ -258,6 +258,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_SizeBag_Text();
         else if (type == CONNECTIONVALUES_TEXT)
             *ptr = create_ConnectionValues_Text();
+        else if (type == CONNECTIONMESSAGE_TEXT)
+            *ptr = create_ConnectionMessage_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);

@@ -9,6 +9,7 @@ unsigned short multiplayerLobby(piece** Piece)
     DECLARE_VARIABLE(bool, firstLoop, true);
     DECLARE_VARIABLE(bool, justPressedButton, false);
     DECLARE_VARIABLE(double, textMulti, 0.80);
+    DECLARE_VARIABLE(double, messageMulti, 1.0);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -17,6 +18,7 @@ unsigned short multiplayerLobby(piece** Piece)
     static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *Piece, false);
     static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
     static SDL_Texture* Texture_ConnectionValues; declare_HUD_Text(&Texture_ConnectionValues, CONNECTIONVALUES_TEXT);
+    static SDL_Texture* Texture_ConnectionMessage; declare_HUD_Text(&Texture_ConnectionMessage, CONNECTIONMESSAGE_TEXT);
 
     //UI elements
     static UI_list* connection; declare_UI_list(&connection, CONNECTION_LIST);
@@ -24,6 +26,7 @@ unsigned short multiplayerLobby(piece** Piece)
     //Arrays
     static char* ipString; declareStart(ipString, '\0');
     static char* portString; declareStart(portString, '\0');
+    static char* currMessage; declareStart(currMessage, '\0');
 
     if (*firstLoop == true)
     {
@@ -88,24 +91,48 @@ unsigned short multiplayerLobby(piece** Piece)
             if (SDL_strcmp(selected_option, "CONNECT") == 0)
             {
 
-                IPaddress ip;
-                TCPsocket tcpsock;
-
-                // Open connection to server as specified by ipString and portString
-                if (SDLNet_ResolveHost(&ip, ipString, SDL_atoi(portString)) == -1)
+                // Don'y allow IP address that doesn't have at least one period
+                if (SDL_strchr(ipString, '.') == NULL)
                 {
 
-                    printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-                    exit(1);
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Malformed IP Address") + 1);
+                    SDL_strlcpy(currMessage, "Malformed IP Address", SDL_strlen("Malformed IP Address") + 1);
+
+                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
                 }
-
-                tcpsock = SDLNet_TCP_Open(&ip);
-                if (!tcpsock)
+                else
                 {
 
-                    printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-                    exit(2);
+                    IPaddress ip;
+                    TCPsocket tcpsock;
+
+                    // Open connection to server as specified by ipString and portString
+                    if (SDLNet_ResolveHost(&ip, ipString, SDL_atoi(portString)) == -1)
+                    {
+
+                        // Display error message to screen
+                        const char* temp = SDLNet_GetError();
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
+                        SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
+    
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+                    }
+
+                    tcpsock = SDLNet_TCP_Open(&ip);
+                    if (!tcpsock)
+                    {
+
+                        // Display error message to screen
+                        const char* temp = SDLNet_GetError();
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
+                        SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
+
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+
+                    }
 
                 }
 
@@ -216,6 +243,18 @@ unsigned short multiplayerLobby(piece** Piece)
     drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
 
     drawTexture(Texture_ConnectionValues, connectionX + getStringLength("PORT", *textMulti), connectionY, *textMulti);
+    
+    // Display error message if longer than 0 characters
+    if (SDL_strlen(currMessage) > 0)
+    {
+
+        int stringLength = getStringLength(currMessage, 1.0);
+        *messageMulti = SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) * SPRITE_WIDTH / stringLength;
+        int x = getConnectionMessageX(currMessage, *messageMulti);
+        int y = getConnectionMessageY(*messageMulti);
+        drawTexture(Texture_ConnectionMessage, x, y, *messageMulti);
+
+    }
 
     // ------------------------------------------------------------------
 
