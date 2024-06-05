@@ -55,6 +55,15 @@ unsigned short multiplayerLobby(piece** Piece)
             SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
             updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
+            // If received a messages containing "All players joined", exit multiplayer lobby and move into PLAYMODE.
+            if (SDL_strstr(currMessage, "All players joined") != NULL)
+            {
+
+                freeVars();
+                return PLAY_SCREEN;
+
+            }
+
         }
 
     }

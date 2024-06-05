@@ -3,7 +3,7 @@
 
 #include "MGF.h"
 
-void drawPlayField(SDL_Texture* background, unsigned short size);
+void drawPlayField(SDL_Texture* background, unsigned short size, int XOffset);
 void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode);
 void drawLevelBox(SDL_Texture* background, unsigned short size);
 void drawUntilBox(SDL_Texture* background, unsigned short size);

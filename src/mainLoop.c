@@ -7,24 +7,51 @@ void mainLoop()
 	static SDL_Texture* Texture_Background;
 	if (Texture_Background == NULL) {
 
-		//Set renderer to correect dimensions for selected size
-		int width = getGameWidth(MODE);
-		int height = getGameHeight(MODE);
-		SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
-		scaleRenderer();
+		if (MULTIPLAYER == false)
+		{
 
-		//Create background texture
-		Texture_Background = createTexture(width, height);
+			//Set renderer to correect dimensions for selected size
+			int width = getGameWidth(MODE);
+			int height = getGameHeight(MODE);
+			SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
+			scaleRenderer();
 
-		//Draw all layout stuff
-		drawPlayField(Texture_Background, MODE);
-		drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
-		drawLevelBox(Texture_Background, MODE);
-		drawUntilBox(Texture_Background, MODE);
-		drawNextBox(Texture_Background, MODE);
-		drawHoldBox(Texture_Background, MODE);
-		drawSizeBagBox(Texture_Background, MODE);
-		drawBackgroundExtras(Texture_Background, MODE);
+			//Create background texture
+			Texture_Background = createTexture(width, height);
+
+			//Draw all layout stuff
+			drawPlayField(Texture_Background, MODE, 0);
+			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
+			drawLevelBox(Texture_Background, MODE);
+			drawUntilBox(Texture_Background, MODE);
+			drawNextBox(Texture_Background, MODE);
+			drawHoldBox(Texture_Background, MODE);
+			drawSizeBagBox(Texture_Background, MODE);
+			drawBackgroundExtras(Texture_Background, MODE);
+
+		}
+		else
+		{
+
+			int width = getGameWidth(MODE) * 2;
+			int height = getGameHeight(MODE);
+			SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
+			scaleRenderer();
+
+			Texture_Background = createTexture(width, height);
+
+			drawPlayField(Texture_Background, MODE, 0);
+			drawPlayField(Texture_Background, MODE, width / 2);
+
+			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
+			drawLevelBox(Texture_Background, MODE);
+			drawUntilBox(Texture_Background, MODE);
+			drawNextBox(Texture_Background, MODE);
+			drawHoldBox(Texture_Background, MODE);
+			drawSizeBagBox(Texture_Background, MODE);
+			drawBackgroundExtras(Texture_Background, MODE);
+
+		}
 
 	}
 
@@ -130,7 +157,21 @@ void mainLoop()
 	else if (game_state == CONTROLS_SCREEN)
 		game_state = controlsScreen(&firstPiece);
 	else if (game_state == MULTIPLAYERLOBBY_SCREEN)
+	{
+
 		game_state = multiplayerLobby(&firstPiece);
+
+		// If entering a multiplayer game, clear the background so that it can be redrawn with two play fields.
+		if (game_state == PLAY_SCREEN && MULTIPLAYER == true)
+		{
+
+			clearTexture(Texture_Background);
+			SDL_DestroyTexture(Texture_Background);
+			Texture_Background = NULL;
+
+		}
+
+	}
 	else if (game_state == RESET)	//Reset the game to the main menu
 	{
 		

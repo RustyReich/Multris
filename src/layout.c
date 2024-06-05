@@ -5,7 +5,7 @@
 #define NUM_OF_TITLE_PIECES		19
 
 //Draw the playfield
-void drawPlayField(SDL_Texture* background, unsigned short size)
+void drawPlayField(SDL_Texture* background, unsigned short size, int XOffset)
 {
 
 	//Use MAX_PIECE_SIZE if size == 0
@@ -44,6 +44,9 @@ void drawPlayField(SDL_Texture* background, unsigned short size)
 		Y = 0;
 
 	}
+
+	// Apply offset. This is used for drawing a second play field in multiplayer mode
+	X += XOffset;
 
 	//Set correct width and height depending on size
 	int width = SDL_round(BASE_PLAYFIELD_WIDTH * size) + 2;
