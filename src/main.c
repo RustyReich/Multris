@@ -23,6 +23,8 @@ int WALL_SPRITE_ID = 2;
 
 bool DEBUG = true;
 
+bool MULTIPLAYER = false;
+
 //Global Instance
 gameInstance *globalInstance;
 

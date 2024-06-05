@@ -10,6 +10,7 @@ unsigned short multiplayerLobby(piece** Piece)
     DECLARE_VARIABLE(bool, justPressedButton, false);
     DECLARE_VARIABLE(double, textMulti, 0.80);
     DECLARE_VARIABLE(double, messageMulti, 1.0);
+    DECLARE_VARIABLE(bool, error, false);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -36,101 +37,139 @@ unsigned short multiplayerLobby(piece** Piece)
 
     }
 
-    // Control Logic ----------------------------------------------------
-
-    // Keep track of the current selected connection option
-    const char* selected_option = getListSelectedString(connection);
-
-    // If you press DOWN
-    if (onPress(DOWN_BUTTON))
+    // If connected to a server
+    if (MULTIPLAYER)
     {
 
-        if (connection->ui->currentlyInteracting)
+        // Check if data is ready to be received from the server
+        if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
         {
 
-            // Move cursor down and play MOVE_SOUND if not already at the bottom.
-            if (connection->selected_entry < connection->num_entries - 1)
+            // Receive the data if there is any
+            char data[1024];
+            int len = SDLNet_TCP_Recv(globalInstance->serverSocket, data, 1024);
+            data[len] = '\0';
+
+            // And print the messsage received from the server
+            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(data) + 1);
+            SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
+            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+        }
+
+    }
+    else
+    {
+
+        // Control Logic ----------------------------------------------------
+
+        // Keep track of the current selected connection option
+        const char* selected_option = getListSelectedString(connection);
+
+        // If you press DOWN
+        if (onPress(DOWN_BUTTON))
+        {
+
+            if (connection->ui->currentlyInteracting)
             {
 
-                playSound(MOVE_SOUND);
-                connection->selected_entry++;
+                // Move cursor down and play MOVE_SOUND if not already at the bottom.
+                if (connection->selected_entry < connection->num_entries - 1)
+                {
+
+                    playSound(MOVE_SOUND);
+                    connection->selected_entry++;
+
+                }
+
+            }
+            
+        }
+
+        // If you press UP
+        if (onPress(UP_BUTTON))
+        {
+
+            if (connection->ui->currentlyInteracting)
+            {
+
+                // Move cursor up and play MOVE_SOUND if not already at the top
+                if (connection->selected_entry > 0)
+                {
+
+                    playSound(MOVE_SOUND);
+                    connection->selected_entry--;
+
+                }
 
             }
 
         }
+
+        if (onPress(SELECT_BUTTON))
+        {
+
+            if (connection->ui->currentlyInteracting)
+            {
+
+                // When you press SELECT_BUTTON on the CONNECT option
+                if (SDL_strcmp(selected_option, "CONNECT") == 0)
+                {
+
+                    // Reset error to false whenever we press the CONNECT button
+                    *error = false;
+
+                    // Don'y allow IP address that doesn't have at least one period
+                    if (SDL_strchr(ipString, '.') == NULL)
+                    {
+
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Malformed IP Address") + 1);
+                        SDL_strlcpy(currMessage, "Malformed IP Address", SDL_strlen("Malformed IP Address") + 1);
+
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                        *error = true;
+
+                    }
+                    else
+                    {
+
+                        // Open connection to server as specified by ipString and portString
+                        if (SDLNet_ResolveHost(&(globalInstance->serverIP), ipString, SDL_atoi(portString)) == -1)
+                        {
+
+                            // Display error message to screen
+                            const char* temp = SDLNet_GetError();
+                            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
+                            SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
         
-    }
+                            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                            *error = true;
 
-    // If you press UP
-    if (onPress(UP_BUTTON))
-    {
+                        }
 
-        if (connection->ui->currentlyInteracting)
-        {
+                        globalInstance->serverSocket = SDLNet_TCP_Open(&(globalInstance->serverIP));
+                        if (!globalInstance->serverSocket)
+                        {
 
-            // Move cursor up and play MOVE_SOUND if not already at the top
-            if (connection->selected_entry > 0)
-            {
+                            // Display error message to screen
+                            const char* temp = SDLNet_GetError();
+                            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
+                            SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
 
-                playSound(MOVE_SOUND);
-                connection->selected_entry--;
+                            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                            *error = true;
 
-            }
+                        }
 
-        }
+                        // If there were no errors connecting to the server
+                        if (*error == false)
+                        {
 
-    }
-
-    if (onPress(SELECT_BUTTON))
-    {
-
-        if (connection->ui->currentlyInteracting)
-        {
-
-            // When you press SELECT_BUTTON on the CONNECT option
-            if (SDL_strcmp(selected_option, "CONNECT") == 0)
-            {
-
-                // Don'y allow IP address that doesn't have at least one period
-                if (SDL_strchr(ipString, '.') == NULL)
-                {
-
-                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Malformed IP Address") + 1);
-                    SDL_strlcpy(currMessage, "Malformed IP Address", SDL_strlen("Malformed IP Address") + 1);
-
-                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
-
-                }
-                else
-                {
-
-                    IPaddress ip;
-                    TCPsocket tcpsock;
-
-                    // Open connection to server as specified by ipString and portString
-                    if (SDLNet_ResolveHost(&ip, ipString, SDL_atoi(portString)) == -1)
-                    {
-
-                        // Display error message to screen
-                        const char* temp = SDLNet_GetError();
-                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
-                        SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
-    
-                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
-
-                    }
-
-                    tcpsock = SDLNet_TCP_Open(&ip);
-                    if (!tcpsock)
-                    {
-
-                        // Display error message to screen
-                        const char* temp = SDLNet_GetError();
-                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
-                        SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
-
-                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
-
+                            // Add the connection socket to our socket set and set MULTIPLAYER to true
+                            SDLNet_TCP_AddSocket(globalInstance->serverSocketSet, globalInstance->serverSocket);
+                            MULTIPLAYER = true;
+                            
+                        }
 
                     }
 
@@ -140,85 +179,85 @@ unsigned short multiplayerLobby(piece** Piece)
 
         }
 
-    }
-
-    // If the selected connection option is IP or PORT
-    if (SDL_strcmp(selected_option, "IP") == 0 || SDL_strcmp(selected_option, "PORT") == 0)
-    {
-
-        // Check which one it is, IP or PORT
-        char* strBeingModified = ipString;
-        if (SDL_strcmp(selected_option, "PORT") == 0)
-            strBeingModified = portString;
-
-        // Get the currently pressed key
-        int pressedKey = getPressedKey();
-
-        // Only allow one key press at a time. So justPressedButton is false if no buttons are being pressed, to allow
-        // a new key press
-        if (getPressedKey() == -1)
-            *justPressedButton = false;
-
-        // As long the the user didnt just press a key already
-        if (*justPressedButton == false)
+        // If the selected connection option is IP or PORT
+        if (SDL_strcmp(selected_option, "IP") == 0 || SDL_strcmp(selected_option, "PORT") == 0)
         {
 
-            // Only allow digits and periods
-            if (pressedKey == SDL_SCANCODE_PERIOD || (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_0))
+            // Check which one it is, IP or PORT
+            char* strBeingModified = ipString;
+            if (SDL_strcmp(selected_option, "PORT") == 0)
+                strBeingModified = portString;
+
+            // Get the currently pressed key
+            int pressedKey = getPressedKey();
+
+            // Only allow one key press at a time. So justPressedButton is false if no buttons are being pressed, to allow
+            // a new key press
+            if (getPressedKey() == -1)
+                *justPressedButton = false;
+
+            // As long the the user didnt just press a key already
+            if (*justPressedButton == false)
             {
-                
-                // Convert the SDL_SCANCODE to an ascii value
-                char asciiValue;
-                if (pressedKey == SDL_SCANCODE_PERIOD)
-                    asciiValue = '.';
-                else if (pressedKey == SDL_SCANCODE_0)
-                    asciiValue = '0';
-                else
-                    asciiValue = '1' + (pressedKey - SDL_SCANCODE_1);
 
-                // Max length is diffent depending on if the user is editing the IP or the PORT
-                int maxLength = 15;
-                if (strBeingModified == portString)
-                    maxLength = 5;
-
-                // Check if the key that was pressed was a period 
-                bool pressedPeriod = (pressedKey == SDL_SCANCODE_PERIOD);
-
-                // Don't allow periods in the PORT and dont allow input past maxLength
-                if ((int)SDL_strlen(strBeingModified) < maxLength && !(pressedPeriod && strBeingModified == portString))
+                // Only allow digits and periods
+                if (pressedKey == SDL_SCANCODE_PERIOD || (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_0))
                 {
+                    
+                    // Convert the SDL_SCANCODE to an ascii value
+                    char asciiValue;
+                    if (pressedKey == SDL_SCANCODE_PERIOD)
+                        asciiValue = '.';
+                    else if (pressedKey == SDL_SCANCODE_0)
+                        asciiValue = '0';
+                    else
+                        asciiValue = '1' + (pressedKey - SDL_SCANCODE_1);
 
-                    // Expand the currently selected string and concatenate the pressedkey
-                    int currLength = SDL_strlen(strBeingModified) + 1;
-                    strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength + 1));
-                    SDL_strlcat(strBeingModified, &asciiValue, currLength + 1);
+                    // Max length is diffent depending on if the user is editing the IP or the PORT
+                    int maxLength = 15;
+                    if (strBeingModified == portString)
+                        maxLength = 5;
 
-                    // Then update the Connectionvalues texture
-                    updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+                    // Check if the key that was pressed was a period 
+                    bool pressedPeriod = (pressedKey == SDL_SCANCODE_PERIOD);
 
-                    // And don't allow multiple inputs from a single key press
-                    *justPressedButton = true;
+                    // Don't allow periods in the PORT and dont allow input past maxLength
+                    if ((int)SDL_strlen(strBeingModified) < maxLength && !(pressedPeriod && strBeingModified == portString))
+                    {
 
+                        // Expand the currently selected string and concatenate the pressedkey
+                        int currLength = SDL_strlen(strBeingModified) + 1;
+                        strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength + 1));
+                        SDL_strlcat(strBeingModified, &asciiValue, currLength + 1);
+
+                        // Then update the Connectionvalues texture
+                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+
+                        // And don't allow multiple inputs from a single key press
+                        *justPressedButton = true;
+
+                    }
+                    
                 }
-                
-            }
-            else if (pressedKey == SDL_SCANCODE_BACKSPACE)  // Erase if user presses backspace
-            {
-
-                // Don't allow erase if length of string is already zero
-                if ((int)SDL_strlen(strBeingModified) > 0)
+                else if (pressedKey == SDL_SCANCODE_BACKSPACE)  // Erase if user presses backspace
                 {
 
-                    // Remove the last character from string.
-                    int currLength = SDL_strlen(strBeingModified) + 1;
-                    strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength - 1));
-                    SDL_strlcpy(strBeingModified, strBeingModified, currLength - 1);
+                    // Don't allow erase if length of string is already zero
+                    if ((int)SDL_strlen(strBeingModified) > 0)
+                    {
 
-                    // And then update the ConnectionValues texture
-                    updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+                        // Remove the last character from string.
+                        int currLength = SDL_strlen(strBeingModified) + 1;
+                        strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength - 1));
+                        SDL_strlcpy(strBeingModified, strBeingModified, currLength - 1);
 
-                    // And don't allow multiple inputs from a single key press
-                    *justPressedButton = true;
+                        // And then update the ConnectionValues texture
+                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+
+                        // And don't allow multiple inputs from a single key press
+                        *justPressedButton = true;
+
+                    }
 
                 }
 

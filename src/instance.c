@@ -199,6 +199,10 @@ void initInstance(gameInstance** instance)
     (*instance)->FPS = 0;
     (*instance)->frame_time = 0;
 
+    // Allocate memory for the server socket for the instance
+        // Can only connect to 1 server at a time.
+    (*instance)->serverSocketSet = SDLNet_AllocSocketSet(1);
+
 }
 
 void findDisplayBounds(gameInstance* instance)

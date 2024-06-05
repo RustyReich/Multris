@@ -28,4 +28,6 @@ extern int WALL_SPRITE_ID;
 
 extern bool DEBUG;
 
+extern bool MULTIPLAYER;
+
 #endif

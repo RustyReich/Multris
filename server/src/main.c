@@ -30,19 +30,38 @@ int main (int argc, char* argv[])
 
     TCPsocket server;
     IPaddress ip;
-    int maxPortTries = 10;
-    int currPortTries = 0;
 
-    // Open server on random port. Try up to 10 random ports to find an open one
-    while (SDLNet_ResolveHost(&ip, NULL, rand() % SDL_MAX_UINT16) == -1)
+    // Start server provided in command line argument if present
+    if (argc > 1)
     {
 
-        currPortTries++;
-        if (currPortTries < maxPortTries)
-            continue;
+        if (SDLNet_ResolveHost(&ip, NULL, SDL_atoi(argv[1])) == -1)
+        {
 
-        printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-        exit(1);
+            printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+            exit(1);
+
+        }
+
+    }
+    else
+    {
+
+        // Open server on random port. Try up to 10 random ports to find an open one
+        while (SDLNet_ResolveHost(&ip, NULL, rand() % SDL_MAX_UINT16) == -1)
+        {
+
+            int maxPortTries = 10;
+            int currPortTries = 0;
+
+            currPortTries++;
+            if (currPortTries < maxPortTries)
+                continue;
+
+            printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+            exit(1);
+
+        }
 
     }
 
@@ -67,7 +86,10 @@ int main (int argc, char* argv[])
     // Array of connected clients
     TCPsocket* clients = SDL_calloc(maxPlayers, sizeof(TCPsocket));
 
-    printf("Waiting for player %d to join\n", numConnectedPlayers + 1);
+    // Array of socket sets. Each connected client has its own socket set.
+    SDLNet_SocketSet* socketSets = SDL_calloc(maxPlayers, sizeof(SDLNet_SocketSet));
+    
+    printf("Waiting for player %d to join...\n", numConnectedPlayers + 1);
 
     // Wait until maxPLayers number of players connects to the server
     while (numConnectedPlayers < maxPlayers)
@@ -92,6 +114,10 @@ int main (int argc, char* argv[])
 
             }
 
+            // Add socket for current player to their own socket set
+            socketSets[numConnectedPlayers] = SDLNet_AllocSocketSet(1);
+            SDLNet_TCP_AddSocket(socketSets[numConnectedPlayers], clients[numConnectedPlayers]);
+
             // Keep track of number of connected players
             int id = numConnectedPlayers + 1;
 
@@ -103,9 +129,17 @@ int main (int argc, char* argv[])
 
             numConnectedPlayers++;
 
-            // Let user know we are still waiting on additional players
             if (numConnectedPlayers < maxPlayers)
-                printf("Waiting for player %d to join\n", numConnectedPlayers + 1);
+            {
+
+                // Let user know we are still waiting on additional players
+                printf("Waiting for player %d to join...\n", numConnectedPlayers + 1);
+
+                // Also let the connected player know that we are waiting for players to join
+                char message[] = "Waiting for players to join...";
+                SDLNet_TCP_Send(clients[numConnectedPlayers - 1], message, SDL_strlen(message));
+
+            }
 
         }
         else
@@ -113,10 +147,35 @@ int main (int argc, char* argv[])
 
     }
 
+    // Send message to all connected players once all players join
+    for (int i = 0; i < maxPlayers; i++)
+    {
+
+        char message[] = "All players joined...";
+        SDLNet_TCP_Send(clients[i], message, SDL_strlen(message));
+
+    }
+
     while (running == true)
     {
 
+        // Check all connected players
+        for (int i = 0; i < maxPlayers; i++)
+        {
 
+            // Check to see if the player has sent any data
+            if (SDLNet_CheckSockets(socketSets[i], 0))
+            {
+
+                // Process the data if they sent any
+                char data[1024];
+                int len = SDLNet_TCP_Recv(clients[i], data, 1024);
+                data[len - 1] = '\0';
+                printf("%s\n", data);
+
+            }
+
+        }
 
     }
 
