@@ -47,6 +47,13 @@ int main(int argc, char *argv[]) {
 		exit( -1 );
 
 	}
+	if ( SDLNet_Init() == -1)
+	{
+
+		printf("SDLNet_Init: %s\n", SDLNet_GetError());
+		exit( -1);
+
+	}
 
 	// Force openGL on Windows because somewhere there is a bug when resizing the window on Direc3D
 	#ifdef _WIN32
