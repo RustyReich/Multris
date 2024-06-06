@@ -3,18 +3,20 @@
 ########################################################################
 
 # Compiler settings - Can be customized.
-CC = 	x86_64-w64-mingw32-gcc	 												\
-		-LSDL2-devel-2.30.1-mingw/SDL2-2.30.1/x86_64-w64-mingw32/lib			\
-		-ISDL2-devel-2.30.1-mingw/SDL2-2.30.1/x86_64-w64-mingw32/include		\
-		-ISDL2-devel-2.30.1-mingw/SDL2-2.30.1/x86_64-w64-mingw32/include/SDL2	\
-		-LSDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/lib	\
-		-ISDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/include
+CC = 	x86_64-w64-mingw32-gcc	 													\
+		-LSDL2-devel-2.30.3-mingw/SDL2-2.30.3/x86_64-w64-mingw32/lib				\
+		-ISDL2-devel-2.30.3-mingw/SDL2-2.30.3/x86_64-w64-mingw32/include			\
+		-ISDL2-devel-2.30.3-mingw/SDL2-2.30.3/x86_64-w64-mingw32/include/SDL2		\
+		-LSDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/lib		\
+		-ISDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/include 	\
+		-LSDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32/lib			\
+		-ISDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32/include		\
 
 CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
 LDFLAGS = -lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_net -lssp -lm
 
 # Makefile settings - Can be customized.
-APPNAME = build/Multris_Dedicated_Server
+APPNAME = build_windows/Multris_Dedicated_Server.exe
 EXT = .c
 SRCDIR = src
 OBJDIR = win_obj
