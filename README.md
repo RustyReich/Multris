@@ -34,9 +34,11 @@ LEFT / RIGHT ARROW - Move. Hold to move quicker.
 ``` 
 ##### GAME MODES
 ```
-  MULTRIS - All pieces are a random size. 
-NUMERICAL - All pieces are the selected size.
-            Unlock larger sizes by reaching high levels in smaller sizes.
+    MULTRIS - All pieces are a random size. 
+  NUMERICAL - All pieces are the selected size.
+              Unlock larger sizes by reaching high levels in smaller sizes.
+     CUSTOM - Same as MULTRIS mode except that the maximum piece size can be selected.
+MULTIPLAYER - Battle against another player in MULTRIS mode.
 ```           
 ##### GAMEPLAY
 ```
@@ -50,9 +52,12 @@ Score - You score points by completing lines.
 ##### OPTIONS
 ```
   FULLSCREEN - Enable or disable fullscreen mode
-      VOLUME - Set the volume of the game audio. Between 0-9
+      VOLUME - Set the volume of the game audio. Between 0-100
    LIMIT FPS - Limit the FPS of the game to twice that of the refresh rate of the display.
                This is to lower CPU usage.
+    SHOW FPS - Enable/Disable drawing the FPS to the screen.
+  CENTER DOT - Enable to draw a dot in the center of the current piece while playing.
+    GRAPHICS - Switch between newer graphics and older legacy graphics.
     CONTROLS - Modify the keybindings for the game.
 ```
 
@@ -67,6 +72,8 @@ Score - You score points by completing lines.
 [SDL2](https://www.libsdl.org/download-2.0.php)
 
 [SDL2_Image](https://www.libsdl.org/projects/SDL_image/)
+
+[SDL2_Net](https://github.com/libsdl-org/SDL_net)
 
 For all following instructions, replace `make -f Makefile_Linux` with `make -f Makefile_Windows` if you are on Windows.
 
