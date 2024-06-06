@@ -13,7 +13,7 @@ CC = 	x86_64-w64-mingw32-gcc	 													\
 		-ISDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32/include		\
 
 CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
-LDFLAGS = -lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_net -lssp -lm
+LDFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_net -lssp -lm
 
 # Makefile settings - Can be customized.
 APPNAME = build_windows/Multris_Dedicated_Server.exe
