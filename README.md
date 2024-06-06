@@ -13,7 +13,7 @@ A modified version of the classic puzzle game, with randomly generated polyomino
 <a name="Showcase"/>
 
 ## Showcase
-![Showcase](https://img.itch.zone/aW1nLzY4OTU1NjcuZ2lm/original/%2B9z%2FOo.gif)
+![Showcase](Showcase.gif)
 
 <a name="How_to_Play"/>
 
