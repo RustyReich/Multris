@@ -21,7 +21,7 @@ bool CUSTOM_MODE = false;
 int BLOCK_SPRITE_ID = 1;
 int WALL_SPRITE_ID = 2;
 
-bool DEBUG = true;
+bool DEBUG = false;
 
 bool MULTIPLAYER = false;
 
@@ -136,6 +136,7 @@ int main(int argc, char *argv[]) {
 		SHOW_FPS = getFileValue("SAVES/options.cfg", "SHOW FPS");
 		CENTER_DOT = getFileValue("SAVES/options.cfg", "CENTER DOT");
 		GRAPHICS = getFileValue("SAVES/options.cfg", "GRAPHICS");
+		DEBUG = getFileValue("SAVES/options.cfg", "DEBUG");
 
 		// Change sprite IDs depending on if using new or old graphics
 		if (GRAPHICS == false)

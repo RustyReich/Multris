@@ -34,7 +34,7 @@
 
 #define LEVELUP_INCREASE 3
 
-#define NUM_OF_OPTIONS 6
+#define NUM_OF_OPTIONS 7
 
 enum Control_Types {
 	

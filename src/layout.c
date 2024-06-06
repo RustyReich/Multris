@@ -1419,7 +1419,10 @@ UI_list* create_Options_List()
 	list->selected_entry = 0;
 
 	list->ui->x = 42;
-	list->ui->y = 98;
+
+	list->ui->y = 84;
+	if (DEBUG == true)
+		list->ui->y = 98;
 
 	list->ui->currentlyInteracting = false;
 

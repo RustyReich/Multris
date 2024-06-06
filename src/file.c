@@ -167,7 +167,8 @@ void createOptions()
 		fprintf(optionsFile, "LIMIT FPS=1\n");
 		fprintf(optionsFile, "SHOW FPS=1\n");
 		fprintf(optionsFile, "CENTER DOT=1\n");
-		fprintf(optionsFile, "GRAPHICS=1");
+		fprintf(optionsFile, "GRAPHICS=1\n");
+		fprintf(optionsFile, "DEBUG=0");
 
 		fclose(optionsFile);
 
@@ -416,6 +417,7 @@ bool brokenOptions()
 	int show_fps_value = getFileValue("SAVES/options.cfg", "SHOW FPS");
 	int center_dot_value = getFileValue("SAVES/options.cfg", "CENTER DOT");
 	int graphics_value = getFileValue("SAVES/options.cfg", "GRAPHICS");
+	int debug_value = getFileValue("SAVES/options.cfg", "DEBUG");
 
 	if (fullscreen_value != 0 && fullscreen_value != 1)
 		return true;
@@ -428,6 +430,8 @@ bool brokenOptions()
 	if (center_dot_value != 0 && center_dot_value != 1)
 		return true;
 	if (graphics_value != 0 && graphics_value != 1)
+		return true;
+	if (debug_value != 0 && debug_value != 1)
 		return true;
 
 	return false;
