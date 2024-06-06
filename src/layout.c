@@ -2341,27 +2341,35 @@ void drawBackgroundExtras(SDL_Texture* background, unsigned short size)
 }
 
 //Get the width, in pixels, of the entire game content
-int getGameWidth(unsigned short size)
+int getGameWidth(unsigned short size, bool multiplayer)
 {
 
+	int returnValue = 0;
+
 	if (size == 0 || size == MAX_PIECE_SIZE)
-		return 384;
+		returnValue = 384;
 	else if (size == 1)
-		return 300;
+		returnValue = 300;
 	else if (size == 2)
-		return 324;
+		returnValue = 324;
 	else if (size == 3)
-		return 360;
+		returnValue = 360;
 	else if (size == 4)
-		return 384;
+		returnValue = 384;
 	else if (size == 5)
-		return 420;
+		returnValue = 420;
 	else if (size == 6)
-		return 444;
+		returnValue = 444;
 	else if (size == 7)
-		return 480;
+		returnValue = 480;
 	else
-		return 384;
+		returnValue = 384;
+
+	// Double the width if in a multiplayer game
+	if (multiplayer)
+		returnValue *= 2;
+	
+	return returnValue;
 
 }
 

@@ -76,7 +76,7 @@ int main (int argc, char* argv[])
 
     }
     else
-        printf("Opened server on port %d\n", SDL_SwapBE16(ip.port));
+        printf("Opened server on port %d.\n", SDL_SwapBE16(ip.port));
 
     bool running = true;
 
@@ -167,11 +167,34 @@ int main (int argc, char* argv[])
             if (SDLNet_CheckSockets(socketSets[i], 0))
             {
 
+                printf("Receiving data from player %d...\n", i + 1);
+
                 // Process the data if they sent any
                 char data[1024];
                 int len = SDLNet_TCP_Recv(clients[i], data, 1024);
                 data[len - 1] = '\0';
-                printf("%s\n", data);
+
+                // If the data is MAP data
+                if (SDL_strstr(data, "MAP") != NULL )
+                {
+
+                    printf("Received MAP from player %d.\n", i + 1);
+
+                    // Send the map data to every other player
+                    for (int j = 0; j < maxPlayers; j++)
+                    {
+
+                        if (j != i)
+                        {
+
+                            printf("Sending MAP from player %d to player %d...\n", i + 1, j + 1);
+                            SDLNet_TCP_Send(clients[j], data, len);
+
+                        }
+
+                    }
+
+                }
 
             }
 

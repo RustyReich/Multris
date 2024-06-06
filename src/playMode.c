@@ -32,6 +32,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(bool, firstLoop, true);
 	DECLARE_VARIABLE(int, foregroundX, 0);
 	DECLARE_VARIABLE(int, foregroundY, 0);
+	DECLARE_VARIABLE(int, opponentForegroundX, 0);
 	DECLARE_VARIABLE(double, pausedMulti, 1.0);
 	DECLARE_VARIABLE(bool, playing_progress_sound, false);
 	DECLARE_VARIABLE(unsigned int, progress_sound_start, 0);
@@ -49,6 +50,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
 	static SDL_Texture* Texture_SizeBag; declare_HUD_Text(&Texture_SizeBag, SIZEBAG_TEXT);
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
+	static SDL_Texture* oppenentForeground; declare_HUD_Text(&oppenentForeground, FOREGROUND_TEXT);
 
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
@@ -65,6 +67,9 @@ unsigned short playMode(piece* firstPiece)
 		//Get X and Y for foreground
 		*foregroundX = getForegroundX(MODE);
 		*foregroundY = getForegroundY(MODE);
+
+		// The X coordinate of the opponents foreground is offset from the regular foreground by gameWidth / 2.
+		*opponentForegroundX = *foregroundX + getGameWidth(MODE, MULTIPLAYER) / 2;
 
 		//Calculate multiplier for PAUSED text when it would be wider than the playfield
 		if (MODE != 0)
@@ -669,6 +674,90 @@ unsigned short playMode(piece* firstPiece)
 
 			}
 
+			// If in a multiplayer game
+			if (MULTIPLAYER)
+			{
+
+				// Send your MAP data to the server whenever you place a piece
+				int len = MAP_WIDTH * MAP_HEIGHT + SDL_strlen("MAP=") + 1;
+				char* data = SDL_calloc(len, sizeof(char));
+				SDL_strlcpy(data, "MAP=", len);
+				
+				int index = SDL_strlen("MAP=");
+
+				for (unsigned short i = 0; i < MAP_HEIGHT; i++)
+				{
+
+					for (unsigned short j = 0; j < MAP_WIDTH; j++)
+					{
+
+						// MAP data is sent as a string of 1's and 0's
+						if (*(mapData + i * MAP_WIDTH + j) == true)
+							data[index] = '1';
+						else
+							data[index] = '0';
+
+						index++;
+
+					}
+
+				}
+
+				// MAP data ends with a null-terminator
+				data[len - 1] = '\0';
+
+				// Send the data
+				SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+				// Then free the data to avoid memory leaks
+				SDL_free(data);
+
+			}
+
+		}
+
+	}
+
+	// If in a multiplayer game
+	if (MULTIPLAYER)
+	{
+
+		// Check for incoming data from the server
+		if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
+		{
+
+			// Store the data in a 1024 byte buffer
+			char data[1024];
+			int len = SDLNet_TCP_Recv(globalInstance->serverSocket, data, 1024);
+			data[len] = '\0';
+
+			// If the data received is MAP data
+			if (SDL_strstr(data, "MAP") != NULL)
+			{
+
+				int stringIndex = SDL_strlen("MAP=");
+				int mapDataIndex = 0;
+
+				// Iterate through the MAP data and place the pieces on the opponents foreground texture
+				while (data[stringIndex] != '\0')
+				{
+
+					if (data[stringIndex] == '1')
+					{
+
+						int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
+						int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
+						drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, GREEN);
+
+					}
+
+					stringIndex++;
+					mapDataIndex++;
+
+				}
+
+			}
+
 		}
 
 	}
@@ -713,6 +802,10 @@ unsigned short playMode(piece* firstPiece)
 		drawTexture(foreground, *foregroundX, *foregroundY, 1.0);
 	else	// In SIZE > MAX_PIECE_SIZE, the foreground is rendered smaller to fit within the same sized play area as MULTRIS mode.
 		drawTexture(foreground, *foregroundX, *foregroundY, (float)MAX_PIECE_SIZE / (float)MODE);
+
+	// If in a multiplayer game, draw the opponents foreground texture
+	if (MULTIPLAYER)
+		drawTexture(oppenentForeground, *opponentForegroundX, *foregroundY, 1.0);
 
 	//Draw current piece if game isnt over
 	if (*gameOver == false)

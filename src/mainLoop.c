@@ -7,51 +7,29 @@ void mainLoop()
 	static SDL_Texture* Texture_Background;
 	if (Texture_Background == NULL) {
 
-		if (MULTIPLAYER == false)
-		{
+		//Set renderer to correect dimensions for selected size
+		int width = getGameWidth(MODE, MULTIPLAYER);
+		int height = getGameHeight(MODE);
+		SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
+		scaleRenderer();
 
-			//Set renderer to correect dimensions for selected size
-			int width = getGameWidth(MODE);
-			int height = getGameHeight(MODE);
-			SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
-			scaleRenderer();
+		//Create background texture
+		Texture_Background = createTexture(width, height);
 
-			//Create background texture
-			Texture_Background = createTexture(width, height);
-
-			//Draw all layout stuff
-			drawPlayField(Texture_Background, MODE, 0);
-			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
-			drawLevelBox(Texture_Background, MODE);
-			drawUntilBox(Texture_Background, MODE);
-			drawNextBox(Texture_Background, MODE);
-			drawHoldBox(Texture_Background, MODE);
-			drawSizeBagBox(Texture_Background, MODE);
-			drawBackgroundExtras(Texture_Background, MODE);
-
-		}
-		else
-		{
-
-			int width = getGameWidth(MODE) * 2;
-			int height = getGameHeight(MODE);
-			SDL_RenderSetLogicalSize(globalInstance->renderer, width, height);
-			scaleRenderer();
-
-			Texture_Background = createTexture(width, height);
-
-			drawPlayField(Texture_Background, MODE, 0);
+		//Draw all layout stuff
+		
+		//Draw two play fields if in multiplayer mode. Second one is offset by half the width of the game
+		drawPlayField(Texture_Background, MODE, 0);
+		if (MULTIPLAYER)
 			drawPlayField(Texture_Background, MODE, width / 2);
 
-			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
-			drawLevelBox(Texture_Background, MODE);
-			drawUntilBox(Texture_Background, MODE);
-			drawNextBox(Texture_Background, MODE);
-			drawHoldBox(Texture_Background, MODE);
-			drawSizeBagBox(Texture_Background, MODE);
-			drawBackgroundExtras(Texture_Background, MODE);
-
-		}
+		drawScoreBox(Texture_Background, MODE, CUSTOM_MODE);
+		drawLevelBox(Texture_Background, MODE);
+		drawUntilBox(Texture_Background, MODE);
+		drawNextBox(Texture_Background, MODE);
+		drawHoldBox(Texture_Background, MODE);
+		drawSizeBagBox(Texture_Background, MODE);
+		drawBackgroundExtras(Texture_Background, MODE);
 
 	}
 

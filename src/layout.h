@@ -57,7 +57,7 @@ int getNextY(unsigned short size, int height);
 int getHoldX(unsigned short size, int width);
 int getHoldY(unsigned short size, int height);
 void drawBackgroundExtras(SDL_Texture* background, unsigned short size);
-int getGameWidth(unsigned short size);
+int getGameWidth(unsigned short size, bool multiplayer);
 int getGameHeight(unsigned short size);
 int getPausedX(unsigned short size, float multi);
 int getPausedY(unsigned short size, float multi);
