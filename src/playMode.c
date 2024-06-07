@@ -20,6 +20,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(bool, justHeld, false);
 	DECLARE_VARIABLE(unsigned short, numCompleted, 0);
 	DECLARE_VARIABLE(unsigned int, Score, 0);
+	DECLARE_VARIABLE(unsigned int, opponentScore, 0);
 	DECLARE_VARIABLE(short, Level, 0);
 	DECLARE_VARIABLE(short, linesAtCurrentLevel, 0);
 	DECLARE_VARIABLE(short, ghostY, MAP_HEIGHT - currentPiece->height);
@@ -46,6 +47,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece, false);
 	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece, false);
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
+	static SDL_Texture* Texture_OpponentScore; declare_HUD_Text(&Texture_OpponentScore, SCORE_TEXT);
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
@@ -600,6 +602,10 @@ unsigned short playMode(piece* firstPiece)
 				*Score += ((93.333 * SDL_pow(*numCompleted, 3) - 490 * SDL_pow(*numCompleted, 2) + 876.67 * *numCompleted - 440) * (*Level + 1));
 				updateScore(*Score, Texture_Score);
 
+				// Send score to the server if in a multiplayer game
+				if (MULTIPLAYER)
+					sendScoretoServer(*Score, lastPulseTime);
+
 				//Keep track of the number of lines that have been cleared on the current 
 				//level
 				*linesAtCurrentLevel += *numCompleted;
@@ -727,6 +733,14 @@ unsigned short playMode(piece* firstPiece)
 
 				}
 
+			}	// If the data receveid is SCORE data
+			else if (SDL_strstr(data, "SCORE") != NULL)
+			{
+
+				// Extract the score from the received data and update the Texture_OpponentScore
+				int opponentScore = SDL_atoi(SDL_strstr(data, "SCORE=") + SDL_strlen("SCORE=") * sizeof(char));
+				updateScore(opponentScore, Texture_OpponentScore);
+
 			}
 
 		}
@@ -785,9 +799,14 @@ unsigned short playMode(piece* firstPiece)
 	else	// In SIZE > MAX_PIECE_SIZE, the foreground is rendered smaller to fit within the same sized play area as MULTRIS mode.
 		drawTexture(foreground, *foregroundX, *foregroundY, (float)MAX_PIECE_SIZE / (float)MODE);
 
-	// If in a multiplayer game, draw the opponents foreground texture
+	// If in a multiplayer game, draw the opponents textures
 	if (MULTIPLAYER)
+	{
+
 		drawTexture(oppenentForeground, *opponentForegroundX, *foregroundY, 1.0);
+		drawTexture(Texture_OpponentScore, getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2, getScoreDrawY(MODE), 1);
+
+	}
 
 	//Draw current piece if game isnt over
 	if (*gameOver == false)
@@ -953,11 +972,39 @@ unsigned short playMode(piece* firstPiece)
 
 }
 
+// Function for sending score data to the server
+void sendScoretoServer(int score, int* lastPulseTime)
+{
+
+	// Convert the score into a string
+	char* scoreString = SDL_calloc(getIntLength(score) + 1, sizeof(char));
+	SDL_itoa(score, scoreString, 10);
+	scoreString[getIntLength(score)] = '\0';
+
+	// Prepend the "SCORE" header to the data string
+	int len = SDL_strlen("SCORE=") + SDL_strlen(scoreString) + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "SCORE=", len);
+	SDL_strlcat(data, scoreString, len);
+
+	// Ensure data ends in null-byte
+	data[len] = '\0';
+
+	// Send data to server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of when last communication with server was
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free the scoreString to avoid memory leaks
+	SDL_free(scoreString);
+
+}
+
 // Function for sending mapData to the server
 void sendMapToServer(int* mapData, int* lastPuleTime)
 {
 
-	// Send your MAP data to the server whenever you place a piece
 	int len = MAP_WIDTH * MAP_HEIGHT + SDL_strlen("MAP=") + 1;
 	char* data = SDL_calloc(len, sizeof(char));
 	SDL_strlcpy(data, "MAP=", len);
@@ -980,7 +1027,7 @@ void sendMapToServer(int* mapData, int* lastPuleTime)
 	}
 
 	// MAP data ends with a null-terminator
-	data[len - 1] = '\0';
+	data[len] = '\0';
 
 	// Send the data
 	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);

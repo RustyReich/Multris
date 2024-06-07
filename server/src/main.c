@@ -223,7 +223,7 @@ int main (int argc, char* argv[])
                     }
 
                     // If the data is MAP data
-                    if (SDL_strstr(data, "MAP") != NULL )
+                    if (SDL_strstr(data, "MAP") != NULL)
                     {
 
                         printf("Received MAP from player %d.\n", playerID);
@@ -242,7 +242,27 @@ int main (int argc, char* argv[])
 
                         }
 
-                    }   
+                    }   // if the data is SCORE data   
+                    else if (SDL_strstr(data, "SCORE") != NULL)
+                    {
+
+                        printf("Received SCORE from player %d.\n", playerID);
+
+                        // Send the score data to every other player
+                        for (int j = 0; j < maxPlayers; j++)
+                        {
+
+                            if (j != i)
+                            {
+
+                                printf("Sending SCORE from player %d to player %d...\n", playerID, j + 1);
+                                SDLNet_TCP_Send(clients[j], data, len);
+
+                            }
+
+                        }
+
+                    }
 
                 }
                 else

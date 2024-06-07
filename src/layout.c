@@ -58,7 +58,7 @@ void drawPlayField(SDL_Texture* background, unsigned short size, int XOffset)
 }
 
 //Function for drawing the score box
-void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode)
+void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode, int XOffset)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -73,7 +73,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
     //Load the top score and create a string for it
-    int topScore = loadTop(MODE, inCustomMode);
+	int topScore = loadTop(MODE, inCustomMode);
 	char* top_zeros;
 	//Figure out how many zeros should be pre-pended to the score
 	unsigned short zeroLength = 7 - getIntLength(topScore);
@@ -155,6 +155,9 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 		Y = 60;
 
 	}
+	
+	// Apply offset. This is used for drawing a second score box in multiplayer mode
+	X += XOffset;
 
 	//Draw box
     drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);
