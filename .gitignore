@@ -26,3 +26,7 @@
 !server/
 !server/src
 !server/src/*
+!server/build
+!server/build_windows
+!server/unix_obj
+!server/win_obj
