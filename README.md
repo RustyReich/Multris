@@ -83,6 +83,8 @@ For all following instructions, replace `make -f Makefile_Linux` with `make -f M
 git clone https://github.com/RustyReich/Multris
 cd Multris
 make -f Makefile_Linux
+cd server
+make -f Makefile_Linux
 ```
 
 #### Building a Specific Release Version (Stable)
@@ -92,6 +94,8 @@ make -f Makefile_Linux
 ```
 git clone https://github.com/RustyReich/Multris --branch v1.x.x
 cd Multris
+make -f Makefile_Linux
+cd server
 make -f Makefile_Linux
 ```
 
