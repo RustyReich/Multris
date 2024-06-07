@@ -36,6 +36,8 @@
 
 #define NUM_OF_OPTIONS 7
 
+#define MULTIPLAYER_PULSE_DELAY_SECONDS 1
+
 enum Control_Types {
 	
 	LEFT_BUTTON,

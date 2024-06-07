@@ -11,6 +11,7 @@ unsigned short multiplayerLobby(piece** Piece)
     DECLARE_VARIABLE(double, textMulti, 0.80);
     DECLARE_VARIABLE(double, messageMulti, 1.0);
     DECLARE_VARIABLE(bool, error, false);
+    DECLARE_VARIABLE(int, lastPulseTime, 0);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -63,6 +64,17 @@ unsigned short multiplayerLobby(piece** Piece)
                 return PLAY_SCREEN;
 
             }
+
+        }
+
+        // Send a "PULSE" to the server every MULTIPLAYER_PULSE_DELAY_SECONDS so the server knows that we are still connected.
+        if ((SDL_GetTicks() - *lastPulseTime) / 1000 > MULTIPLAYER_PULSE_DELAY_SECONDS)
+        {
+
+            char message[] = "PULSE";
+            SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message));
+            
+            *lastPulseTime = SDL_GetTicks();
 
         }
 
@@ -176,6 +188,10 @@ unsigned short multiplayerLobby(piece** Piece)
 
                             // Add the connection socket to our socket set and set MULTIPLAYER to true
                             SDLNet_TCP_AddSocket(globalInstance->serverSocketSet, globalInstance->serverSocket);
+                            
+                            // Keep track of the last time we sent data to the server
+                            *lastPulseTime = SDL_GetTicks();
+                            
                             MULTIPLAYER = true;
                             
                         }
@@ -271,6 +287,19 @@ unsigned short multiplayerLobby(piece** Piece)
                 }
 
             }
+
+        }
+
+        // Exit to the main menu if EXIT_BUTTON is pressed
+        if (onPress(EXIT_BUTTON))
+        {
+
+            // Close the server socket
+            SDLNet_TCP_Close(globalInstance->serverSocket);
+
+            playSound(LAND_SOUND);
+            freeVars();
+            return RESET;
 
         }
 

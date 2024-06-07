@@ -38,6 +38,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(unsigned int, progress_sound_start, 0);
 	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
 	DECLARE_VARIABLE(bool, aboutToExit, false);
+	DECLARE_VARIABLE(int, lastPulseTime, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -675,44 +676,9 @@ unsigned short playMode(piece* firstPiece)
 			}
 
 			// If in a multiplayer game
-			if (MULTIPLAYER)
-			{
-
 				// Send your MAP data to the server whenever you place a piece
-				int len = MAP_WIDTH * MAP_HEIGHT + SDL_strlen("MAP=") + 1;
-				char* data = SDL_calloc(len, sizeof(char));
-				SDL_strlcpy(data, "MAP=", len);
-				
-				int index = SDL_strlen("MAP=");
-
-				for (unsigned short i = 0; i < MAP_HEIGHT; i++)
-				{
-
-					for (unsigned short j = 0; j < MAP_WIDTH; j++)
-					{
-
-						// MAP data is sent as a string of 1's and 0's
-						if (*(mapData + i * MAP_WIDTH + j) == true)
-							data[index] = '1';
-						else
-							data[index] = '0';
-
-						index++;
-
-					}
-
-				}
-
-				// MAP data ends with a null-terminator
-				data[len - 1] = '\0';
-
-				// Send the data
-				SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-				// Then free the data to avoid memory leaks
-				SDL_free(data);
-
-			}
+			if (MULTIPLAYER)
+				sendMapToServer(mapData, lastPulseTime);
 
 		}
 
@@ -738,6 +704,9 @@ unsigned short playMode(piece* firstPiece)
 				int stringIndex = SDL_strlen("MAP=");
 				int mapDataIndex = 0;
 
+				// Clear the opponents background texture
+				clearTexture(oppenentForeground);
+
 				// Iterate through the MAP data and place the pieces on the opponents foreground texture
 				while (data[stringIndex] != '\0')
 				{
@@ -757,6 +726,17 @@ unsigned short playMode(piece* firstPiece)
 				}
 
 			}
+
+		}
+
+		if ((SDL_GetTicks() - *lastPulseTime) / 1000 > MULTIPLAYER_PULSE_DELAY_SECONDS)
+		{
+
+			char message[] = "PULSE";
+			SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message));
+		
+
+			*lastPulseTime = SDL_GetTicks();
 
 		}
 
@@ -862,7 +842,15 @@ unsigned short playMode(piece* firstPiece)
 			if (!*playing_progress_sound)
 				playSound(COMPLETE_SOUND);
 
+			// Send the mapData to the server now that a row has been removed.
+			if (MULTIPLAYER)
+				sendMapToServer(mapData, lastPulseTime);
+
 		}
+
+		// This is added because otherwise the last removed line will be missed
+		if (*clearingLine == false)
+			sendMapToServer(mapData, lastPulseTime);
 
 		//Remove first element in completedRows array
 			//Also resize completedRows array
@@ -960,6 +948,49 @@ unsigned short playMode(piece* firstPiece)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
+
+}
+
+// Function for sending mapData to the server
+void sendMapToServer(bool* mapData, int* lastPuleTime)
+{
+
+	// Send your MAP data to the server whenever you place a piece
+	int len = MAP_WIDTH * MAP_HEIGHT + SDL_strlen("MAP=") + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "MAP=", len);
+	
+	int index = SDL_strlen("MAP=");
+
+	for (unsigned short i = 0; i < MAP_HEIGHT; i++)
+	{
+
+		for (unsigned short j = 0; j < MAP_WIDTH; j++)
+		{
+
+			// MAP data is sent as a string of 1's and 0's
+			if (*(mapData + i * MAP_WIDTH + j) == true)
+				data[index] = '1';
+			else
+				data[index] = '0';
+
+			index++;
+
+		}
+
+	}
+
+	// MAP data ends with a null-terminator
+	data[len - 1] = '\0';
+
+	// Send the data
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of the last time we sent data to the server.
+	*lastPuleTime = SDL_GetTicks();
+
+	// Then free the data to avoid memory leaks
+	SDL_free(data);
 
 }
 

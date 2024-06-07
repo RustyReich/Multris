@@ -297,6 +297,7 @@ int main(int argc, char *argv[]) {
 	//Close SDL stuff 
 	SDL_DestroyRenderer(globalInstance->renderer);
 	SDL_DestroyWindow(globalInstance->window);
+	SDLNet_Quit();
 	SDL_Quit();
 
 	//Return 0 upon successful run

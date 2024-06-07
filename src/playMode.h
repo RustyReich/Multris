@@ -21,5 +21,6 @@ unsigned short completedLine(bool* mapData, int Y, piece Piece, int** returnRows
 void adjustNewPiece(piece* Piece, signed short* X, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight);
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
+void sendMapToServer(bool* mapData, int* lastPuleTime);
 
 #endif
