@@ -56,6 +56,7 @@ unsigned short playMode(piece* firstPiece)
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
 	static int* completedRows; declareStart(completedRows, MAP_HEIGHT + 1);
+		// mapData[i][j] = 0 if nothing at that coord. Otherwise = integer equivalent of the color of the block at that coord.
 	static int* mapData; declare_map_matrix(&mapData);
 
 	// Declare the bag holding the possible sizes for bag shuffling of sizes
@@ -716,6 +717,7 @@ unsigned short playMode(piece* firstPiece)
 
 						int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
 						int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
+						// Color of the block can be determined based on the digit that is present in the string
 						drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, (Uint8)data[stringIndex] - '0');
 
 					}
