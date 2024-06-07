@@ -56,7 +56,7 @@ unsigned short playMode(piece* firstPiece)
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
 	static int* completedRows; declareStart(completedRows, MAP_HEIGHT + 1);
-	static bool* mapData; declare_map_matrix(&mapData);
+	static int* mapData; declare_map_matrix(&mapData);
 
 	// Declare the bag holding the possible sizes for bag shuffling of sizes
 	static SizeBag* sizeBag; declare_size_bag(&sizeBag, MODE, CUSTOM_MODE);
@@ -221,7 +221,7 @@ unsigned short playMode(piece* firstPiece)
 							furthestY = blockY - currentPiece->centerBlock->Y;
 
 					}	// Check whether the current block is colliding with a different piece that has already been placed
-					else if (*(mapData + ((int)*Y + (blockY - currentPiece->minY)) * MAP_WIDTH + (*X + (blockX - currentPiece->minX))))
+					else if (*(mapData + ((int)*Y + (blockY - currentPiece->minY)) * MAP_WIDTH + (*X + (blockX - currentPiece->minX))) != 0)
 					{
 
 						// If it is, check wether the collision is to the left or right of the center. If there is a collision, then
@@ -580,7 +580,7 @@ unsigned short playMode(piece* firstPiece)
 				int row = (int)*Y + (currentPiece->blocks[i].Y - currentPiece->minY);
 				int column = *X + (currentPiece->blocks[i].X - currentPiece->minX);
 
-				*(mapData + row * MAP_WIDTH + column) = true;
+				*(mapData + row * MAP_WIDTH + column) = currentPiece->color;
 
 			}
 
@@ -711,12 +711,12 @@ unsigned short playMode(piece* firstPiece)
 				while (data[stringIndex] != '\0')
 				{
 
-					if (data[stringIndex] == '1')
+					if (data[stringIndex] != '0')
 					{
 
 						int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
 						int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
-						drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, GREEN);
+						drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, (Uint8)data[stringIndex] - '0');
 
 					}
 
@@ -849,7 +849,7 @@ unsigned short playMode(piece* firstPiece)
 		}
 
 		// This is added because otherwise the last removed line will be missed
-		if (*clearingLine == false)
+		if (*clearingLine == false && MULTIPLAYER)
 			sendMapToServer(mapData, lastPulseTime);
 
 		//Remove first element in completedRows array
@@ -952,7 +952,7 @@ unsigned short playMode(piece* firstPiece)
 }
 
 // Function for sending mapData to the server
-void sendMapToServer(bool* mapData, int* lastPuleTime)
+void sendMapToServer(int* mapData, int* lastPuleTime)
 {
 
 	// Send your MAP data to the server whenever you place a piece
@@ -968,11 +968,8 @@ void sendMapToServer(bool* mapData, int* lastPuleTime)
 		for (unsigned short j = 0; j < MAP_WIDTH; j++)
 		{
 
-			// MAP data is sent as a string of 1's and 0's
-			if (*(mapData + i * MAP_WIDTH + j) == true)
-				data[index] = '1';
-			else
-				data[index] = '0';
+			// MAP data is sent as a string of digits
+			data[index] = '0' + (char)*(mapData + i * MAP_WIDTH + j);
 
 			index++;
 
@@ -1180,7 +1177,7 @@ unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigne
 }
 
 //Function for calculating the Y coord to display the "ghost" of the current piece at
-unsigned short calcGhostY(piece* Piece, int X, int startY, bool* mapData, int mapWidth, int mapHeight)
+unsigned short calcGhostY(piece* Piece, int X, int startY, int* mapData, int mapWidth, int mapHeight)
 {
 
 	double Y = startY;
@@ -1336,7 +1333,7 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 }
 
 //Function for playing one frame of the line clearing animation
-bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, bool *mapData, unsigned short* numCompleted)
+bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, int *mapData, unsigned short* numCompleted)
 {
 
 	//This is the value that gets returned from the function and is used to tell if a sound should be played for the animation this frame
@@ -1430,12 +1427,12 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 }
 
 //Function for removing a line from the mapData and moving the lines above it down
-void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsigned short mapWidth)
+void removeLine(unsigned short row, int* mapData, SDL_Texture* foreground, unsigned short mapWidth)
 {
 
 	//All blocks in memory for the clearedLine are set to empty
 	for (unsigned short j = 0; j < mapWidth; j++)
-		*(mapData + row * mapWidth + j) = false;
+		*(mapData + row * mapWidth + j) = 0;
 
 	SDL_Rect srcRect = { .x = 0, .y = 0, .w = mapWidth * SPRITE_WIDTH, .h = row * SPRITE_HEIGHT };
 	
@@ -1464,12 +1461,12 @@ void removeLine(unsigned short row, bool* mapData, SDL_Texture* foreground, unsi
 }
 
 //Functiom for checking if a given row is completely filled
-bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth)
+bool lineIsComplete(int* mapData, unsigned short row, unsigned short mapWidth)
 {
 
 	//Just go through every block in the given row. If any of them are not filled, return false
 	for (unsigned short j = 0; j < mapWidth; j++)
-		if (*(mapData + row * mapWidth + j) == false)
+		if (*(mapData + row * mapWidth + j) == 0)
 			return false;
 
 	//Otherwise, the line must be totally filled and thus complete, so return true
@@ -1479,7 +1476,7 @@ bool lineIsComplete(bool* mapData, unsigned short row, unsigned short mapWidth)
 
 //This function gets both the number of lines that have just been completed, as well as 
 //the row numbers of each one that was completed
-unsigned short completedLine(bool* mapData, int Y, piece Piece, int** returnRows, int mapWidth, int mapHeight)
+unsigned short completedLine(int* mapData, int Y, piece Piece, int** returnRows, int mapWidth, int mapHeight)
 {
 
 	//Duct-tape fix for a rare glitch that can sometimes happen when holding near the top
@@ -1534,7 +1531,7 @@ void adjustNewPiece(piece* Piece, signed short* X, unsigned short mapWidth)
 }
 
 //Check if a piece is colliding with another piece in various circumstances
-bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, int mapWidth, int mapHeight)
+bool isColliding(piece Piece, int X, double* Y, int direction, int* mapData, int mapWidth, int mapHeight)
 {
 
 	//A piece is considered colliding if it sticks outside the bounds of the playable area
@@ -1551,7 +1548,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, in
 			//map Data
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX))) == true ||
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX))) != 0 ||
 				(int)*Y + Piece.height > mapHeight)
 			{
 
@@ -1568,7 +1565,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, in
 		//Check any blocks in mapData exist to the LEFT of any blocks in the currentPiece
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX) - 1)) == true)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX) - 1)) != 0)
 				return true;
 
 	}
@@ -1578,7 +1575,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, in
 		//Check any blocks in mapData exist to the RIGHT of any blocks in the currentPiece
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX) + 1)) == true)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX) + 1)) != 0)
 				return true;
 
 	}
@@ -1589,7 +1586,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, bool* mapData, in
 			//currentPiece is not trying to move in this instance
 		for (unsigned short i = 0; i < Piece.numOfBlocks; i++)
 			if (*(mapData + ((int)*Y + (Piece.blocks[i].Y - Piece.minY))
-				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX))) == true)
+				* mapWidth + (X + (Piece.blocks[i].X - Piece.minX))) != 0)
 				return true;
 
 	}

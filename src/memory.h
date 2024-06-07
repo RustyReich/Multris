@@ -15,7 +15,7 @@ void declare_unsigned_int(void** ptr, unsigned int value);
 void declare_Piece(piece** ptr, piece* Piece);
 void declare_Piece_Text(SDL_Texture** ptr, piece* Piece, bool drawCenterDot);
 void declare_HUD_Text(SDL_Texture** ptr, int type);
-void declare_map_matrix(bool** ptr);
+void declare_map_matrix(int** ptr);
 void declare_size_bag(SizeBag** ptr, unsigned short mode, bool customMode);
 void declare_moving_title_pieces(piece*** ptr);
 void declare_UI_list(UI_list** ptr, int type);

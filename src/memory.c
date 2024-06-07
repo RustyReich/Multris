@@ -269,17 +269,17 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
 }
 
 //Declare the map data matrix
-void declare_map_matrix(bool** ptr)
+void declare_map_matrix(int** ptr)
 {
 
     if (*ptr == NULL)
     {
 
-        *ptr = (bool*)(SDL_malloc(MAP_HEIGHT * MAP_WIDTH * sizeof(**ptr)));
+        *ptr = (int*)(SDL_malloc(MAP_HEIGHT * MAP_WIDTH * sizeof(**ptr)));
         if (*ptr != NULL)
             for (unsigned short i = 0; i < MAP_HEIGHT; i++)
                 for (unsigned short j = 0; j < MAP_WIDTH; j++)
-                    *(*ptr + i * MAP_WIDTH + j) = false;
+                    *(*ptr + i * MAP_WIDTH + j) = 0;
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, VARIABLE);

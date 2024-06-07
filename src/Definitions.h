@@ -72,18 +72,17 @@ enum Sound_Types {
 
 enum Color_Types {
 
-	GRAY,
-	WHITE,
-	YELLOW,
-	GREEN,
-	CYAN,
-	MAGENTA,
-	ORANGE,
-	BLUE,
-	RED,
-	BLACK,
-	DARK_GRAY,
-	NUM_OF_COLORS
+	GRAY = 1,
+	WHITE = 2,
+	YELLOW = 3,
+	GREEN = 4,
+	CYAN = 5,
+	MAGENTA = 6,
+	ORANGE = 7,
+	BLUE = 8,
+	RED = 9,
+	BLACK = 10,
+	DARK_GRAY = 11
 
 };
 
