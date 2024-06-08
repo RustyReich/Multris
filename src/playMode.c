@@ -7,6 +7,7 @@ unsigned short playMode(piece* firstPiece)
 	static piece* currentPiece; declare_Piece(&currentPiece, firstPiece);
 	static piece* holdPiece; declare_Piece(&holdPiece, NULL);
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
+	static piece* opponentNextPiece; declare_Piece(&opponentNextPiece, NULL);
 	
 	//Variables
 	DECLARE_VARIABLE(signed short, X, 0);
@@ -28,6 +29,8 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(bool, moveStartBool, false);
 	DECLARE_VARIABLE(int, nextText_Width, 0);
 	DECLARE_VARIABLE(int, nextText_Height, 0);
+	DECLARE_VARIABLE(int, opponentNextText_Width, 0);
+	DECLARE_VARIABLE(int, opponentNextText_Height, 0);
 	DECLARE_VARIABLE(int, holdText_Width, 0);
 	DECLARE_VARIABLE(int, holdText_Height, 0);
 	DECLARE_VARIABLE(bool, firstLoop, true);
@@ -45,6 +48,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
 	static SDL_Texture* Texture_Ghost; declare_Piece_Text(&Texture_Ghost, currentPiece, CENTER_DOT);
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece, false);
+	static SDL_Texture* Texture_OpponentNext; declare_Piece_Text(&Texture_OpponentNext, opponentNextPiece, false);
 	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece, false);
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
 	static SDL_Texture* Texture_OpponentScore; declare_HUD_Text(&Texture_OpponentScore, SCORE_TEXT);
@@ -536,6 +540,10 @@ unsigned short playMode(piece* firstPiece)
 		// Remove size of nextPiece from sizeBag
 		removeSizeFromBag(sizeBag, nextPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
+		// If in a muliplayer game, send the NEXT piece to the server
+		if (MULTIPLAYER)
+			sendNextPieceToServer(nextPiece, lastPulseTime);
+
 	}
 
 	//Gravity
@@ -742,6 +750,25 @@ unsigned short playMode(piece* firstPiece)
 				updateScore(opponentScore, Texture_OpponentScore);
 
 			}
+			else if (SDL_strstr(data, "NEXT") != NULL)	// If the data received is a NEXT piece from the opponent
+			{
+
+				// Delete the current opponents NEXT piece
+				if (opponentNextPiece != NULL)
+				{
+
+					delPiece(&opponentNextPiece);
+					SDL_DestroyTexture(Texture_OpponentNext);
+					Texture_OpponentNext = NULL;
+
+				}
+
+				// And create a new one
+				opponentNextPiece = createPieceFromString(SDL_strstr(data, "NEXT=") + SDL_strlen("NEXT=") * sizeof(char));
+				Texture_OpponentNext = createPieceTexture(*opponentNextPiece, false);
+				SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
+
+			}
 
 		}
 
@@ -805,6 +832,8 @@ unsigned short playMode(piece* firstPiece)
 
 		drawTexture(oppenentForeground, *opponentForegroundX, *foregroundY, 1.0);
 		drawTexture(Texture_OpponentScore, getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2, getScoreDrawY(MODE), 1);
+		int X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentNext, X, getNextY(MODE, *opponentNextText_Height), 1.0);
 
 	}
 
@@ -972,6 +1001,31 @@ unsigned short playMode(piece* firstPiece)
 
 }
 
+// Function for sending a NEXT piece to the server
+void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime)
+{
+
+	// Conver the piece to a string
+	char* nextPieceAsString = convertPieceToString(nextPiece);
+
+	// Pre-pend "NEXT=" to the string
+	int len = SDL_strlen("NEXT=") + SDL_strlen(nextPieceAsString) + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "NEXT=", len);
+	SDL_strlcat(data, nextPieceAsString, len);
+
+	// Send the string to the server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of the last time data was sent to the server
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free the strings to avoid memory leaks
+	SDL_free(nextPieceAsString);
+	SDL_free(data);
+
+}
+
 // Function for sending score data to the server
 void sendScoretoServer(int score, int* lastPulseTime)
 {
@@ -998,6 +1052,8 @@ void sendScoretoServer(int score, int* lastPulseTime)
 
 	// Free the scoreString to avoid memory leaks
 	SDL_free(scoreString);
+
+	SDL_free(data);
 
 }
 

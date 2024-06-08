@@ -18,19 +18,24 @@ void mainLoop()
 
 		//Draw all layout stuff
 		
-		//Draw two play fields if in multiplayer mode. Second one is offset by half the width of the game
+		//Draw two play fields if in multiplayer mode. Second one is offset by half the width of the game.
 		drawPlayField(Texture_Background, MODE, 0);
 		if (MULTIPLAYER)
 			drawPlayField(Texture_Background, MODE, width / 2);
 
-		// Draw two score boxes if in multiplayer mode. Second one is offset by half the width of the game
+		// Draw two score boxes if in multiplayer mode. Second one is offset by half the width of the game.
 		drawScoreBox(Texture_Background, MODE, CUSTOM_MODE, 0);
 		if (MULTIPLAYER)
 			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE, width / 2);
 
 		drawLevelBox(Texture_Background, MODE);
 		drawUntilBox(Texture_Background, MODE);
-		drawNextBox(Texture_Background, MODE);
+
+		// Draw two NEXT boxes if in multiplayer mode. Second one is offset by half the width of the game.
+		drawNextBox(Texture_Background, MODE, 0);
+		if (MULTIPLAYER)
+			drawNextBox(Texture_Background, MODE, width / 2);
+		
 		drawHoldBox(Texture_Background, MODE);
 		drawSizeBagBox(Texture_Background, MODE);
 		drawBackgroundExtras(Texture_Background, MODE);

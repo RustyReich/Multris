@@ -263,6 +263,26 @@ int main (int argc, char* argv[])
                         }
 
                     }
+                    else if (SDL_strstr(data, "NEXT") != NULL)
+                    {
+
+                        printf("Received NEXT from player %d.\n", playerID);
+
+                        // Send the NEXT data to every other player
+                        for (int j = 0; j < maxPlayers; j++)
+                        {
+
+                            if (j != i)
+                            {
+
+                                printf("Sending NEXT from player %d to player %d...\n", playerID, j + 1);
+                                SDLNet_TCP_Send(clients[j], data, len);
+
+                            }
+
+                        }
+
+                    }
 
                 }
                 else

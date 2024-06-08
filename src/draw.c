@@ -97,11 +97,29 @@ unsigned short getColor_B(unsigned short color)
 unsigned short getIntLength(int num)
 {
 
+	unsigned short returnValue = 0;
+	bool isNegative = false;
+
+	// If the value is negative, make it positive...
+	if (num < 0)
+	{
+
+		num = num * -1;
+		isNegative = true;
+
+	}
+
 	if (num == 0)
-		return 1;
+		returnValue = 1;
 	else
-		return (unsigned short)(SDL_floor(SDL_log10(abs(num))) + 1);
+		returnValue = (unsigned short)(SDL_floor(SDL_log10(abs(num))) + 1);
 	
+	// ...And then add an extra 1 to the returnValue to account for the minus sign.
+	if (isNegative)
+		returnValue += 1;
+
+	return returnValue;
+
 }
 
 //Print string to a texture

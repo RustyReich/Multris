@@ -23,5 +23,7 @@ bool isColliding(piece Piece, int X, double* Y, int direction, int* mapData, int
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 void sendMapToServer(int* mapData, int* lastPuleTime);
 void sendScoretoServer(int score, int* lastPulseTime);
+void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime);
+piece* createPieceFromString(char* string);
 
 #endif

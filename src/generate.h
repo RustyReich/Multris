@@ -12,5 +12,7 @@ bool isSurrounded(piece* Piece, unsigned short blockID);
 unsigned short calcWidth(piece* Piece);
 unsigned short calcHeight(piece* Piece);
 piece* generateGamePiece(unsigned short size);
+char* convertPieceToString(piece* Piece);
+piece* createPieceFromString(char* string);
 
 #endif

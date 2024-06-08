@@ -336,3 +336,155 @@ piece* generateGamePiece(unsigned short size)
 	return Piece;
 
 }
+
+// Function for converting a piece into a string of data to be sent to a server.
+	// This function dynamically allocates memory for the return value. Ensure to free it with SDL_free().
+	// Information is encoded in the format "COLOR|NUM_OF_BLOCKS|X|Y|X|Y|...|X|Y|"
+char* convertPieceToString(piece* Piece)
+{
+
+	char* string = SDL_calloc(2, sizeof(char));
+	string[0] = '0' + (char)Piece->color;
+	string[1] = '\0';
+
+	char* numOfBlocksString = SDL_calloc(getIntLength(Piece->numOfBlocks) + 1, sizeof(char));
+	SDL_itoa(Piece->numOfBlocks, numOfBlocksString, 10);
+	numOfBlocksString[getIntLength(Piece->numOfBlocks)] = '\0';
+
+	int len = SDL_strlen(string) + SDL_strlen("|") + SDL_strlen(numOfBlocksString) + 1;
+	string = SDL_realloc(string, len * sizeof(char));
+	SDL_strlcat(string, "|", len);
+	SDL_strlcat(string, numOfBlocksString, len);
+
+	SDL_free(numOfBlocksString);
+
+	for (unsigned short i = 0; i < Piece->numOfBlocks; i++)
+	{
+
+		int x = Piece->blocks[i].X;
+		int y = Piece->blocks[i].Y;
+
+		char* xString = SDL_calloc(getIntLength(x) + 1, sizeof(char));
+		SDL_itoa(x, xString, 10);
+		xString[getIntLength(x)] = '\0';
+
+		char* yString = SDL_calloc(getIntLength(y) + 1, sizeof(char));
+		SDL_itoa(y, yString, 10);
+		yString[getIntLength(y)] = '\0';
+
+		len = SDL_strlen(string) + SDL_strlen("|") + SDL_strlen(xString) + 1;
+		string = SDL_realloc(string, len * sizeof(char));
+		SDL_strlcat(string, "|", len);
+		SDL_strlcat(string, xString, len);
+
+		len = SDL_strlen(string) + SDL_strlen("|") + SDL_strlen(yString) + 1;
+		string = SDL_realloc(string, len * sizeof(char));
+		SDL_strlcat(string, "|", len);
+		SDL_strlcat(string, yString, len);
+
+		SDL_free(xString);
+		SDL_free(yString);
+
+	}
+
+	len = SDL_strlen(string) + SDL_strlen("|") + 1;
+	string = SDL_realloc(string, len * sizeof(char));
+	SDL_strlcat(string, "|", len);
+
+	return string;
+
+}
+
+// Function for creating a piece structure from a string of data received from the server
+	// Information is encoded in the format "COLOR|NUM_OF_BLOCKS|X|Y|X|Y|...|X|Y|"
+piece* createPieceFromString(char* string)
+{
+
+	// Allocate memory for the piece
+	piece* Piece = SDL_calloc(1, sizeof(piece));
+
+	char* currentStringValue = NULL;
+
+	int valueIndex = 0;
+	int stringIndex = 0;
+	int blockIndex = 0;
+
+	// Go through each character in the string.
+	while (string[stringIndex] !='\0')
+	{
+
+		// If the character is not a delimiter, then we are currently reading a value
+		if (string[stringIndex] != '|')
+		{
+
+			// Build a string for the current value we are reading
+			if (currentStringValue == NULL)
+			{
+
+				currentStringValue = SDL_calloc(2, sizeof(char));
+				currentStringValue[0] = string[stringIndex];
+				currentStringValue[1] = '\0';
+
+			}
+			else
+			{
+
+				int newLen = SDL_strlen(currentStringValue) + 1 + 1;
+				currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
+				SDL_strlcat(currentStringValue, &(string[stringIndex]), newLen);
+
+			}
+
+		}
+		else	// Once we hit a delimiter, we know we are done reading the current value
+		{
+
+			// So apply it to the currect attribute for the piece depending on the current valueIndex
+			if (valueIndex == 0)
+				Piece->color = SDL_atoi(currentStringValue);
+			else if (valueIndex == 1)
+			{
+
+				Piece->numOfBlocks = SDL_atoi(currentStringValue);
+				Piece->blocks = SDL_calloc(Piece->numOfBlocks, sizeof(block));
+
+			}
+			else if (valueIndex % 2 == 0)
+				Piece->blocks[blockIndex].X = SDL_atoi(currentStringValue);
+			else if (valueIndex % 2 == 1)
+			{
+
+				Piece->blocks[blockIndex].Y = SDL_atoi(currentStringValue);
+				blockIndex++;
+
+			}
+
+			valueIndex++;
+
+			// Free the currentStringValue so that we can start reading the next value
+			SDL_free(currentStringValue);
+			currentStringValue = NULL;
+
+		}
+
+		stringIndex++;
+
+	}
+
+	// Ensure we free the memory for the currentStringValue
+	if (currentStringValue != NULL)
+	{
+
+		SDL_free(currentStringValue);
+		currentStringValue = NULL;
+
+	}
+
+	Piece->width = calcWidth(Piece);
+	Piece->height = calcHeight(Piece);
+
+	createCenterBlock(Piece);
+
+	return Piece;	
+
+}
