@@ -446,3 +446,85 @@ void freeVars()
     *vector = NULL;
 
 }
+
+// Function for extracting all of the values from a string of bytes separated by a delimiter character
+    // The function returns a dynamically allocated 2D array that should be freed later with SDL_free().
+    // Ensure to free each element as well as the array itself.
+char** extractStringsFromDelimitedBytes(char* data, int dataLength, int* numValues, char delim)
+{
+
+    // values is an array of strings of bytes
+    char** values = NULL;
+    *numValues = 0;
+    char* currentStringValue = NULL;
+
+    // Go through the entire string of bytes
+    for (int dataIndex = 0; dataIndex < dataLength; dataIndex++)
+    {
+
+        // If the current byte is not a delimter.
+        if (data[dataIndex] != delim)
+        {
+
+            // Then we are currently reading a value. So build the current value by appending the bytes 1-by-1 to
+            // currentStringValue
+            if (currentStringValue == NULL)
+            {
+
+                currentStringValue = SDL_calloc(2, sizeof(char));
+                currentStringValue[0] = data[dataIndex];
+                currentStringValue[1] = '\0';
+
+            }
+            else
+            {
+
+                int newLen  = SDL_strlen(currentStringValue) + 1 + 1;
+                currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
+                SDL_strlcat(currentStringValue, &(data[dataIndex]), newLen);
+
+            }
+
+        }
+        else    // If the current byte is a delimiter, we have finished reading the current value.
+        {
+
+            // So append the current value to the list of values
+            if (*numValues == 0)
+            {
+
+                values = SDL_calloc(1, sizeof(char*));
+                *numValues = *numValues + 1;
+
+            }
+            else
+            {
+
+                values = SDL_realloc(values, (*numValues + 1) * sizeof(char*));
+                *numValues = *numValues + 1;
+
+            }
+
+            values[*numValues - 1] = SDL_calloc(SDL_strlen(currentStringValue) + 1, sizeof(char));
+            SDL_strlcpy(values[*numValues - 1], currentStringValue, SDL_strlen(currentStringValue) + 1);
+
+            // Free the currentStringValue to avoid memory leaks
+            SDL_free(currentStringValue);
+            currentStringValue = NULL;
+
+        }
+
+    }
+
+    // Ensure to free currentStringValue before leaving the function.
+    if (currentStringValue != NULL)
+    {
+
+        SDL_free(currentStringValue);
+        currentStringValue = NULL;
+
+    }
+
+    return values;
+
+}

@@ -20,5 +20,6 @@ void declare_size_bag(SizeBag** ptr, unsigned short mode, bool customMode);
 void declare_moving_title_pieces(piece*** ptr);
 void declare_UI_list(UI_list** ptr, int type);
 void freeVars();
+char** extractStringsFromDelimitedBytes(char* data, int dataLength, int* numValues, char delim);
 
 #endif

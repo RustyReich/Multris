@@ -403,82 +403,37 @@ piece* createPieceFromString(char* string)
 	// Allocate memory for the piece
 	piece* Piece = SDL_calloc(1, sizeof(piece));
 
-	char* currentStringValue = NULL;
+	int numValues = 0;
+	char** values = extractStringsFromDelimitedBytes(string, SDL_strlen(string) + 1, &numValues, '|');
 
-	int valueIndex = 0;
-	int stringIndex = 0;
 	int blockIndex = 0;
-
-	// Go through each character in the string.
-	while (string[stringIndex] !='\0')
+	for (unsigned short i = 0; i < numValues; i++)
 	{
 
-		// If the character is not a delimiter, then we are currently reading a value
-		if (string[stringIndex] != '|')
+		if (i == 0)
+			Piece->color = SDL_atoi(values[i]);
+		else if (i == 1)
 		{
 
-			// Build a string for the current value we are reading
-			if (currentStringValue == NULL)
-			{
-
-				currentStringValue = SDL_calloc(2, sizeof(char));
-				currentStringValue[0] = string[stringIndex];
-				currentStringValue[1] = '\0';
-
-			}
-			else
-			{
-
-				int newLen = SDL_strlen(currentStringValue) + 1 + 1;
-				currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
-				SDL_strlcat(currentStringValue, &(string[stringIndex]), newLen);
-
-			}
+			Piece->numOfBlocks = SDL_atoi(values[i]);
+			Piece->blocks = SDL_calloc(Piece->numOfBlocks, sizeof(block));
 
 		}
-		else	// Once we hit a delimiter, we know we are done reading the current value
+		else if (i % 2 == 0)
+			Piece->blocks[blockIndex].X = SDL_atoi(values[i]);
+		else if (i % 2 == 1)
 		{
 
-			// So apply it to the currect attribute for the piece depending on the current valueIndex
-			if (valueIndex == 0)
-				Piece->color = SDL_atoi(currentStringValue);
-			else if (valueIndex == 1)
-			{
-
-				Piece->numOfBlocks = SDL_atoi(currentStringValue);
-				Piece->blocks = SDL_calloc(Piece->numOfBlocks, sizeof(block));
-
-			}
-			else if (valueIndex % 2 == 0)
-				Piece->blocks[blockIndex].X = SDL_atoi(currentStringValue);
-			else if (valueIndex % 2 == 1)
-			{
-
-				Piece->blocks[blockIndex].Y = SDL_atoi(currentStringValue);
-				blockIndex++;
-
-			}
-
-			valueIndex++;
-
-			// Free the currentStringValue so that we can start reading the next value
-			SDL_free(currentStringValue);
-			currentStringValue = NULL;
+			Piece->blocks[blockIndex].Y = SDL_atoi(values[i]);
+			blockIndex++;
 
 		}
 
-		stringIndex++;
-
 	}
 
-	// Ensure we free the memory for the currentStringValue
-	if (currentStringValue != NULL)
-	{
-
-		SDL_free(currentStringValue);
-		currentStringValue = NULL;
-
-	}
+	for (int i = 0; i < numValues; i++)
+		SDL_free(values[i]);
+	SDL_free(values);
 
 	Piece->width = calcWidth(Piece);
 	Piece->height = calcHeight(Piece);

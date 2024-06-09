@@ -800,68 +800,8 @@ unsigned short playMode(piece* firstPiece)
 			// Split data into "packets". A packet is basically a set of data for a specific variable.
 				// For example,"MAP=...NEXT=...SCORE=..." could all be received at the same time, and be stored
 				// in the data pointer at the same time, and here we would split it into three separate packets.
-			char** packets = NULL;
 			int numPackets = 0;
-			char* currentStringValue = NULL;
-			for (int dataIndex = 0; dataIndex < dataLen; dataIndex++)
-			{
-
-				if (data[dataIndex] != '\0')
-				{
-
-					if (currentStringValue == NULL)
-					{
-
-						currentStringValue = SDL_calloc(2, sizeof(char));
-						currentStringValue[0] = data[dataIndex];
-						currentStringValue[1] = '\0';
-
-					}
-					else
-					{
-
-						int newLen = SDL_strlen(currentStringValue) + 1 + 1;
-						currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
-						SDL_strlcat(currentStringValue, &(data[dataIndex]), newLen);
-
-					}
-
-				}
-				else
-				{
-
-					if (numPackets == 0)
-					{
-
-						packets = SDL_calloc(1, sizeof(char*));
-						numPackets++;
-
-					}
-					else
-					{
-
-						packets = SDL_realloc(packets, (numPackets + 1) * sizeof(char*));
-						numPackets++;                                
-
-					}
-
-					packets[numPackets - 1] = SDL_calloc(SDL_strlen(currentStringValue) + 1, sizeof(char));
-					SDL_strlcpy(packets[numPackets - 1], currentStringValue, SDL_strlen(currentStringValue) + 1);
-
-					SDL_free(currentStringValue);
-					currentStringValue = NULL;
-
-				}
-
-			}
-
-			if (currentStringValue != NULL)
-			{
-
-				SDL_free(currentStringValue);
-				currentStringValue = NULL;
-
-			}
+			char** packets = extractStringsFromDelimitedBytes(data, dataLen, &numPackets, '\0');
 
 			// Now go through each packet and process it
 			for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
@@ -985,63 +925,25 @@ unsigned short playMode(piece* firstPiece)
 				{
 
 					// Parse the X and Y values from the payload. Given in the format "POSITION=X|Y|"
-					int valueIndex = 0;
-					int stringIndex = SDL_strlen("POSITION=");
-					char* currentStringValue = NULL;
-					while (packets[packetIndex][stringIndex] != '\0')
+					int numValues = 0;
+					char* valuesString = &(packets[packetIndex][SDL_strlen("POSITION=")]);
+					int valuesStringLength = SDL_strlen(valuesString) + 1;
+					char** values = extractStringsFromDelimitedBytes(valuesString, valuesStringLength, &numValues, '|');
+					
+					for (unsigned short i = 0; i < numValues; i++)
 					{
 
-						if (packets[packetIndex][stringIndex] != '|')
-						{
-
-							// Build a string for the current value we are reading
-							if (currentStringValue == NULL)
-							{
-
-								currentStringValue = SDL_calloc(2, sizeof(char));
-								currentStringValue[0] = packets[packetIndex][stringIndex];
-								currentStringValue[1] = '\0';
-
-							}
-							else
-							{
-
-								int newLen = SDL_strlen(currentStringValue) + 1 + 1;
-								currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
-								SDL_strlcat(currentStringValue, &(packets[packetIndex][stringIndex]), newLen);
-
-							}
-
-						}
-						else	// Once we hit a delimiter, we know we are done reading the current value
-						{
-
-							// So apply it to the currect attribute for the piece depending on the current valueIndex
-							if (valueIndex == 0)
-								*opponentX = SDL_atoi(currentStringValue);
-							else if (valueIndex == 1)
-								*opponentY = SDL_atoi(currentStringValue);
-
-							valueIndex++;
-
-							// Free the currentStringValue so that we can start reading the next value
-							SDL_free(currentStringValue);
-							currentStringValue = NULL;
-
-						}
-
-						stringIndex++;	
+						if (i == 0)
+							*opponentX = SDL_atoi(values[i]);
+						else if (i == 1)
+							*opponentY = SDL_atoi(values[i]);
 
 					}
 
-					// Ensure we free the memory for the currentStringValue
-					if (currentStringValue != NULL)
-					{
-
-						SDL_free(currentStringValue);
-						currentStringValue = NULL;
-
-					}
+					// Free the values to avoid memory leaks
+					for (int i = 0; i < numValues; i++)
+						SDL_free(values[i]);
+					SDL_free(values);
 
 				}
 
