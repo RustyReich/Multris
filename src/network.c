@@ -146,6 +146,31 @@ void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime)
 
 }
 
+// Function for sending a HOLD piece to the server
+void sendHoldPieceToServer(piece* holdPiece, int* lastPulseTime)
+{
+
+	// Conver the piece to a string
+	char* holdPieceAsString = convertPieceToString(holdPiece);
+
+	// Pre-pend "HOLD=" to the string
+	int len = SDL_strlen("HOLD=") + SDL_strlen(holdPieceAsString) + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "HOLD=", len);
+	SDL_strlcat(data, holdPieceAsString, len);
+
+	// Send the string to the server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of the last time data was sent to the server
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free the strings to avoid memory leaks
+	SDL_free(holdPieceAsString);
+	SDL_free(data);
+
+}
+
 // Function for sending score data to the server
 void sendScoretoServer(int score, int* lastPulseTime)
 {

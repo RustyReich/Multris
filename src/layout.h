@@ -8,7 +8,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 void drawLevelBox(SDL_Texture* background, unsigned short size, int XOffset);
 void drawUntilBox(SDL_Texture* background, unsigned short size, int XOffset);
 void drawNextBox(SDL_Texture* background, unsigned short size, int XOffset);
-void drawHoldBox(SDL_Texture* background, unsigned short size);
+void drawHoldBox(SDL_Texture* background, unsigned short size, int XOffset);
 void drawSizeBagBox(SDL_Texture* background, unsigned short size);
 int calcMapWidth();
 int calcMapHeight();

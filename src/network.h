@@ -10,5 +10,6 @@ void sendLevelToServer(int level, int* lastPulseTime);
 void sendCurrentPieceToServer(piece* currentPiece, int *lastPulseTime);
 void sendPositionToServer(int X, int Y, int* lastPulseTime);
 void sendLinesToServer(int lines, int* lastPulseTime);
+void sendHoldPieceToServer(piece* holdPiece, int* lastPulseTime);
 
 #endif

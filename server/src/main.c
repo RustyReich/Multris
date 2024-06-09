@@ -447,6 +447,27 @@ int main (int argc, char* argv[])
                             }
 
                         }
+                        else if (SDL_strstr(packets[packetIndex], "HOLD") != NULL)
+                        {
+
+                            printf("Received HOLD from player %d.\n", playerID);
+
+                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                            {
+
+                                if (otherPlayerIndex != currentPlayerIndex)
+                                {
+
+                                    // Send HOLD piece data to all other players
+                                    printf("Sending HOLD from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
+                                    int len = SDL_strlen(packets[packetIndex]) + 1;
+                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
+
+                                }
+
+                            }
+
+                        }
                         else if (SDL_strstr(packets[packetIndex], "POSITION") != NULL)
                         {
 

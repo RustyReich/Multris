@@ -7,6 +7,7 @@ unsigned short playMode(piece* firstPiece)
 	static piece* currentPiece; declare_Piece(&currentPiece, firstPiece);
 	static piece* opponentCurrentPiece; declare_Piece(&opponentCurrentPiece, NULL);
 	static piece* holdPiece; declare_Piece(&holdPiece, NULL);
+	static piece* opponentHoldPiece; declare_Piece(&opponentHoldPiece, NULL);
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
 	static piece* opponentNextPiece; declare_Piece(&opponentNextPiece, NULL);
 	
@@ -40,6 +41,8 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(int, opponentNextText_Height, 0);
 	DECLARE_VARIABLE(int, holdText_Width, 0);
 	DECLARE_VARIABLE(int, holdText_Height, 0);
+	DECLARE_VARIABLE(int, opponentHoldText_Width, 0);
+	DECLARE_VARIABLE(int, opponentHoldText_Height, 0);
 	DECLARE_VARIABLE(bool, firstLoop, true);
 	DECLARE_VARIABLE(int, foregroundX, 0);
 	DECLARE_VARIABLE(int, foregroundY, 0);
@@ -58,6 +61,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece, false);
 	static SDL_Texture* Texture_OpponentNext; declare_Piece_Text(&Texture_OpponentNext, opponentNextPiece, false);
 	static SDL_Texture* Texture_Hold; declare_Piece_Text(&Texture_Hold, holdPiece, false);
+	static SDL_Texture* Texture_OpponentHold; declare_Piece_Text(&Texture_OpponentHold, opponentHoldPiece, false);
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
 	static SDL_Texture* Texture_OpponentScore; declare_HUD_Text(&Texture_OpponentScore, SCORE_TEXT);
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
@@ -398,6 +402,10 @@ unsigned short playMode(piece* firstPiece)
 				Texture_Hold = createPieceTexture(*holdPiece, false);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
 
+				// If in a multiplayer game, send holdPiece to the server
+				if (MULTIPLAYER)
+					sendHoldPieceToServer(holdPiece, lastPulseTime);
+
 				//Delete currentPiece
 				delPiece(&currentPiece);
 				SDL_DestroyTexture(Texture_Current);
@@ -444,6 +452,10 @@ unsigned short playMode(piece* firstPiece)
 				copyPiece(currentPiece, holdPiece);
 				Texture_Hold = createPieceTexture(*holdPiece, false);
 				SDL_QueryTexture(Texture_Hold, NULL, NULL, holdText_Width, holdText_Height);
+
+				// If in a multiplayer game, send the holdPiece to the server.
+				if (MULTIPLAYER)
+					sendHoldPieceToServer(holdPiece, lastPulseTime);
 
 				//Delete currentPiece
 				delPiece(&currentPiece);
@@ -913,6 +925,26 @@ unsigned short playMode(piece* firstPiece)
 					SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
 
 				}
+				else if (SDL_strstr(packets[packetIndex], "HOLD") != NULL)	// If the data receveid is a HOLD piece from
+				{															// the opponent
+
+					// Delete the opponents current HOLD piece
+					if (opponentHoldPiece != NULL)
+					{
+
+						delPiece(&opponentHoldPiece);
+						SDL_DestroyTexture(Texture_OpponentHold);
+						Texture_OpponentHold = NULL;
+						
+					}
+
+					// And create a new one
+					char* pieceString = SDL_strstr(packets[packetIndex], "HOLD=") + SDL_strlen("HOLD=") * sizeof(char);
+					opponentHoldPiece = createPieceFromString(pieceString);
+					Texture_OpponentHold = createPieceTexture(*opponentHoldPiece, false);
+					SDL_QueryTexture(Texture_OpponentHold, NULL, NULL, opponentHoldText_Width, opponentHoldText_Height);
+
+				}
 				else if (SDL_strstr(packets[packetIndex], "LEVEL") != NULL)
 				{
 
@@ -1082,16 +1114,24 @@ unsigned short playMode(piece* firstPiece)
 	{
 
 		drawTexture(opponentForeground, *opponentForegroundX, *foregroundY, 1.0);
+		
 		drawTexture(Texture_OpponentScore, getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2, getScoreDrawY(MODE), 1);
+		
 		int X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentNext, X, getNextY(MODE, *opponentNextText_Height), 1.0);
+		
 		X = getLevelX(MODE, *opponentLevel) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentLevel, X, getLevelY(MODE), 1.0);
+		
 		X = SDL_ceil((float)FONT_WIDTH * (float)(*opponentX) + (float)*opponentForegroundX);
 		int  Y = SDL_ceil((float)FONT_HEIGHT * (float)(*opponentY) + (float)*foregroundY);
 		drawTexture(Texture_OpponentCurrent, X, Y, 1.0);
+		
 		X = getLinesX(MODE, *opponentLinesUntilLevelUp) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentLines, X, getLinesY(MODE), 1.0);
+		
+		X = getHoldX(MODE, *opponentHoldText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentHold, X, getHoldY(MODE, *opponentHoldText_Height), HOLD_TEXTURE_MULTI);
 
 	}
 

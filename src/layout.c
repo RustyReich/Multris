@@ -438,7 +438,7 @@ void drawNextBox(SDL_Texture* background, unsigned short size, int XOffset)
 }
 
 //Function for drawing the "hold" box
-void drawHoldBox(SDL_Texture* background, unsigned short size)
+void drawHoldBox(SDL_Texture* background, unsigned short size, int XOffset)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -469,6 +469,9 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = SPRITE_WIDTH * (SDL_round(BASE_PLAYFIELD_WIDTH * size) + 1);
 		Y = FONT_HEIGHT * 28;
 
+		// Apply offset. This is used for drawing a second HOLD box in multiplayer mode
+		X += XOffset;
+
 		width_in_sprites = size + 1;
 		height_in_sprites = size + 2;
 		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
@@ -491,6 +494,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 192;
 		Y = 132;
 
+		X += XOffset;
+
 		width_in_sprites = 5;
 		height_in_sprites = size + 2;
 		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
@@ -505,6 +510,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 216;
 		Y = 144;
 
+		X += XOffset;
+
 		width_in_sprites = 5;
 		height_in_sprites = size + 2;
 		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
@@ -517,6 +524,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 
 		X = 252;
 		Y = 156;
+
+		X += XOffset;
 
 		width_in_sprites = 5;
 		height_in_sprites = size + 1;
@@ -531,6 +540,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 276;
 		Y = 168;
 
+		X += XOffset;
+
 		width_in_sprites = 5;
 		height_in_sprites = size + 1;
 		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
@@ -543,6 +554,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 
 		X = 312;
 		Y = 204;
+
+		X += XOffset;
 
 		width_in_sprites = 5;
 		height_in_sprites = size + 1;
@@ -557,6 +570,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 		X = 336;
 		Y = 228;
 
+		X += XOffset;
+
 		width_in_sprites = 5;
 		height_in_sprites = size + 1;
 		width_in_pixels = SPRITE_WIDTH * width_in_sprites;
@@ -569,6 +584,8 @@ void drawHoldBox(SDL_Texture* background, unsigned short size)
 
 		X = 360;
 		Y = 264;
+
+		X += XOffset;
 
 		width_in_sprites = 7;
 		height_in_sprites = size + 1;
