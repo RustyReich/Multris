@@ -5,13 +5,18 @@ unsigned short playMode(piece* firstPiece)
 
 	//Game pieces
 	static piece* currentPiece; declare_Piece(&currentPiece, firstPiece);
+	static piece* opponentCurrentPiece; declare_Piece(&opponentCurrentPiece, NULL);
 	static piece* holdPiece; declare_Piece(&holdPiece, NULL);
 	static piece* nextPiece; declare_Piece(&nextPiece, NULL);
 	static piece* opponentNextPiece; declare_Piece(&opponentNextPiece, NULL);
 	
 	//Variables
 	DECLARE_VARIABLE(signed short, X, 0);
+	DECLARE_VARIABLE(signed short, opponentX, 0);
 	DECLARE_VARIABLE(double, Y, 0.0);
+	DECLARE_VARIABLE(int, lastYInt, 0);
+	DECLARE_VARIABLE(int, lastXInt, 0);
+	DECLARE_VARIABLE(signed short, opponentY, 0);
 	DECLARE_VARIABLE(double, speed, INITIAL_SPEED);
 	DECLARE_VARIABLE(bool, softDrop, false);
 	DECLARE_VARIABLE(bool, gameOver, false);
@@ -47,6 +52,7 @@ unsigned short playMode(piece* firstPiece)
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
+	static SDL_Texture* Texture_OpponentCurrent; declare_Piece_Text(&Texture_OpponentCurrent, opponentCurrentPiece, false);
 	static SDL_Texture* Texture_Ghost; declare_Piece_Text(&Texture_Ghost, currentPiece, CENTER_DOT);
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, nextPiece, false);
 	static SDL_Texture* Texture_OpponentNext; declare_Piece_Text(&Texture_OpponentNext, opponentNextPiece, false);
@@ -59,7 +65,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
 	static SDL_Texture* Texture_SizeBag; declare_HUD_Text(&Texture_SizeBag, SIZEBAG_TEXT);
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
-	static SDL_Texture* oppenentForeground; declare_HUD_Text(&oppenentForeground, FOREGROUND_TEXT);
+	static SDL_Texture* opponentForeground; declare_HUD_Text(&opponentForeground, FOREGROUND_TEXT);
 
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
@@ -91,6 +97,9 @@ unsigned short playMode(piece* firstPiece)
 
 		// Remove the size of the firstPiece from the sizeBag
 		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
+
+		if (MULTIPLAYER)
+			sendCurrentPieceToServer(currentPiece, lastPulseTime);
 
 		*firstLoop = false;
 
@@ -354,6 +363,9 @@ unsigned short playMode(piece* firstPiece)
 
 			}
 
+			if (MULTIPLAYER)
+				sendCurrentPieceToServer(currentPiece, lastPulseTime);
+
 			//Recalculate ghostY
 			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
 
@@ -387,6 +399,9 @@ unsigned short playMode(piece* firstPiece)
 				//Move nextPiece to currentPiece
 				currentPiece = nextPiece;
 				adjustNewPiece(currentPiece, X, MAP_WIDTH);
+
+				if (MULTIPLAYER)
+					sendCurrentPieceToServer(currentPiece, lastPulseTime);
 
 				//NextPiece no longer exists
 				nextPiece = NULL;
@@ -434,6 +449,9 @@ unsigned short playMode(piece* firstPiece)
 				currentPiece->centerBlock = SDL_calloc(1, sizeof(block));
 				copyPiece(tempPiece, currentPiece);
 				adjustNewPiece(currentPiece, X, MAP_WIDTH);
+
+				if (MULTIPLAYER)
+					sendCurrentPieceToServer(currentPiece, lastPulseTime);
 
 				//Delete tempPeice
 				delPiece(&tempPiece);
@@ -671,6 +689,9 @@ unsigned short playMode(piece* firstPiece)
 			currentPiece = nextPiece;
 			adjustNewPiece(currentPiece, X, MAP_WIDTH);
 
+			if (MULTIPLAYER)
+				sendCurrentPieceToServer(currentPiece, lastPulseTime);
+
 			//NextPiece no longer exists
 			nextPiece = NULL;
 			//So delete texture for next piece
@@ -708,6 +729,15 @@ unsigned short playMode(piece* firstPiece)
 	// If in a multiplayer game
 	if (MULTIPLAYER)
 	{
+
+		if ((*lastXInt != *X) || (*lastYInt != (int)*Y))
+		{
+
+			sendPositionToServer(*X, (int)*Y, lastPulseTime);
+			*lastXInt = *X;
+			*lastYInt = (int)*Y;
+
+		}
 
 		// Check for incoming data from the server
 		if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
@@ -819,7 +849,7 @@ unsigned short playMode(piece* firstPiece)
 					int mapDataIndex = 0;
 
 					// Clear the opponents background texture
-					clearTexture(oppenentForeground);
+					clearTexture(opponentForeground);
 
 					// Iterate through the MAP data and place the pieces on the opponents foreground texture
 					while (packets[packetIndex][stringIndex] != '\0')
@@ -831,7 +861,7 @@ unsigned short playMode(piece* firstPiece)
 							int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
 							int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
 							// Color of the block can be determined based on the digit that is present in the string
-							drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, (Uint8)packets[packetIndex][stringIndex] - '0');
+							drawToTexture(BLOCK_SPRITE_ID, opponentForeground, X, Y, 1.0, (Uint8)packets[packetIndex][stringIndex] - '0');
 
 						}
 
@@ -863,7 +893,8 @@ unsigned short playMode(piece* firstPiece)
 					}
 
 					// And create a new one
-					opponentNextPiece = createPieceFromString(SDL_strstr(packets[packetIndex], "NEXT=") + SDL_strlen("NEXT=") * sizeof(char));
+					char* pieceString = SDL_strstr(packets[packetIndex], "NEXT=") + SDL_strlen("NEXT=") * sizeof(char);
+					opponentNextPiece = createPieceFromString(pieceString);
 					Texture_OpponentNext = createPieceTexture(*opponentNextPiece, false);
 					SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
 
@@ -874,6 +905,88 @@ unsigned short playMode(piece* firstPiece)
 					// Extract the level from the received data and update the Texture_OpponentLevel
 					*opponentLevel = SDL_atoi(SDL_strstr(packets[packetIndex], "LEVEL=") + SDL_strlen("LEVEL=") * sizeof(char));
 					updateLevel(*opponentLevel, Texture_OpponentLevel);
+
+				}
+				else if (SDL_strstr(packets[packetIndex], "CURRENT") != NULL)	// If the data is a CURRENT piece from
+				{																// the opponent
+
+					// Delete the current CURRENT piece for the opponent
+					if (opponentCurrentPiece != NULL)
+					{
+
+						delPiece(&opponentCurrentPiece);
+						SDL_DestroyTexture(Texture_OpponentCurrent);
+						Texture_OpponentCurrent = NULL;
+
+					}
+
+					// And create a new one
+					char* pieceString = SDL_strstr(packets[packetIndex], "CURRENT=") + SDL_strlen("CURRENT=") * sizeof(char);
+					opponentCurrentPiece = createPieceFromString(pieceString);
+					Texture_OpponentCurrent = createPieceTexture(*opponentCurrentPiece, false);
+
+				}
+				else if (SDL_strstr(packets[packetIndex], "POSITION") != NULL)
+				{
+
+					// Parse the X and Y values from the payload. Given in the format "POSITION=X|Y|"
+					int valueIndex = 0;
+					int stringIndex = SDL_strlen("POSITION=");
+					char* currentStringValue = NULL;
+					while (packets[packetIndex][stringIndex] != '\0')
+					{
+
+						if (packets[packetIndex][stringIndex] != '|')
+						{
+
+							// Build a string for the current value we are reading
+							if (currentStringValue == NULL)
+							{
+
+								currentStringValue = SDL_calloc(2, sizeof(char));
+								currentStringValue[0] = packets[packetIndex][stringIndex];
+								currentStringValue[1] = '\0';
+
+							}
+							else
+							{
+
+								int newLen = SDL_strlen(currentStringValue) + 1 + 1;
+								currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
+								SDL_strlcat(currentStringValue, &(packets[packetIndex][stringIndex]), newLen);
+
+							}
+
+						}
+						else	// Once we hit a delimiter, we know we are done reading the current value
+						{
+
+							// So apply it to the currect attribute for the piece depending on the current valueIndex
+							if (valueIndex == 0)
+								*opponentX = SDL_atoi(currentStringValue);
+							else if (valueIndex == 1)
+								*opponentY = SDL_atoi(currentStringValue);
+
+							valueIndex++;
+
+							// Free the currentStringValue so that we can start reading the next value
+							SDL_free(currentStringValue);
+							currentStringValue = NULL;
+
+						}
+
+						stringIndex++;	
+
+					}
+
+					// Ensure we free the memory for the currentStringValue
+					if (currentStringValue != NULL)
+					{
+
+						SDL_free(currentStringValue);
+						currentStringValue = NULL;
+
+					}
 
 				}
 
@@ -945,12 +1058,15 @@ unsigned short playMode(piece* firstPiece)
 	if (MULTIPLAYER)
 	{
 
-		drawTexture(oppenentForeground, *opponentForegroundX, *foregroundY, 1.0);
+		drawTexture(opponentForeground, *opponentForegroundX, *foregroundY, 1.0);
 		drawTexture(Texture_OpponentScore, getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2, getScoreDrawY(MODE), 1);
 		int X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentNext, X, getNextY(MODE, *opponentNextText_Height), 1.0);
 		X = getLevelX(MODE, *opponentLevel) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentLevel, X, getLevelY(MODE), 1.0);
+		X = SDL_ceil((float)FONT_WIDTH * (float)(*opponentX) + (float)*opponentForegroundX);
+		int  Y = SDL_ceil((float)FONT_HEIGHT * (float)(*opponentY) + (float)*foregroundY);
+		drawTexture(Texture_OpponentCurrent, X, Y, 1.0);
 
 	}
 
@@ -1118,6 +1234,40 @@ unsigned short playMode(piece* firstPiece)
 
 }
 
+// Function for sending current position to the server
+void sendPositionToServer(int X, int Y, int* lastPulseTime)
+{
+
+	// Convert X value into a string
+	char* xString = SDL_calloc(getIntLength(X) + 1, sizeof(char));
+	SDL_itoa(X, xString, 10);
+	xString[getIntLength(X)] = '\0';
+
+	// Conver Y value into a string
+	char* yString = SDL_calloc(getIntLength(Y) + 1, sizeof(char));
+	SDL_itoa(Y, yString, 10);
+	yString[getIntLength(Y)] = '\0';
+
+	// Send the position to the server in the format "POSITION=X|Y|"
+	int len = SDL_strlen("POSITION=") + SDL_strlen(xString) + SDL_strlen("|") + SDL_strlen(yString) + SDL_strlen("|") + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "POSITION=", len);
+	SDL_strlcat(data, xString, len);
+	SDL_strlcat(data, "|", len);
+	SDL_strlcat(data, yString, len);
+	SDL_strlcat(data, "|", len);
+
+	SDL_free(xString);
+	SDL_free(yString);
+
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	*lastPulseTime = SDL_GetTicks();
+
+	SDL_free(data);
+
+}
+
 // Function for sending level data to the server
 void sendLevelToServer(int level, int* lastPulseTime)
 {
@@ -1145,6 +1295,31 @@ void sendLevelToServer(int level, int* lastPulseTime)
 	// Free the levelString to avoid memory leaks
 	SDL_free(levelString);
 
+	SDL_free(data);
+
+}
+
+// Send the current CURRENT piece to the server
+void sendCurrentPieceToServer(piece* currentPiece, int *lastPulseTime)
+{
+
+	// Convert the piece to a string
+	char* currentPieceAsString = convertPieceToString(currentPiece);
+
+	// Pre-pend "CURRENT=" to the string
+	int len = SDL_strlen("CURRENT=") + SDL_strlen(currentPieceAsString) + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "CURRENT=", len);
+	SDL_strlcat(data, currentPieceAsString, len);
+
+	// Send the string to the server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of when last communication with server was
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free the strings to avoid memory leaks
+	SDL_free(currentPieceAsString);
 	SDL_free(data);
 
 }

@@ -25,5 +25,7 @@ void sendMapToServer(int* mapData, int* lastPuleTime);
 void sendScoretoServer(int score, int* lastPulseTime);
 void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime);
 void sendLevelToServer(int level, int* lastPulseTime);
+void sendCurrentPieceToServer(piece* currentPiece, int *lastPulseTime);
+void sendPositionToServer(int X, int Y, int* lastPulseTime);
 
 #endif

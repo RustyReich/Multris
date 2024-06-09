@@ -153,7 +153,7 @@ unsigned short calcWidth(piece* Piece)
 	signed short maxX = 0;
 
 	//Go through all blocks to find the min and max X values
-	for (unsigned short i = 1; i < Piece->numOfBlocks; i++)
+	for (unsigned short i = 0; i < Piece->numOfBlocks; i++)
 	{
 
 		if (Piece->blocks[i].X < minX)
