@@ -24,6 +24,6 @@ void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 void sendMapToServer(int* mapData, int* lastPuleTime);
 void sendScoretoServer(int score, int* lastPulseTime);
 void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime);
-piece* createPieceFromString(char* string);
+void sendLevelToServer(int level, int* lastPulseTime);
 
 #endif

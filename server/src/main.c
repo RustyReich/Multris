@@ -7,6 +7,11 @@ int main (int argc, char* argv[])
     (void)argc;
     (void)argv;
 
+    const int TICK_RATE = 128;
+    const double TARGET_FRAME_TIME = (double)1 / (double)TICK_RATE;
+
+    Uint32 ticksLastFrame = SDL_GetTicks(); 
+
     printf("Starting server...\n");
 
     // Initialize SDL Stuff
@@ -228,7 +233,7 @@ int main (int argc, char* argv[])
 
                         printf("Received MAP from player %d.\n", playerID);
 
-                        // Send the map data to every other player
+                        // Send the MAP data to every other player
                         for (int j = 0; j < maxPlayers; j++)
                         {
 
@@ -248,7 +253,7 @@ int main (int argc, char* argv[])
 
                         printf("Received SCORE from player %d.\n", playerID);
 
-                        // Send the score data to every other player
+                        // Send the SCORE data to every other player
                         for (int j = 0; j < maxPlayers; j++)
                         {
 
@@ -283,6 +288,26 @@ int main (int argc, char* argv[])
                         }
 
                     }
+                    else if (SDL_strstr(data, "LEVEL") != NULL)
+                    {
+
+                        printf("Received LEVEL from player %d.\n", playerID);
+
+                        // Send the LEVEL data to every other player
+                        for (int j = 0; j < maxPlayers; j++)
+                        {
+
+                            if (j != i)
+                            {
+        
+                                printf("Sending LEVEL from player %d to player %d...\n", playerID, j + 1);
+                                SDLNet_TCP_Send(clients[j], data, len);
+
+                            }
+
+                        }
+
+                    }
 
                 }
                 else
@@ -304,6 +329,11 @@ int main (int argc, char* argv[])
             }
 
         }
+
+        int deltaMS = SDL_GetTicks() - ticksLastFrame;
+        if (deltaMS < TARGET_FRAME_TIME * 1000)
+            SDL_Delay(TARGET_FRAME_TIME * 1000 - deltaMS);
+        ticksLastFrame = SDL_GetTicks();
 
     }
 

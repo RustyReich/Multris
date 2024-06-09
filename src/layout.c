@@ -178,7 +178,7 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 }
 
 //Function for drawing the level box
-void drawLevelBox(SDL_Texture* background, unsigned short size)
+void drawLevelBox(SDL_Texture* background, unsigned short size, int XOffset)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -221,6 +221,9 @@ void drawLevelBox(SDL_Texture* background, unsigned short size)
 		Y = 96;
 	else if (size == 7)
 		Y = 132;
+
+	// Apply offset. This is used for drawing a second level box in multiplayer mode
+	X += XOffset;
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);

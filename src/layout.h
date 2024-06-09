@@ -5,7 +5,7 @@
 
 void drawPlayField(SDL_Texture* background, unsigned short size, int XOffset);
 void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode, int XOffset);
-void drawLevelBox(SDL_Texture* background, unsigned short size);
+void drawLevelBox(SDL_Texture* background, unsigned short size, int XOffset);
 void drawUntilBox(SDL_Texture* background, unsigned short size);
 void drawNextBox(SDL_Texture* background, unsigned short size, int XOffset);
 void drawHoldBox(SDL_Texture* background, unsigned short size);

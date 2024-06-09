@@ -23,6 +23,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(unsigned int, Score, 0);
 	DECLARE_VARIABLE(unsigned int, opponentScore, 0);
 	DECLARE_VARIABLE(short, Level, 0);
+	DECLARE_VARIABLE(short, opponentLevel, 0);
 	DECLARE_VARIABLE(short, linesAtCurrentLevel, 0);
 	DECLARE_VARIABLE(short, ghostY, MAP_HEIGHT - currentPiece->height);
 	DECLARE_VARIABLE(unsigned int, moveStart, 0);
@@ -53,6 +54,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
 	static SDL_Texture* Texture_OpponentScore; declare_HUD_Text(&Texture_OpponentScore, SCORE_TEXT);
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
+	static SDL_Texture* Texture_OpponentLevel; declare_HUD_Text(&Texture_OpponentLevel, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
 	static SDL_Texture* Texture_SizeBag; declare_HUD_Text(&Texture_SizeBag, SIZEBAG_TEXT);
@@ -628,6 +630,10 @@ unsigned short playMode(piece* firstPiece)
 					//Increase level count and update Texture_Level
 					*Level += 1;
 					updateLevel(*Level, Texture_Level);
+					
+					// Send level to server if in a multiplayer game
+					if (MULTIPLAYER)
+						sendLevelToServer(*Level, lastPulseTime);
 
 					//If player reaches the appropriate level to unlock a new size in numerical mode
 					if (*Level >= MODE && MODE == PROGRESS && CUSTOM_MODE == false)
@@ -769,6 +775,14 @@ unsigned short playMode(piece* firstPiece)
 				SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
 
 			}
+			else if (SDL_strstr(data, "LEVEL") != NULL)
+			{
+
+				// Extract the level from the received data and update the Texture_OpponentLevel
+				*opponentLevel = SDL_atoi(SDL_strstr(data, "LEVEL=") + SDL_strlen("LEVEL=") * sizeof(char));
+				updateLevel(*opponentLevel, Texture_OpponentLevel);
+
+			}
 
 		}
 
@@ -834,6 +848,8 @@ unsigned short playMode(piece* firstPiece)
 		drawTexture(Texture_OpponentScore, getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2, getScoreDrawY(MODE), 1);
 		int X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentNext, X, getNextY(MODE, *opponentNextText_Height), 1.0);
+		X = getLevelX(MODE, *opponentLevel) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentLevel, X, getLevelY(MODE), 1.0);
 
 	}
 
@@ -1001,6 +1017,37 @@ unsigned short playMode(piece* firstPiece)
 
 }
 
+// Function for sending level data to the server
+void sendLevelToServer(int level, int* lastPulseTime)
+{
+
+	// Convert the level into a string
+	char* levelString = SDL_calloc(getIntLength(level) + 1, sizeof(char));
+	SDL_itoa(level, levelString, 10);
+	levelString[getIntLength(level)] = '\0';
+
+	// Prepend the "LEVEL=" header to the data string
+	int len = SDL_strlen("LEVEL=") + SDL_strlen(levelString) + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "LEVEL=", len);
+	SDL_strlcat(data, levelString, len);
+
+	// Ensure data ends in null-byte
+	data[len] = '\0';
+
+	// Send data to server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of when last communication with server was
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free the levelString to avoid memory leaks
+	SDL_free(levelString);
+
+	SDL_free(data);
+
+}
+
 // Function for sending a NEXT piece to the server
 void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime)
 {
@@ -1035,7 +1082,7 @@ void sendScoretoServer(int score, int* lastPulseTime)
 	SDL_itoa(score, scoreString, 10);
 	scoreString[getIntLength(score)] = '\0';
 
-	// Prepend the "SCORE" header to the data string
+	// Prepend the "SCORE=" header to the data string
 	int len = SDL_strlen("SCORE=") + SDL_strlen(scoreString) + 1;
 	char* data = SDL_calloc(len, sizeof(char));
 	SDL_strlcpy(data, "SCORE=", len);
