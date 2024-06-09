@@ -1370,7 +1370,6 @@ UI_list* create_Modes_List()
 {
 
 	//Initialize list
-		// Add "MULTIPLAYER" mode if DEBUG = 1 since this is still an experimental feature
 	UI_list* list;
 	list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "MULTIPLAYER", "OPTIONS", "EXIT");
 
@@ -1449,9 +1448,7 @@ UI_list* create_Options_List()
 
 	list->ui->x = 42;
 
-	list->ui->y = 84;
-	if (DEBUG == true)
-		list->ui->y = 98;
+	list->ui->y = 98;
 
 	list->ui->currentlyInteracting = false;
 
