@@ -243,7 +243,7 @@ void drawLevelBox(SDL_Texture* background, unsigned short size, int XOffset)
 }
 
 //Function for drawing the "lines until levelup" box
-void drawUntilBox(SDL_Texture* background, unsigned short size)
+void drawUntilBox(SDL_Texture* background, unsigned short size, int XOffset)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -317,6 +317,9 @@ void drawUntilBox(SDL_Texture* background, unsigned short size)
 		Y = 180;
 
 	}
+
+	// Apply offset. This is used for drawing a second until box in multiplayer mode
+	X += XOffset;
 
 	//Draw box
 	drawRectangle(WALL_SPRITE_ID, background, X, Y, width_in_sprites + 2, height_in_sprites + 2, GRAY, false);

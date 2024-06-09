@@ -21,11 +21,5 @@ unsigned short completedLine(int* mapData, int Y, piece Piece, int** returnRows,
 void adjustNewPiece(piece* Piece, signed short* X, unsigned short mapWidth);
 bool isColliding(piece Piece, int X, double* Y, int direction, int* mapData, int mapWidth, int mapHeight);
 void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
-void sendMapToServer(int* mapData, int* lastPuleTime);
-void sendScoretoServer(int score, int* lastPulseTime);
-void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime);
-void sendLevelToServer(int level, int* lastPulseTime);
-void sendCurrentPieceToServer(piece* currentPiece, int *lastPulseTime);
-void sendPositionToServer(int X, int Y, int* lastPulseTime);
 
 #endif

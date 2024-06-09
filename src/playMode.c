@@ -30,6 +30,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(short, Level, 0);
 	DECLARE_VARIABLE(short, opponentLevel, 0);
 	DECLARE_VARIABLE(short, linesAtCurrentLevel, 0);
+	DECLARE_VARIABLE(short, opponentLinesUntilLevelUp, 0);
 	DECLARE_VARIABLE(short, ghostY, MAP_HEIGHT - currentPiece->height);
 	DECLARE_VARIABLE(unsigned int, moveStart, 0);
 	DECLARE_VARIABLE(bool, moveStartBool, false);
@@ -62,6 +63,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_Level; declare_HUD_Text(&Texture_Level, LEVEL_TEXT);
 	static SDL_Texture* Texture_OpponentLevel; declare_HUD_Text(&Texture_OpponentLevel, LEVEL_TEXT);
 	static SDL_Texture* Texture_Lines; declare_HUD_Text(&Texture_Lines, LINES_TEXT);
+	static SDL_Texture* Texture_OpponentLines; declare_HUD_Text(&Texture_OpponentLines, LINES_TEXT);
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
 	static SDL_Texture* Texture_SizeBag; declare_HUD_Text(&Texture_SizeBag, SIZEBAG_TEXT);
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
@@ -98,8 +100,15 @@ unsigned short playMode(piece* firstPiece)
 		// Remove the size of the firstPiece from the sizeBag
 		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
+		// If in a multiplayer game
 		if (MULTIPLAYER)
+		{
+
+			// Send the current piece and lines values to the server at the start of the game
 			sendCurrentPieceToServer(currentPiece, lastPulseTime);
+			sendLinesToServer(calcLinesUntilLevelup(*linesAtCurrentLevel, *Level), lastPulseTime);
+
+		}
 
 		*firstLoop = false;
 
@@ -676,6 +685,10 @@ unsigned short playMode(piece* firstPiece)
 				//Update the texture displaying how many more lines are needed to reach the next level
 				updateLines(calcLinesUntilLevelup(*linesAtCurrentLevel, *Level), &Texture_Lines);
 
+				// If in a multiplayer game, send the lines until levelup value to the server
+				if (MULTIPLAYER)
+					sendLinesToServer(calcLinesUntilLevelup(*linesAtCurrentLevel, *Level), lastPulseTime);
+
 			}
 
 			//Delete texture for currentPiece
@@ -730,6 +743,7 @@ unsigned short playMode(piece* firstPiece)
 	if (MULTIPLAYER)
 	{
 
+		// Send position to the server if it changed since the last frame
 		if ((*lastXInt != *X) || (*lastYInt != (int)*Y))
 		{
 
@@ -907,6 +921,15 @@ unsigned short playMode(piece* firstPiece)
 					updateLevel(*opponentLevel, Texture_OpponentLevel);
 
 				}
+				else if (SDL_strstr(packets[packetIndex], "LINES") != NULL)
+				{
+
+					// Extract the "lines until levelup" value from the received data and update the Texture_OpponentLines
+					char* linesString = SDL_strstr(packets[packetIndex], "LINES=") + SDL_strlen("LINES=") * sizeof(char);
+					*opponentLinesUntilLevelUp = SDL_atoi(linesString);
+					updateLines(*opponentLinesUntilLevelUp, &Texture_OpponentLines);
+
+				}
 				else if (SDL_strstr(packets[packetIndex], "CURRENT") != NULL)	// If the data is a CURRENT piece from
 				{																// the opponent
 
@@ -1067,6 +1090,8 @@ unsigned short playMode(piece* firstPiece)
 		X = SDL_ceil((float)FONT_WIDTH * (float)(*opponentX) + (float)*opponentForegroundX);
 		int  Y = SDL_ceil((float)FONT_HEIGHT * (float)(*opponentY) + (float)*foregroundY);
 		drawTexture(Texture_OpponentCurrent, X, Y, 1.0);
+		X = getLinesX(MODE, *opponentLinesUntilLevelUp) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentLines, X, getLinesY(MODE), 1.0);
 
 	}
 
@@ -1231,191 +1256,6 @@ unsigned short playMode(piece* firstPiece)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
-
-}
-
-// Function for sending current position to the server
-void sendPositionToServer(int X, int Y, int* lastPulseTime)
-{
-
-	// Convert X value into a string
-	char* xString = SDL_calloc(getIntLength(X) + 1, sizeof(char));
-	SDL_itoa(X, xString, 10);
-	xString[getIntLength(X)] = '\0';
-
-	// Conver Y value into a string
-	char* yString = SDL_calloc(getIntLength(Y) + 1, sizeof(char));
-	SDL_itoa(Y, yString, 10);
-	yString[getIntLength(Y)] = '\0';
-
-	// Send the position to the server in the format "POSITION=X|Y|"
-	int len = SDL_strlen("POSITION=") + SDL_strlen(xString) + SDL_strlen("|") + SDL_strlen(yString) + SDL_strlen("|") + 1;
-	char* data = SDL_calloc(len, sizeof(char));
-	SDL_strlcpy(data, "POSITION=", len);
-	SDL_strlcat(data, xString, len);
-	SDL_strlcat(data, "|", len);
-	SDL_strlcat(data, yString, len);
-	SDL_strlcat(data, "|", len);
-
-	SDL_free(xString);
-	SDL_free(yString);
-
-	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-	*lastPulseTime = SDL_GetTicks();
-
-	SDL_free(data);
-
-}
-
-// Function for sending level data to the server
-void sendLevelToServer(int level, int* lastPulseTime)
-{
-
-	// Convert the level into a string
-	char* levelString = SDL_calloc(getIntLength(level) + 1, sizeof(char));
-	SDL_itoa(level, levelString, 10);
-	levelString[getIntLength(level)] = '\0';
-
-	// Prepend the "LEVEL=" header to the data string
-	int len = SDL_strlen("LEVEL=") + SDL_strlen(levelString) + 1;
-	char* data = SDL_calloc(len, sizeof(char));
-	SDL_strlcpy(data, "LEVEL=", len);
-	SDL_strlcat(data, levelString, len);
-
-	// Ensure data ends in null-byte
-	data[len] = '\0';
-
-	// Send data to server
-	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-	// Keep track of when last communication with server was
-	*lastPulseTime = SDL_GetTicks();
-
-	// Free the levelString to avoid memory leaks
-	SDL_free(levelString);
-
-	SDL_free(data);
-
-}
-
-// Send the current CURRENT piece to the server
-void sendCurrentPieceToServer(piece* currentPiece, int *lastPulseTime)
-{
-
-	// Convert the piece to a string
-	char* currentPieceAsString = convertPieceToString(currentPiece);
-
-	// Pre-pend "CURRENT=" to the string
-	int len = SDL_strlen("CURRENT=") + SDL_strlen(currentPieceAsString) + 1;
-	char* data = SDL_calloc(len, sizeof(char));
-	SDL_strlcpy(data, "CURRENT=", len);
-	SDL_strlcat(data, currentPieceAsString, len);
-
-	// Send the string to the server
-	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-	// Keep track of when last communication with server was
-	*lastPulseTime = SDL_GetTicks();
-
-	// Free the strings to avoid memory leaks
-	SDL_free(currentPieceAsString);
-	SDL_free(data);
-
-}
-
-// Function for sending a NEXT piece to the server
-void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime)
-{
-
-	// Conver the piece to a string
-	char* nextPieceAsString = convertPieceToString(nextPiece);
-
-	// Pre-pend "NEXT=" to the string
-	int len = SDL_strlen("NEXT=") + SDL_strlen(nextPieceAsString) + 1;
-	char* data = SDL_calloc(len, sizeof(char));
-	SDL_strlcpy(data, "NEXT=", len);
-	SDL_strlcat(data, nextPieceAsString, len);
-
-	// Send the string to the server
-	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-	// Keep track of the last time data was sent to the server
-	*lastPulseTime = SDL_GetTicks();
-
-	// Free the strings to avoid memory leaks
-	SDL_free(nextPieceAsString);
-	SDL_free(data);
-
-}
-
-// Function for sending score data to the server
-void sendScoretoServer(int score, int* lastPulseTime)
-{
-
-	// Convert the score into a string
-	char* scoreString = SDL_calloc(getIntLength(score) + 1, sizeof(char));
-	SDL_itoa(score, scoreString, 10);
-	scoreString[getIntLength(score)] = '\0';
-
-	// Prepend the "SCORE=" header to the data string
-	int len = SDL_strlen("SCORE=") + SDL_strlen(scoreString) + 1;
-	char* data = SDL_calloc(len, sizeof(char));
-	SDL_strlcpy(data, "SCORE=", len);
-	SDL_strlcat(data, scoreString, len);
-
-	// Ensure data ends in null-byte
-	data[len] = '\0';
-
-	// Send data to server
-	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-	// Keep track of when last communication with server was
-	*lastPulseTime = SDL_GetTicks();
-
-	// Free the scoreString to avoid memory leaks
-	SDL_free(scoreString);
-
-	SDL_free(data);
-
-}
-
-// Function for sending mapData to the server
-void sendMapToServer(int* mapData, int* lastPuleTime)
-{
-
-	int len = MAP_WIDTH * MAP_HEIGHT + SDL_strlen("MAP=") + 1;
-	char* data = SDL_calloc(len, sizeof(char));
-	SDL_strlcpy(data, "MAP=", len);
-	
-	int index = SDL_strlen("MAP=");
-
-	for (unsigned short i = 0; i < MAP_HEIGHT; i++)
-	{
-
-		for (unsigned short j = 0; j < MAP_WIDTH; j++)
-		{
-
-			// MAP data is sent as a string of digits
-			data[index] = '0' + (char)*(mapData + i * MAP_WIDTH + j);
-
-			index++;
-
-		}
-
-	}
-
-	// MAP data ends with a null-terminator
-	data[len] = '\0';
-
-	// Send the data
-	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
-
-	// Keep track of the last time we sent data to the server.
-	*lastPuleTime = SDL_GetTicks();
-
-	// Then free the data to avoid memory leaks
-	SDL_free(data);
 
 }
 

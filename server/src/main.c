@@ -405,6 +405,27 @@ int main (int argc, char* argv[])
                             }
 
                         }
+                        else if (SDL_strstr(packets[packetIndex], "LINES") != NULL)
+                        {
+
+                            printf("Received LINES from player %d.\n", playerID);
+
+                            // Send the LINES data to every other player
+                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                            {
+
+                                if (otherPlayerIndex != currentPlayerIndex)
+                                {
+            
+                                    printf("Sending LINES from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
+                                    int len = SDL_strlen(packets[packetIndex]) + 1;
+                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
+
+                                }
+
+                            }
+
+                        }
                         else if (SDL_strstr(packets[packetIndex], "CURRENT") != NULL)
                         {
 

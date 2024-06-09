@@ -33,7 +33,10 @@ void mainLoop()
 		if (MULTIPLAYER)
 			drawLevelBox(Texture_Background, MODE, width / 2);
 
-		drawUntilBox(Texture_Background, MODE);
+		// Draw two until boxes if in multiplayer mode. Second one is offset by half the width of the game.
+		drawUntilBox(Texture_Background, MODE, 0);
+		if (MULTIPLAYER)
+			drawUntilBox(Texture_Background, MODE, width / 2);
 
 		// Draw two NEXT boxes if in multiplayer mode. Second one is offset by half the width of the game.
 		drawNextBox(Texture_Background, MODE, 0);

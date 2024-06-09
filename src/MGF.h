@@ -29,6 +29,7 @@
 #include "playMode.h"
 #include "rotate.h"
 #include "multiplayerLobby.h"
+#include "network.h"
 
 //Fix for cross-compiling mkdir() for windows on linux
 #ifdef _WIN32
