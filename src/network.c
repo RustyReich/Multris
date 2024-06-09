@@ -1,5 +1,18 @@
 #include "MGF.h"
 
+// Function for disconnecting from a server
+void disconnectFromServer()
+{
+
+	// Close the socket
+    SDLNet_TCP_Close(globalInstance->serverSocket);
+	// Free the socket set
+    SDLNet_FreeSocketSet(globalInstance->serverSocketSet);
+	// And set MULTIPLAYER to false
+    MULTIPLAYER = false;
+
+}
+
 // Function for sending current sizeBag to the server
 	// Sent in the format "SIZEBAG=|size_1|size_2|size_3|...|"
 void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime)

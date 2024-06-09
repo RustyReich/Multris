@@ -510,7 +510,8 @@ unsigned short playMode(piece* firstPiece)
 	{				//not over
 
 		//Pausing
-		if (onPress(SELECT_BUTTON))
+			// Player cannot pause in multiplayer
+		if (onPress(SELECT_BUTTON) && MULTIPLAYER == false)
 		{
 
 			// If aboutToExit and press SELECT_BUTTON, exit to main menu
@@ -531,7 +532,8 @@ unsigned short playMode(piece* firstPiece)
 
 		}
 		// Also pause if window loses focus
-		if (!(SDL_GetWindowFlags(globalInstance->window) & SDL_WINDOW_INPUT_FOCUS) && !*paused)
+			// Game will not pause in multiplayer
+		if (!(SDL_GetWindowFlags(globalInstance->window) & SDL_WINDOW_INPUT_FOCUS) && !*paused && MULTIPLAYER == false)
 		{
 		
 			playSound(PAUSE_SOUND);
@@ -786,6 +788,17 @@ unsigned short playMode(piece* firstPiece)
 
 				char currentData[1024];
 				int currentLen = SDLNet_TCP_Recv(globalInstance->serverSocket, currentData, 1024);
+
+				// If data is length 0, the server closed. So disconnect from the server and return back to lobby.
+				if (currentLen == 0)
+				{
+
+					disconnectFromServer();
+					freeVars();
+					return MULTIPLAYERLOBBY_SCREEN;
+
+
+				}
 
 				if (data == NULL)
 				{

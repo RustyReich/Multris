@@ -1,6 +1,6 @@
 #include "MGF.h"
 
-unsigned short multiplayerLobby(piece** Piece)
+unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
 {
 
     //Variables
@@ -34,7 +34,23 @@ unsigned short multiplayerLobby(piece** Piece)
     {
 
         SDL_QueryTexture(Texture_Next, NULL, NULL, nextText_Width, nextText_Height);
-        *firstLoop = false;   
+        *firstLoop = false;
+
+        // If the player is being returned back to the lobby after being disconnected from a multiplayer game
+        if (*justDisconnected)
+        {
+
+            // Display "Disconnected from server" on the screen
+            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Disconnected from server") + 1);
+            SDL_strlcpy(currMessage, "Disconnected from server", SDL_strlen("Disconnected from server") + 1);
+
+            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+            *error = true;
+
+            // And the user is now no longer "justDisconnected"
+            *justDisconnected = false;
+
+        }
 
     }
 
@@ -186,7 +202,9 @@ unsigned short multiplayerLobby(piece** Piece)
                         if (*error == false)
                         {
 
-                            // Add the connection socket to our socket set and set MULTIPLAYER to true
+                            // Allocate a connection socket and add the connection socket to our socket set and set 
+                            // MULTIPLAYER to true
+                            globalInstance->serverSocketSet = SDLNet_AllocSocketSet(1);
                             SDLNet_TCP_AddSocket(globalInstance->serverSocketSet, globalInstance->serverSocket);
                             
                             // Keep track of the last time we sent data to the server
@@ -294,8 +312,9 @@ unsigned short multiplayerLobby(piece** Piece)
         if (onPress(EXIT_BUTTON))
         {
 
-            // Close the server socket
-            SDLNet_TCP_Close(globalInstance->serverSocket);
+            // If we were connected to a server, we need to disconnect
+            if (MULTIPLAYER)
+                disconnectFromServer();
 
             playSound(LAND_SOUND);
             freeVars();

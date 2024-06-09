@@ -3,6 +3,6 @@
 
 #include "MGF.h"
 
-unsigned short multiplayerLobby(piece** Piece);
+unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected);
 
 #endif

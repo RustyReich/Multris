@@ -2,7 +2,8 @@
 #define NETWORK_H_
 
 #include "MGF.h"
-
+       
+void disconnectFromServer();
 void sendMapToServer(int* mapData, int* lastPuleTime);
 void sendScoretoServer(int score, int* lastPulseTime);
 void sendNextPieceToServer(piece* nextPiece, int* lastPulseTime);

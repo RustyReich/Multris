@@ -58,6 +58,7 @@ void mainLoop()
 	}
 
 	static bool firstFrame = true;
+	static bool justDisconnected = false;	// Track if the player just got disconnected from a multiplayer game
 	
 	static float fpsSizeMultiplier = 0.75;
 	static int fpsTextureWidth;
@@ -155,13 +156,33 @@ void mainLoop()
 		else     //The firstPiece has been deleted since it is no longer needed
 			game_state = playMode(NULL);	//So we just pass NULL in its place
 
+		// This happens when the player just got disconnected from a multiplayer game and goes back to the lobby
+		if (game_state == MULTIPLAYERLOBBY_SCREEN)
+		{
+			
+			// Reset MODE back to zero
+			MODE = 0;
+
+			// Delete the background texture so that we don't have the two play fields anymore
+			clearTexture(Texture_Background);
+			SDL_DestroyTexture(Texture_Background);
+			Texture_Background = NULL;
+
+			// Re-generate the firstPiece
+			generateFirst = true;
+
+			// And keep track of the fact that the player just got disconnected so we can display a message to them.
+			justDisconnected = true;
+
+		}
+
 	}
 	else if (game_state == CONTROLS_SCREEN)
 		game_state = controlsScreen(&firstPiece);
 	else if (game_state == MULTIPLAYERLOBBY_SCREEN)
 	{
 
-		game_state = multiplayerLobby(&firstPiece);
+		game_state = multiplayerLobby(&firstPiece, &justDisconnected);
 
 		// If entering a multiplayer game, clear the background so that it can be redrawn with two play fields.
 		if (game_state == PLAY_SCREEN && MULTIPLAYER == true)
