@@ -70,6 +70,7 @@ unsigned short playMode(piece* firstPiece)
 	static SDL_Texture* Texture_OpponentLines; declare_HUD_Text(&Texture_OpponentLines, LINES_TEXT);
 	static SDL_Texture* Texture_Paused; declare_HUD_Text(&Texture_Paused, PAUSED_TEXT);
 	static SDL_Texture* Texture_SizeBag; declare_HUD_Text(&Texture_SizeBag, SIZEBAG_TEXT);
+	static SDL_Texture* Texture_OpponentSizeBag; declare_HUD_Text(&Texture_OpponentSizeBag, SIZEBAG_TEXT);
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
 	static SDL_Texture* opponentForeground; declare_HUD_Text(&opponentForeground, FOREGROUND_TEXT);
 
@@ -103,6 +104,10 @@ unsigned short playMode(piece* firstPiece)
 
 		// Remove the size of the firstPiece from the sizeBag
 		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
+
+		// If in a multiplayer game, send the sizeBag to the server
+		if (MULTIPLAYER)
+			sendSizeBagToServer(sizeBag, lastPulseTime);
 
 		// If in a multiplayer game
 		if (MULTIPLAYER)
@@ -581,6 +586,10 @@ unsigned short playMode(piece* firstPiece)
 		// Remove size of nextPiece from sizeBag
 		removeSizeFromBag(sizeBag, nextPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
+		// If in a multiplayer game, send the sizeBag to the server
+		if (MULTIPLAYER)
+			sendSizeBagToServer(sizeBag, lastPulseTime);
+
 		// If in a muliplayer game, send the NEXT piece to the server
 		if (MULTIPLAYER)
 			sendNextPieceToServer(nextPiece, lastPulseTime);
@@ -946,6 +955,51 @@ unsigned short playMode(piece* firstPiece)
 					SDL_free(values);
 
 				}
+				else if (SDL_strstr(packets[packetIndex], "SIZEBAG") != NULL)	// If the data recieved is a sizeBag
+				{
+
+					// Get all of the values from the payload
+					int numValues = 0;
+					char* valuesString = &(packets[packetIndex][SDL_strlen("SIZEBAG=")]);
+					int valuesStringLength = SDL_strlen(valuesString) + 1;
+					char** values = extractStringsFromDelimitedBytes(valuesString, valuesStringLength, &numValues, '|');
+
+					// Create a temporary sizeBag to store the sizes received in
+					SizeBag* tempSizeBag = SDL_calloc(1, sizeof(sizeBag));
+					tempSizeBag->size = numValues;
+					tempSizeBag->sizesInBag = SDL_calloc(numValues, sizeof(unsigned short));
+
+					// Store the sizes in that temp bag
+					for (unsigned short i = 0; i < numValues; i++)
+						tempSizeBag->sizesInBag[i] = SDL_atoi(values[i]);
+
+					// Reset the opponents sizeBag texture
+					resetSizeBagTexture(Texture_OpponentSizeBag);
+
+					// Remove any sizes from the opponents sizeBag texture that were not received in the packet
+					for (unsigned short i = 1; i < MAX_PIECE_SIZE + 1; i++)
+					{
+						
+						bool sizeInBag = false;
+						for (unsigned short j = 0; j < tempSizeBag->size; j++)
+							if (tempSizeBag->sizesInBag[j] == i)
+								sizeInBag = true;
+
+						if (sizeInBag == false)
+							removeSizeFromBagTexture(Texture_OpponentSizeBag, i);
+
+					}
+
+					// Free memory of the tempSizeBag to avoid memory leaks.
+					SDL_free(tempSizeBag->sizesInBag);
+					SDL_free(tempSizeBag);
+
+					// Free the values to avoid memory leaks
+					for (int i = 0; i < numValues; i++)
+						SDL_free(values[i]);
+					SDL_free(values);
+
+				}
 
 			}
 
@@ -1034,6 +1088,9 @@ unsigned short playMode(piece* firstPiece)
 		
 		X = getHoldX(MODE, *opponentHoldText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentHold, X, getHoldY(MODE, *opponentHoldText_Height), HOLD_TEXTURE_MULTI);
+
+		X = getSizeBagX(MODE, getSizeBagMulti(MODE)) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentSizeBag, X, getSizeBagY(MODE), getSizeBagMulti(MODE));
 
 	}
 

@@ -611,7 +611,7 @@ void drawHoldBox(SDL_Texture* background, unsigned short size, int XOffset)
 }
 
 //Function for drawing the sizeBag box
-void drawSizeBagBox(SDL_Texture* background, unsigned short size)
+void drawSizeBagBox(SDL_Texture* background, unsigned short size, int XOffset)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -653,7 +653,10 @@ void drawSizeBagBox(SDL_Texture* background, unsigned short size)
 	else if (size == 6)
 		Y = 216;
 	else if (size == 7)
-		Y = 252;	
+		Y = 252;
+
+	// Apply offset. This is used for drawing a second SIZEBAG box in multiplayer mode
+	X += XOffset;	
 
 	int width_in_pixels = SPRITE_WIDTH * width_in_sprites;
 	int height_in_pixels = SPRITE_HEIGHT * height_in_sprites;

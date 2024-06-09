@@ -11,5 +11,6 @@ void sendCurrentPieceToServer(piece* currentPiece, int *lastPulseTime);
 void sendPositionToServer(int X, int Y, int* lastPulseTime);
 void sendLinesToServer(int lines, int* lastPulseTime);
 void sendHoldPieceToServer(piece* holdPiece, int* lastPulseTime);
+void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime);
 
 #endif

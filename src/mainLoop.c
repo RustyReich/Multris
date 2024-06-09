@@ -43,12 +43,16 @@ void mainLoop()
 		if (MULTIPLAYER)
 			drawNextBox(Texture_Background, MODE, width / 2);
 		
-		// Draw teo HOLD boxes if in multiplayer mode. Second one is offset by half the width of the game.
+		// Draw two HOLD boxes if in multiplayer mode. Second one is offset by half the width of the game.
 		drawHoldBox(Texture_Background, MODE, 0);
 		if (MULTIPLAYER)
 			drawHoldBox(Texture_Background, MODE, width / 2);
 
-		drawSizeBagBox(Texture_Background, MODE);
+		// Draw two SIZEBAG boxes if in multiplayer mode. Second one is offset by half the width of the game. 
+		drawSizeBagBox(Texture_Background, MODE, 0);
+		if (MULTIPLAYER)
+			drawSizeBagBox(Texture_Background, MODE, width / 2);
+
 		drawBackgroundExtras(Texture_Background, MODE);
 
 	}

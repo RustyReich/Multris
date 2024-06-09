@@ -1,5 +1,44 @@
 #include "MGF.h"
 
+// Function for sending current sizeBag to the server
+	// Sent in the format "SIZEBAG=|size_1|size_2|size_3|...|"
+void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime)
+{
+
+	// Add header to packet
+	int len = SDL_strlen("SIZEBAG=") + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "SIZEBAG=", len);
+
+	// Go through each size in the bag and append it as a string to our data
+	for (unsigned short i = 0; i < sizeBag->size; i++)
+	{
+
+		char* sizeString = SDL_calloc(getIntLength(sizeBag->sizesInBag[i]), sizeof(char));
+		SDL_itoa(sizeBag->sizesInBag[i], sizeString, 10);
+		sizeString[getIntLength(sizeBag->sizesInBag[i])] = '\0';
+
+		len = SDL_strlen(data) + SDL_strlen(sizeString) + SDL_strlen("|") + 1;
+		data = SDL_realloc(data, len * sizeof(char));
+		SDL_strlcat(data, sizeString, len);
+		SDL_strlcat(data, "|", len);
+
+		// Free the sizeString to avoid memory leaks
+		SDL_free(sizeString);
+
+	}
+
+	// Send the data to the server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of the last time we communicated with the server
+	*lastPuleTime = SDL_GetTicks();
+
+	// Free the data to avoid memory leaks
+	SDL_free(data);
+
+}
+
 // Function for sending current position to the server
 void sendPositionToServer(int X, int Y, int* lastPulseTime)
 {
