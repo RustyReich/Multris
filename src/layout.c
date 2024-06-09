@@ -1372,10 +1372,7 @@ UI_list* create_Modes_List()
 	//Initialize list
 		// Add "MULTIPLAYER" mode if DEBUG = 1 since this is still an experimental feature
 	UI_list* list;
-	if (DEBUG == false)
-		list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "OPTIONS", "EXIT");
-	else
-		list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "MULTIPLAYER", "OPTIONS", "EXIT");
+	list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "MULTIPLAYER", "OPTIONS", "EXIT");
 
 	//First entry is selected by default
 	list->selected_entry = 0;
