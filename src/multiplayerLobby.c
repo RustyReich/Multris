@@ -72,7 +72,7 @@ unsigned short multiplayerLobby(piece** Piece)
         {
 
             char message[] = "PULSE";
-            SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message));
+            SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message) + 1);
             
             *lastPulseTime = SDL_GetTicks();
 

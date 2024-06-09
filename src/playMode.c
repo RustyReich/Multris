@@ -713,76 +713,177 @@ unsigned short playMode(piece* firstPiece)
 		if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
 		{
 
-			// Store the data in a 1024 byte buffer
-			char data[1024];
-			int len = SDLNet_TCP_Recv(globalInstance->serverSocket, data, 1024);
-			data[len] = '\0';
-
-			// If the data received is MAP data
-			if (SDL_strstr(data, "MAP") != NULL)
+			// Capture data from server in 1024-byte chunks and combine them together into data pointer
+			char* data = NULL;
+			int dataLen = 0;
+			while(SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
 			{
 
-				int stringIndex = SDL_strlen("MAP=");
-				int mapDataIndex = 0;
+				char currentData[1024];
+				int currentLen = SDLNet_TCP_Recv(globalInstance->serverSocket, currentData, 1024);
 
-				// Clear the opponents background texture
-				clearTexture(oppenentForeground);
-
-				// Iterate through the MAP data and place the pieces on the opponents foreground texture
-				while (data[stringIndex] != '\0')
+				if (data == NULL)
 				{
 
-					if (data[stringIndex] != '0')
+					data = SDL_calloc(currentLen, sizeof(char));
+					SDL_memcpy(data, currentData, currentLen);
+					dataLen = currentLen;
+
+				}
+				else
+				{
+
+					data = SDL_realloc(data, dataLen + currentLen);
+					SDL_memcpy(&data[dataLen], currentData, currentLen);
+					dataLen += currentLen;
+
+				}
+
+			}
+
+			// Split data into "packets". A packet is basically a set of data for a specific variable.
+				// For example,"MAP=...NEXT=...SCORE=..." could all be received at the same time, and be stored
+				// in the data pointer at the same time, and here we would split it into three separate packets.
+			char** packets = NULL;
+			int numPackets = 0;
+			char* currentStringValue = NULL;
+			for (int dataIndex = 0; dataIndex < dataLen; dataIndex++)
+			{
+
+				if (data[dataIndex] != '\0')
+				{
+
+					if (currentStringValue == NULL)
 					{
 
-						int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
-						int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
-						// Color of the block can be determined based on the digit that is present in the string
-						drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, (Uint8)data[stringIndex] - '0');
+						currentStringValue = SDL_calloc(2, sizeof(char));
+						currentStringValue[0] = data[dataIndex];
+						currentStringValue[1] = '\0';
+
+					}
+					else
+					{
+
+						int newLen = SDL_strlen(currentStringValue) + 1 + 1;
+						currentStringValue = SDL_realloc(currentStringValue, newLen * sizeof(char));
+						SDL_strlcat(currentStringValue, &(data[dataIndex]), newLen);
 
 					}
 
-					stringIndex++;
-					mapDataIndex++;
-
 				}
-
-			}	// If the data receveid is SCORE data
-			else if (SDL_strstr(data, "SCORE") != NULL)
-			{
-
-				// Extract the score from the received data and update the Texture_OpponentScore
-				int opponentScore = SDL_atoi(SDL_strstr(data, "SCORE=") + SDL_strlen("SCORE=") * sizeof(char));
-				updateScore(opponentScore, Texture_OpponentScore);
-
-			}
-			else if (SDL_strstr(data, "NEXT") != NULL)	// If the data received is a NEXT piece from the opponent
-			{
-
-				// Delete the current opponents NEXT piece
-				if (opponentNextPiece != NULL)
+				else
 				{
 
-					delPiece(&opponentNextPiece);
-					SDL_DestroyTexture(Texture_OpponentNext);
-					Texture_OpponentNext = NULL;
+					if (numPackets == 0)
+					{
+
+						packets = SDL_calloc(1, sizeof(char*));
+						numPackets++;
+
+					}
+					else
+					{
+
+						packets = SDL_realloc(packets, (numPackets + 1) * sizeof(char*));
+						numPackets++;                                
+
+					}
+
+					packets[numPackets - 1] = SDL_calloc(SDL_strlen(currentStringValue) + 1, sizeof(char));
+					SDL_strlcpy(packets[numPackets - 1], currentStringValue, SDL_strlen(currentStringValue) + 1);
+
+					SDL_free(currentStringValue);
+					currentStringValue = NULL;
 
 				}
 
-				// And create a new one
-				opponentNextPiece = createPieceFromString(SDL_strstr(data, "NEXT=") + SDL_strlen("NEXT=") * sizeof(char));
-				Texture_OpponentNext = createPieceTexture(*opponentNextPiece, false);
-				SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
-
 			}
-			else if (SDL_strstr(data, "LEVEL") != NULL)
+
+			if (currentStringValue != NULL)
 			{
 
-				// Extract the level from the received data and update the Texture_OpponentLevel
-				*opponentLevel = SDL_atoi(SDL_strstr(data, "LEVEL=") + SDL_strlen("LEVEL=") * sizeof(char));
-				updateLevel(*opponentLevel, Texture_OpponentLevel);
+				SDL_free(currentStringValue);
+				currentStringValue = NULL;
 
 			}
+
+			// Now go through each packet and process it
+			for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
+			{
+
+				// If the data received is MAP data
+				if (SDL_strstr(packets[packetIndex], "MAP") != NULL)
+				{
+
+					int stringIndex = SDL_strlen("MAP=");
+					int mapDataIndex = 0;
+
+					// Clear the opponents background texture
+					clearTexture(oppenentForeground);
+
+					// Iterate through the MAP data and place the pieces on the opponents foreground texture
+					while (packets[packetIndex][stringIndex] != '\0')
+					{
+
+						if (packets[packetIndex][stringIndex] != '0')
+						{
+
+							int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
+							int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
+							// Color of the block can be determined based on the digit that is present in the string
+							drawToTexture(BLOCK_SPRITE_ID, oppenentForeground, X, Y, 1.0, (Uint8)packets[packetIndex][stringIndex] - '0');
+
+						}
+
+						stringIndex++;
+						mapDataIndex++;
+
+					}
+
+				}	// If the data receveid is SCORE data
+				else if (SDL_strstr(packets[packetIndex], "SCORE") != NULL)
+				{
+
+					// Extract the score from the received data and update the Texture_OpponentScore
+					int opponentScore = SDL_atoi(SDL_strstr(packets[packetIndex], "SCORE=") + SDL_strlen("SCORE=") * sizeof(char));
+					updateScore(opponentScore, Texture_OpponentScore);
+
+				}
+				else if (SDL_strstr(packets[packetIndex], "NEXT") != NULL)	// If the data received is a NEXT piece from the opponent
+				{
+
+					// Delete the current opponents NEXT piece
+					if (opponentNextPiece != NULL)
+					{
+
+						delPiece(&opponentNextPiece);
+						SDL_DestroyTexture(Texture_OpponentNext);
+						Texture_OpponentNext = NULL;
+
+					}
+
+					// And create a new one
+					opponentNextPiece = createPieceFromString(SDL_strstr(packets[packetIndex], "NEXT=") + SDL_strlen("NEXT=") * sizeof(char));
+					Texture_OpponentNext = createPieceTexture(*opponentNextPiece, false);
+					SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
+
+				}
+				else if (SDL_strstr(packets[packetIndex], "LEVEL") != NULL)
+				{
+
+					// Extract the level from the received data and update the Texture_OpponentLevel
+					*opponentLevel = SDL_atoi(SDL_strstr(packets[packetIndex], "LEVEL=") + SDL_strlen("LEVEL=") * sizeof(char));
+					updateLevel(*opponentLevel, Texture_OpponentLevel);
+
+				}
+
+			}
+
+			// Free our data and packets to avoid memory leaks
+			for (int i = 0; i < numPackets; i++)
+				SDL_free(packets[i]);
+			SDL_free(packets);
+			SDL_free(data);
 
 		}
 
@@ -790,7 +891,7 @@ unsigned short playMode(piece* firstPiece)
 		{
 
 			char message[] = "PULSE";
-			SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message));
+			SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message) + 1);
 		
 
 			*lastPulseTime = SDL_GetTicks();
