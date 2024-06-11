@@ -13,6 +13,33 @@ void disconnectFromServer()
 
 }
 
+// Function for sending garbage data to the server
+void sendGarbageToServer(int amount, int* lastPulseTime)
+{
+
+	// Convert the amount into a string
+	char* amountString = SDL_calloc(getIntLength(amount) + 1, sizeof(char));
+	SDL_itoa(amount, amountString, 10);
+	amountString[getIntLength(amount)] = '\0';
+
+	// Prepend the "GARBAGE=" header to the data string
+	int len = SDL_strlen("GARBAGE=") + SDL_strlen(amountString) + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "GARBAGE=", len);
+	SDL_strlcat(data, amountString, len);
+
+	// Send data to server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of when last communication with server was
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free strings to avoid memory leaks
+	SDL_free(amountString);
+	SDL_free(data);	
+
+}
+
 // Function for sending current sizeBag to the server
 	// Sent in the format "SIZEBAG=|size_1|size_2|size_3|...|"
 void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime)

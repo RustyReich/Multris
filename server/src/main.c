@@ -492,7 +492,7 @@ int main (int argc, char* argv[])
                         else if (SDL_strstr(packets[packetIndex], "SIZEBAG=") != NULL)
                         {
 
-                            printf("Received SIZEBAG from players %d.\n", playerID);
+                            printf("Received SIZEBAG from player %d.\n", playerID);
 
                             for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
                             {
@@ -502,6 +502,27 @@ int main (int argc, char* argv[])
 
                                     // Send SIZEBAG data to all other players
                                     printf("Send SIZEBAG from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
+                                    int len = SDL_strlen(packets[packetIndex]) + 1;
+                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
+
+                                }
+
+                            }
+
+                        }
+                        else if (SDL_strstr(packets[packetIndex], "GARBAGE=") != NULL)
+                        {
+
+                            printf("Received GARBAGE from player %d.\n", playerID);
+
+                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                            {
+
+                                if (otherPlayerIndex != currentPlayerIndex)
+                                {
+
+                                    // Send GARBAGE data to all other players
+                                    printf("Send GARBAGE from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
                                     int len = SDL_strlen(packets[packetIndex]) + 1;
                                     SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
 

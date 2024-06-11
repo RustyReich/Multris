@@ -53,6 +53,7 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
 	DECLARE_VARIABLE(bool, aboutToExit, false);
 	DECLARE_VARIABLE(int, lastPulseTime, 0);
+	DECLARE_VARIABLE(int, receivedGarbage, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -654,6 +655,10 @@ unsigned short playMode(piece* firstPiece)
 			if (*numCompleted > 0)
 			{
 
+				// If in a multiplayer game, send half the number of lines completed as garbage to the other player (round down)
+				if (MULTIPLAYER && *numCompleted > 1)
+					sendGarbageToServer(SDL_floor((double)*numCompleted / (double)2), lastPulseTime);
+
 				//This enables the clearing animation to play
 				*clearingLine = true;
 
@@ -776,6 +781,27 @@ unsigned short playMode(piece* firstPiece)
 
 		}
 
+		// If we have received garbage, wait until clearingLine animation is not playing and also make sure the game is not over
+		if (!*clearingLine && *receivedGarbage > 0 && !*gameOver)
+		{
+
+			// Move the Y value up by the amount of garbage lines we received, but dont go less than zero
+			*Y -= *receivedGarbage;
+			if (*Y < 0)
+				*Y = 0;
+
+			// Add the garbage lines and reset receivedGarbage back to zero
+			addGarbageLines(*receivedGarbage, mapData, foreground, MAP_WIDTH, MAP_HEIGHT);
+			*receivedGarbage = 0;
+
+			//Recalculate ghostY
+			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);	
+
+			// Once added the garbage, send the MAP back to the server
+			sendMapToServer(mapData, lastPulseTime);
+
+		}
+
 		// Check for incoming data from the server
 		if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
 		{
@@ -858,7 +884,7 @@ unsigned short playMode(piece* firstPiece)
 
 					}
 
-				}	// If the data receveid is SCORE data
+				}	// If the data received is SCORE data
 				else if (SDL_strstr(packets[packetIndex], "SCORE") != NULL)
 				{
 
@@ -1011,6 +1037,13 @@ unsigned short playMode(piece* firstPiece)
 					for (int i = 0; i < numValues; i++)
 						SDL_free(values[i]);
 					SDL_free(values);
+
+				}	// if the data received is GARBAGE data
+				else if (SDL_strstr(packets[packetIndex], "GARBAGE") != NULL)
+				{
+
+					// Extract the amount of garbage lines from the received data and store it in receivedGarbage
+					*receivedGarbage = SDL_atoi(SDL_strstr(packets[packetIndex], "GARBAGE=") + SDL_strlen("GARBAGE=") * sizeof(char));
 
 				}
 
@@ -1252,9 +1285,13 @@ unsigned short playMode(piece* firstPiece)
 			if (onPress(SELECT_BUTTON))
 			{
 
-				//Free all memory taken by PLAYMODE -----------------------------------
+				// Disconnect from server when player tries to return back to the main menu after getting a game over
+				if (MULTIPLAYER)
+					disconnectFromServer();
 
+				//Free all memory taken by PLAYMODE -----------------------------------
 				freeVars();
+
 				return RESET;
 
 			}
@@ -1268,6 +1305,90 @@ unsigned short playMode(piece* firstPiece)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
+
+}
+
+// Function for adding garbage lines to the play field when in a multiplayer game
+void addGarbageLines(unsigned short numOfLines, int* mapData, SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight)
+{
+
+	// Find the highest row that currently has a block on it
+	int highestRow = mapHeight;
+	for (unsigned short i = 0; i < mapHeight; i++)
+	{
+
+		for (unsigned short j = 0; j < mapWidth; j++)
+		{
+
+			if (*(mapData + i * mapWidth + j) != 0)
+			{
+
+				highestRow = i;
+				goto EndHighestRow;
+
+			}
+
+		}
+
+	}
+	EndHighestRow:;
+
+	// Make sure we are not adding more garbage lines than there is room left in the play field
+	if (highestRow - numOfLines < 0)
+		numOfLines = highestRow;
+
+	// Copy the portion of the foreground texture which is currently occupied (every row has at least one block)
+	SDL_Rect srcR = { .x = 0, .y = highestRow * SPRITE_HEIGHT, .w = mapWidth * SPRITE_WIDTH, .h = (mapHeight - highestRow) * SPRITE_HEIGHT};
+	SDL_Texture* occupiedText;
+	occupiedText = createTexture(srcR.w, srcR.h);
+	SDL_SetRenderTarget(globalInstance->renderer, occupiedText);
+	SDL_RenderCopy(globalInstance->renderer, foreground, &srcR, NULL);
+
+	// Clear the foreground
+	clearTexture(foreground);
+
+	// Move the occupied portion of the texture up numOfLines rows
+	SDL_Rect dstR = { .x = 0, .y = (highestRow - numOfLines) * SPRITE_HEIGHT, .w = srcR.w, .h = srcR.h };
+	SDL_SetRenderTarget(globalInstance->renderer, foreground);
+	SDL_RenderCopy(globalInstance->renderer, occupiedText, NULL, &dstR);
+	SDL_SetRenderTarget(globalInstance->renderer, NULL);
+
+	// Move the rows up by one in the mapData array
+	for (unsigned short i = highestRow - numOfLines; i < mapHeight; i++)
+	{
+
+		// Pick a random block in each row to leave empty
+		int randomHole = rand() % mapWidth;
+
+		for (unsigned short j = 0; j < mapWidth; j++)
+		{
+
+			// Copy the value from numOfLines rows below this row
+			if (i < mapHeight - numOfLines)
+				*(mapData + i * mapWidth + j) = *(mapData + (i + numOfLines) * mapWidth + j);
+			else	// For rows that are now going to be occupied by garbage
+			{
+
+				// As long as this is not the block that will be a hole
+				if (j != randomHole)
+				{
+
+					// Place a gray block
+					*(mapData + i * mapWidth + j) = GRAY;
+					drawToTexture(BLOCK_SPRITE_ID, foreground, j * SPRITE_WIDTH, i * SPRITE_HEIGHT, 1.0, GRAY);
+
+				}
+				else	// Leave it empty if it is a hole
+					*(mapData + i * mapWidth + j) = 0;
+
+			}
+
+		}
+
+	}
+
+	// Avoid memory leaks
+	SDL_DestroyTexture(occupiedText);
 
 }
 
@@ -1737,6 +1858,9 @@ void removeLine(unsigned short row, int* mapData, SDL_Texture* foreground, unsig
 	for (unsigned short i = row; i > 0; i--)
 		for (unsigned short j = 0; j < mapWidth; j++)
 			*(mapData + i * mapWidth + j) = *(mapData + (i - 1) * mapWidth + j);
+
+	// Free aboveText to avoid memory leak
+	SDL_DestroyTexture(aboveText);
 
 }
 
