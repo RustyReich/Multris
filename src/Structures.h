@@ -92,6 +92,8 @@ typedef struct gameInstance
     double frame_time;
 
     Uint8* keys;
+    bool* onKeyPress;
+    bool* onKeyHold;
 
     control* controls;
 

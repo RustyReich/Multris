@@ -7,7 +7,6 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
     DECLARE_VARIABLE(int, nextText_Width, 0);
     DECLARE_VARIABLE(int, nextText_Height, 0);
     DECLARE_VARIABLE(bool, firstLoop, true);
-    DECLARE_VARIABLE(bool, justPressedButton, false);
     DECLARE_VARIABLE(double, textMulti, 0.80);
     DECLARE_VARIABLE(double, messageMulti, 1.0);
     DECLARE_VARIABLE(bool, error, false);
@@ -231,22 +230,23 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
             if (SDL_strcmp(selected_option, "PORT") == 0)
                 strBeingModified = portString;
 
-            // Get the currently pressed key
-            int pressedKey = getPressedKey();
+            // Define the list of keys which are valid inputs while inputting an IP and PORT
+            int validKeys[] = { SDL_SCANCODE_0, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4, SDL_SCANCODE_5,
+                                SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE };
 
-            // Only allow one key press at a time. So justPressedButton is false if no buttons are being pressed, to allow
-            // a new key press
-            if (getPressedKey() == -1)
-                *justPressedButton = false;
-
-            // As long the the user didnt just press a key already
-            if (*justPressedButton == false)
+            // Go through all validKeys
+            for (unsigned short i = 0; i < 12; i++)
             {
 
+                // Check if this key was just pressed this frame. Skip it if it wasn't
+                int pressedKey = validKeys[i];
+                if (globalInstance->onKeyPress[pressedKey] == false)
+                    continue;
+
                 // Only allow digits and periods
-                if (pressedKey == SDL_SCANCODE_PERIOD || (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_0))
+                if (globalInstance->onKeyPress[SDL_SCANCODE_PERIOD] || (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_0))
                 {
-                    
+
                     // Convert the SDL_SCANCODE to an ascii value
                     char asciiValue;
                     if (pressedKey == SDL_SCANCODE_PERIOD)
@@ -276,9 +276,6 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
                         // Then update the Connectionvalues texture
                         updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
 
-                        // And don't allow multiple inputs from a single key press
-                        *justPressedButton = true;
-
                     }
                     
                 }
@@ -296,9 +293,6 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
 
                         // And then update the ConnectionValues texture
                         updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
-
-                        // And don't allow multiple inputs from a single key press
-                        *justPressedButton = true;
 
                     }
 

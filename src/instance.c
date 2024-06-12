@@ -192,6 +192,10 @@ void initInstance(gameInstance** instance)
     //Get keyboard state
 	(*instance)->keys = (Uint8*)SDL_GetKeyboardState(NULL);
 
+    // Store the onKeyPress and onKeyHold status of all keys
+    (*instance)->onKeyPress = SDL_calloc(SDL_NUM_SCANCODES, sizeof(bool));
+    (*instance)->onKeyHold = SDL_calloc(SDL_NUM_SCANCODES, sizeof(bool));
+
     //Initialize controls with the default controls
     (*instance)->controls = initControls();
 

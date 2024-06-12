@@ -197,6 +197,9 @@ int main(int argc, char *argv[]) {
 		//Update 'controls' states
 		updateControls();
 
+		// Update the state of all keys
+		updateKeys();
+
 		//Clear screen with black
         SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 255);
         SDL_RenderClear(globalInstance->renderer);

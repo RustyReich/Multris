@@ -7,5 +7,6 @@ unsigned short controlsScreen(piece** Piece);
 void updateControls();
 int getPressedKey();
 bool invalidKey(int key);
+void updateKeys();
 
 #endif

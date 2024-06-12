@@ -231,6 +231,45 @@ void updateControls()
 
 }
 
+// Function for updating the onKeyPress and onKeyHold status of a key
+void updateKeys()
+{
+
+    // Iterate over all keys
+    for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+    {
+
+        // Update logic
+            // If key[i] is currently pushed
+        if (globalInstance->keys[i])
+        {
+
+            // If this is the first frame of the key being pushed
+            if (globalInstance->onKeyHold[i] == false)
+            {
+
+                // onKeyPress and onKeyHold are both true
+                globalInstance->onKeyPress[i] = true;
+                globalInstance->onKeyHold[i] = true;
+
+            }
+            else    // onKeyPress is only true for a single frame
+                globalInstance->onKeyPress[i] = false;
+
+        }
+        else
+        {
+
+            // If key is not being pushed, onKeyHold and onKeyPress are both false
+            globalInstance->onKeyHold[i] = false;
+            globalInstance->onKeyPress[i] = false;
+
+        }
+
+    }
+
+}
+
 //Get the key that is currently pressed
     //Returns -1 if no valid keys are pressed
     //If multiple are pressed, it returns the one that comes earliest in the SCANCODE list
