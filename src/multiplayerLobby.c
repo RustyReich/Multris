@@ -11,6 +11,7 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
     DECLARE_VARIABLE(double, messageMulti, 1.0);
     DECLARE_VARIABLE(bool, error, false);
     DECLARE_VARIABLE(int, lastPulseTime, 0);
+    DECLARE_VARIABLE(bool, justPasted, false);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -230,12 +231,17 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
             if (SDL_strcmp(selected_option, "PORT") == 0)
                 strBeingModified = portString;
 
+            // Max length is diffent depending on if the user is editing the IP or the PORT
+            int maxLength = 15;
+            if (strBeingModified == portString)
+                maxLength = 5;
+
             // Define the list of keys which are valid inputs while inputting an IP and PORT
             int validKeys[] = { SDL_SCANCODE_0, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4, SDL_SCANCODE_5,
                                 SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE };
 
             // Go through all validKeys
-            for (unsigned short i = 0; i < 12; i++)
+            for (unsigned short i = 0; i < sizeof(validKeys) / sizeof(validKeys[0]); i++)
             {
 
                 // Check if this key was just pressed this frame. Skip it if it wasn't
@@ -255,11 +261,6 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
                         asciiValue = '0';
                     else
                         asciiValue = '1' + (pressedKey - SDL_SCANCODE_1);
-
-                    // Max length is diffent depending on if the user is editing the IP or the PORT
-                    int maxLength = 15;
-                    if (strBeingModified == portString)
-                        maxLength = 5;
 
                     // Check if the key that was pressed was a period 
                     bool pressedPeriod = (pressedKey == SDL_SCANCODE_PERIOD);
@@ -299,6 +300,37 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
                 }
 
             }
+
+            // Check if left or right control button are being held
+            bool controlHeld = (globalInstance->onKeyHold[SDL_SCANCODE_LCTRL] || globalInstance->onKeyHold[SDL_SCANCODE_RCTRL]);
+
+            // If Control+V are being held
+            if (controlHeld && globalInstance->onKeyHold[SDL_SCANCODE_V] && *justPasted == false)
+            {
+
+                // Get the text currently on the clipboard
+                char* clipboard = SDL_GetClipboardText();
+
+                // Don't let the user paste more text than can fit in the current value
+                int currLength = SDL_strlen(strBeingModified) + 1;
+                int newLength = SDL_min(maxLength + 1, SDL_strlen(clipboard) + currLength);
+                strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (newLength + 1));
+                
+                // Append text from the clipboard to the end of the strBeingModified
+                SDL_strlcat(strBeingModified, clipboard, newLength);
+
+                // And then update the ConnectionValues texture
+                updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+
+                // Free memory taken up by copied clipboard text
+                SDL_free(clipboard);
+
+                // Don't paste continuously while holding down Control+V
+                *justPasted = true;
+
+            }   // Once player lets go of Control or V, they can paste again
+            else if (!controlHeld || !globalInstance->onKeyHold[SDL_SCANCODE_V])
+                *justPasted = false;
 
         }
 
