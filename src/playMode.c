@@ -1268,7 +1268,8 @@ unsigned short playMode(piece* firstPiece)
 				printToTexture("OVER", foreground, x, y, multi, WHITE);
 
 				//Save score once overAnimation is finished playing
-				if (*Score > loadTop(MODE, CUSTOM_MODE))
+					// Don't save score if in a multiplayer game
+				if (*Score > loadTop(MODE, CUSTOM_MODE) && MULTIPLAYER == false)
 					saveTop(*Score, MODE, CUSTOM_MODE);
 
 				//Also save the Progress to disk
