@@ -320,6 +320,7 @@ int main (int argc, char* argv[])
                     for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
                     {
 
+                        // Get the packet header (everything before the '=')
                         int endHeaderIndex = 0;
                         for (unsigned short i = 0; i < SDL_strlen(packets[packetIndex]); i++)
                             if (packets[packetIndex][endHeaderIndex] != '=')
