@@ -2431,8 +2431,9 @@ int getGameHeight(unsigned short size)
 int getConnectionMessageX(char* message, float multi)
 {
 
-	int start = getForegroundX(MAX_PIECE_SIZE);
-	int width = SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) * SPRITE_WIDTH;
+	// Give a square of padding on either side of the message 
+	int start = getForegroundX(MAX_PIECE_SIZE) + SPRITE_WIDTH;
+	int width = (SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) - 2) * SPRITE_WIDTH;
 
 	return (start + 0.5 * (width - getStringLength(message, multi)));
 

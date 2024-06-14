@@ -370,8 +370,10 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
     if (SDL_strlen(currMessage) > 0)
     {
 
+        // Give a square of padding on either side of the currMessage
+        int width = (SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) - 2) * SPRITE_WIDTH;
         int stringLength = getStringLength(currMessage, 1.0);
-        *messageMulti = SDL_round(BASE_PLAYFIELD_WIDTH * MAX_PIECE_SIZE) * SPRITE_WIDTH / stringLength;
+        *messageMulti = (double)width / (double)stringLength;
         int x = getConnectionMessageX(currMessage, *messageMulti);
         int y = getConnectionMessageY(*messageMulti);
         drawTexture(Texture_ConnectionMessage, x, y, *messageMulti);
