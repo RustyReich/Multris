@@ -35,38 +35,39 @@ int main (int argc, char* argv[])
 
     TCPsocket server;
     IPaddress ip;
+    bool portSpecified = false;
 
-    // Start server provided in command line argument if present
-    if (argc > 1)
+	for (unsigned short i = 1; i < argc; i++)
     {
 
-        if (SDLNet_ResolveHost(&ip, NULL, SDL_atoi(argv[1])) == -1)
+        if (SDL_strcmp(argv[i], "-p") == 0)
         {
 
-            printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-            exit(1);
+            if (i < argc - 1)
+            {
+
+                portSpecified = true;
+
+                if (SDLNet_ResolveHost(&ip, NULL, SDL_atoi(argv[i + 1])) == -1)
+                {
+
+                    printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+                    exit(1);
+
+                }
+
+            }
 
         }
+
 
     }
-    else
+
+    if (portSpecified == false)
     {
 
-        // Open server on random port. Try up to 10 random ports to find an open one
-        while (SDLNet_ResolveHost(&ip, NULL, rand() % SDL_MAX_UINT16) == -1)
-        {
-
-            int maxPortTries = 10;
-            int currPortTries = 0;
-
-            currPortTries++;
-            if (currPortTries < maxPortTries)
-                continue;
-
-            printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-            exit(1);
-
-        }
+        printf("No port specified.\n");
+        exit(1);
 
     }
 
