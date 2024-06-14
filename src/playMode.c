@@ -22,10 +22,12 @@ unsigned short playMode(piece* firstPiece)
 	DECLARE_VARIABLE(bool, softDrop, false);
 	DECLARE_VARIABLE(bool, gameOver, false);
 	DECLARE_VARIABLE(bool, clearingLine, false);
+	DECLARE_VARIABLE(bool, opponentClearingLine, false);
 	DECLARE_VARIABLE(bool, paused, false);
 	DECLARE_VARIABLE(bool, overAnimation, false);
 	DECLARE_VARIABLE(bool, justHeld, false);
 	DECLARE_VARIABLE(unsigned short, numCompleted, 0);
+	DECLARE_VARIABLE(unsigned short, numOpponentCompleted, 0);
 	DECLARE_VARIABLE(unsigned int, Score, 0);
 	DECLARE_VARIABLE(unsigned int, opponentScore, 0);
 	DECLARE_VARIABLE(short, Level, 0);
@@ -78,8 +80,13 @@ unsigned short playMode(piece* firstPiece)
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
 	static int* completedRows; declareStart(completedRows, MAP_HEIGHT + 1);
+		// Same thing for opponentCompletedRows
+	static int* opponentCompletedRows; declareStart(opponentCompletedRows, MAP_HEIGHT + 1);
 		// mapData[i][j] = 0 if nothing at that coord. Otherwise = integer equivalent of the color of the block at that coord.
 	static int* mapData; declare_map_matrix(&mapData);
+
+	// Store a string representation of the opponents MAP
+	static char* opponentMapString; declareStart(opponentMapString, '\0');
 
 	// Declare the bag holding the possible sizes for bag shuffling of sizes
 	static SizeBag* sizeBag; declare_size_bag(&sizeBag, MODE, CUSTOM_MODE);
@@ -648,6 +655,10 @@ unsigned short playMode(piece* firstPiece)
 
 			}
 
+			// If in a multiplayer game, send MAP data to server whenever you place a piece
+			if (MULTIPLAYER)
+				sendMapToServer(mapData, lastPulseTime);
+
 			//Check if the player just completed a line
 			if (numCompleted != NULL)
 				*numCompleted = completedLine(mapData, (unsigned short)*Y, *currentPiece, &completedRows, MAP_WIDTH, MAP_HEIGHT);
@@ -658,6 +669,10 @@ unsigned short playMode(piece* firstPiece)
 				// If in a multiplayer game, send half the number of lines completed as garbage to the other player (round down)
 				if (MULTIPLAYER && *numCompleted > 1)
 					sendGarbageToServer(SDL_floor((double)*numCompleted / (double)2), lastPulseTime);
+
+				// Send the rows that have been completed to the server
+				if (MULTIPLAYER)
+					sendRemovalToServer(completedRows, *numCompleted, lastPulseTime);
 
 				//This enables the clearing animation to play
 				*clearingLine = true;
@@ -758,11 +773,6 @@ unsigned short playMode(piece* firstPiece)
 
 			}
 
-			// If in a multiplayer game
-				// Send your MAP data to the server whenever you place a piece
-			if (MULTIPLAYER)
-				sendMapToServer(mapData, lastPulseTime);
-
 		}
 
 	}
@@ -860,29 +870,16 @@ unsigned short playMode(piece* firstPiece)
 				{
 
 					int stringIndex = SDL_strlen("MAP=");
-					int mapDataIndex = 0;
 
-					// Clear the opponents background texture
-					clearTexture(opponentForeground);
+					// Extract the MAP data part of the string and store it in opponentMapString
+					int mapStringLength = SDL_strlen(&(packets[packetIndex][stringIndex])) + 1;
+					opponentMapString = SDL_realloc(opponentMapString, mapStringLength * sizeof(char));
+					SDL_strlcpy(opponentMapString, &(packets[packetIndex][stringIndex]), mapStringLength);
 
-					// Iterate through the MAP data and place the pieces on the opponents foreground texture
-					while (packets[packetIndex][stringIndex] != '\0')
-					{
-
-						if (packets[packetIndex][stringIndex] != '0')
-						{
-
-							int X = mapDataIndex % MAP_WIDTH * SPRITE_WIDTH;
-							int Y = mapDataIndex / MAP_WIDTH * SPRITE_HEIGHT;
-							// Color of the block can be determined based on the digit that is present in the string
-							drawToTexture(BLOCK_SPRITE_ID, opponentForeground, X, Y, 1.0, (Uint8)packets[packetIndex][stringIndex] - '0');
-
-						}
-
-						stringIndex++;
-						mapDataIndex++;
-
-					}
+					// Update the opponentForeground if the opponent's line animation isn't playing
+						// Otherwise, we will update it after the animation has finished playing
+					if (*opponentClearingLine == false)
+						updateOpponentForeground(opponentForeground, opponentMapString);
 
 				}	// If the data received is SCORE data
 				else if (SDL_strstr(packets[packetIndex], "SCORE") != NULL)
@@ -1045,6 +1042,31 @@ unsigned short playMode(piece* firstPiece)
 					// Extract the amount of garbage lines from the received data and store it in receivedGarbage
 					*receivedGarbage = SDL_atoi(SDL_strstr(packets[packetIndex], "GARBAGE=") + SDL_strlen("GARBAGE=") * sizeof(char));
 
+				}	// If the data is a list of lines to remove from the opponents playfield
+				else if (SDL_strstr(packets[packetIndex], "REMOVE") != NULL)
+				{
+
+					// Get all the values from the payload
+					int numValues = 0;
+					char* valuesString = &(packets[packetIndex][SDL_strlen("REMOVE=")]);
+					int valuesStringLength = SDL_strlen(valuesString) + 1;
+					char** values = extractStringsFromDelimitedBytes(valuesString, valuesStringLength, &numValues, '|');
+
+					// Store the rows that were completed by the opponent
+					*numOpponentCompleted = numValues;
+					opponentCompletedRows = SDL_realloc(opponentCompletedRows, numValues * sizeof(int));
+					for (unsigned short i = 0; i < *numOpponentCompleted; i++)
+						opponentCompletedRows[i] = SDL_atoi(values[i]);
+
+					// And start the line clearing animation for the opponent
+					if (*numOpponentCompleted > 0)
+						*opponentClearingLine = true;
+
+					// Free the values to avoid memory leaks
+					for (unsigned short i = 0; i < numValues; i++)
+						SDL_free(values[i]);
+					SDL_free(values);
+
 				}
 
 			}
@@ -1180,7 +1202,7 @@ unsigned short playMode(piece* firstPiece)
 		//Keep track of the number of lines completed prior to drawing the next frame of the line animation
 			//This is because the playLineAnimation() function modifies the numCompleted variable
 		unsigned short prevNumCompleted = *numCompleted;
-		
+
 		//Play a single frame of the line animation
 		if (playLineAnimation(foreground, *completedRows, clearingLine, mapData, numCompleted)) {
 
@@ -1227,6 +1249,50 @@ unsigned short playMode(piece* firstPiece)
 		//Recalculate ghostY
 		*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
 		
+	}
+
+	// If in a multiplayer game
+	if (MULTIPLAYER)
+	{
+
+		// Play the line clearing animation for the opponent if we have received lines to clear
+		if (*opponentClearingLine == true && numOpponentCompleted != NULL)
+		{
+
+			// Keep track of the number of of lines completed prior to drawing the next frame of
+			// the line animation
+				// This is because the playOpponentLineAnimation() function modifies the
+				// numOpponentCompleted variable
+			unsigned short prevNumCompleted = *numOpponentCompleted;
+
+			// Play a single frame of the opponent's line animation
+			playOpponentLineAnimation(opponentForeground, *opponentCompletedRows, opponentClearingLine, numOpponentCompleted);
+
+			// If the animation is done playing, we can update the opponent's foreground
+			if (*opponentClearingLine == false)
+				updateOpponentForeground(opponentForeground, opponentMapString);
+
+			// Remove the first element in opponentCompletedRows array
+				// Also resize opponentCompletedRows array
+			if (prevNumCompleted != *numOpponentCompleted && *numOpponentCompleted > 0)
+			{
+
+				unsigned short* tempRows;
+				tempRows = SDL_malloc(*numOpponentCompleted * sizeof(*tempRows));
+				for (unsigned short i = 0; i < *numOpponentCompleted; i++)
+					*(tempRows + i) = *(opponentCompletedRows + i + 1);
+
+				SDL_free(opponentCompletedRows);
+				opponentCompletedRows = SDL_malloc(*numOpponentCompleted * sizeof(*opponentCompletedRows));
+				for (unsigned short i = 0; i < *numOpponentCompleted; i++)
+					*(opponentCompletedRows + i) = *(tempRows + i);
+
+				SDL_free(tempRows);
+
+			}
+
+		}
+
 	}
 
 	//If game is over
@@ -1306,6 +1372,35 @@ unsigned short playMode(piece* firstPiece)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
+
+}
+
+// Function for completely redrawing the opponent's foreground texture
+void updateOpponentForeground(SDL_Texture* foreground, char* mapString)
+{
+
+	// Clear the texture
+	clearTexture(foreground);
+
+	int index = 0;
+
+	// Go through every element in the mapString
+	while (mapString[index] != '\0')
+	{
+
+		if (mapString[index] != '0')
+		{
+
+			// And place the appropriately colored BLOCK onto the texture at the right coordinate
+			int X = index % MAP_WIDTH * SPRITE_WIDTH;
+			int Y = index / MAP_WIDTH * SPRITE_HEIGHT;
+			drawToTexture(BLOCK_SPRITE_ID, foreground, X, Y, 1.0, (Uint8)mapString[index] - '0');
+
+		}
+
+		index++;
+
+	}
 
 }
 
@@ -1734,6 +1829,92 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 
 }
 
+// Function for playing one frame of the line clearing animation for the opponent
+void playOpponentLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, unsigned short* numCompleted)
+{
+
+	//Allocate memory for storing some time values
+	static Uint32* time_start = NULL;
+	static Uint32* time_now = NULL;
+	if (time_start == NULL)
+	{
+
+		time_start = SDL_malloc(sizeof(*time_start));
+		time_now = SDL_malloc(sizeof(*time_now));
+		if (time_start != NULL)
+			*time_start = SDL_GetTicks();
+
+	}
+	else
+	{
+
+		if (time_now != NULL)
+		{
+
+			//Keep track of the current time for this frame
+			*time_now = SDL_GetTicks();
+
+			//If a certain amount of time has passed since the last time the animation was updated
+			if ((*time_now - *time_start) > CLEARING_TIME)
+			{
+
+				//With each frame of the animation, remove two blocks from the line being erased
+					//Here, frame refers to when the animation actually changes
+				SDL_SetRenderTarget(globalInstance->renderer, foreground);
+
+				//'column' stores the x value of the current column that is being erased
+				static unsigned short* column;
+				if (column == NULL)
+				{
+
+					column = SDL_malloc(sizeof(*column));
+					*column = 0;
+
+				}
+				else if (column != NULL)
+				{
+
+					//Because we remove a block on each side of the chasm
+						//The blocks getting removed are +-column blocks away from the center
+					drawToTexture(BLOCK_SPRITE_ID, foreground, (MAP_WIDTH / 2 - *column) * SPRITE_WIDTH, row * SPRITE_HEIGHT, 1, BLACK);
+					drawToTexture(BLOCK_SPRITE_ID, foreground, (MAP_WIDTH / 2 + *column) * SPRITE_WIDTH, row * SPRITE_HEIGHT, 1, BLACK);
+
+					//By increasing *column, we're basically increaing the radius of the 
+					//chasm of blocks we are removing
+					*column = *column + 1;
+
+					//Once we have removed all the blocks in this row
+					if (*column > MAP_WIDTH / 2)
+					{
+
+						SDL_free(column);
+						column = NULL;
+
+						*numCompleted = *numCompleted - 1;
+						if (*numCompleted == 0)
+							*clearingLine = false;
+
+						removeLine(row, NULL, foreground, MAP_WIDTH);
+
+					}
+
+				}
+
+				SDL_free(time_start);
+				time_start = NULL;
+				SDL_free(time_now);
+				time_now = NULL;
+
+				SDL_SetRenderTarget(globalInstance->renderer, NULL);
+
+			}
+
+		}
+
+	}
+
+}
+
 //Function for playing one frame of the line clearing animation
 bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, int *mapData, unsigned short* numCompleted)
 {
@@ -1759,7 +1940,7 @@ bool playLineAnimation(SDL_Texture* foreground, unsigned short row, bool *cleari
 		if (time_now != NULL)
 		{
 
-			//Keep track of the current time for this framess
+			//Keep track of the current time for this frame
 			*time_now = SDL_GetTicks();
 
 			//If a certain amount of time has passed since the last time the animation was updated
@@ -1833,8 +2014,12 @@ void removeLine(unsigned short row, int* mapData, SDL_Texture* foreground, unsig
 {
 
 	//All blocks in memory for the clearedLine are set to empty
-	for (unsigned short j = 0; j < mapWidth; j++)
-		*(mapData + row * mapWidth + j) = 0;
+		// Don't do this if mapData is NULL (indicating we are removing line from opponent playfield)
+			// This is because we don't really store the mapData from opponent in the same way we
+			// store it for the regular player, so there is nothing to update.
+	if (mapData != NULL)
+		for (unsigned short j = 0; j < mapWidth; j++)
+			*(mapData + row * mapWidth + j) = 0;
 
 	SDL_Rect srcRect = { .x = 0, .y = 0, .w = mapWidth * SPRITE_WIDTH, .h = row * SPRITE_HEIGHT };
 	
@@ -1856,9 +2041,13 @@ void removeLine(unsigned short row, int* mapData, SDL_Texture* foreground, unsig
 	SDL_SetRenderTarget(globalInstance->renderer, NULL);
 
 	//Shift all mapData above clearedLine down by 1
-	for (unsigned short i = row; i > 0; i--)
-		for (unsigned short j = 0; j < mapWidth; j++)
-			*(mapData + i * mapWidth + j) = *(mapData + (i - 1) * mapWidth + j);
+		// Don't do this if mapData is NULL (indicating we are removing line from opponent playfield)
+			// This is because we don't really store the mapData from opponent in the same way we
+			// store it for the regular player, so there is nothing to update.
+	if (mapData != NULL)
+		for (unsigned short i = row; i > 0; i--)
+			for (unsigned short j = 0; j < mapWidth; j++)
+				*(mapData + i * mapWidth + j) = *(mapData + (i - 1) * mapWidth + j);
 
 	// Free aboveText to avoid memory leak
 	SDL_DestroyTexture(aboveText);

@@ -40,6 +40,44 @@ void sendGarbageToServer(int amount, int* lastPulseTime)
 
 }
 
+// Function for sending a list of rows to remove to the server
+	// Data is sent to server in the format "REMOVE=[row #]|[row #]|...|[row #]|"
+void sendRemovalToServer(int* rows, int numRows, int *lastPulseTime)
+{
+
+	// Add header to packet
+	int len = SDL_strlen("REMOVE=") + 1;
+	char* data = SDL_calloc(len, sizeof(char));
+	SDL_strlcpy(data, "REMOVE=", len);
+
+	// Go through each row in the array of rows and append them to our data string separated by "|"
+	for (unsigned short i = 0; i < numRows; i++)
+	{
+
+		char* rowString = SDL_calloc(getIntLength(rows[i]), sizeof(char));
+		SDL_itoa(rows[i], rowString, 10);
+		rowString[getIntLength(rows[i])] = '\0';
+
+		len = SDL_strlen(data) + SDL_strlen(rowString) + SDL_strlen("|") + 1;
+		data = SDL_realloc(data, len * sizeof(char));
+		SDL_strlcat(data, rowString, len);
+		SDL_strlcat(data, "|", len);
+
+		SDL_free(rowString);
+
+	}
+
+	// Send the data to the server
+	SDLNet_TCP_Send(globalInstance->serverSocket, data, len);
+
+	// Keep track of the last time we communicated with the server
+	*lastPulseTime = SDL_GetTicks();
+
+	// Free the data to avoid memory leaks
+	SDL_free(data);
+
+}
+
 // Function for sending current sizeBag to the server
 	// Sent in the format "SIZEBAG=|size_1|size_2|size_3|...|"
 void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime)

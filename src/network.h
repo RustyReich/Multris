@@ -14,5 +14,6 @@ void sendLinesToServer(int lines, int* lastPulseTime);
 void sendHoldPieceToServer(piece* holdPiece, int* lastPulseTime);
 void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime);
 void sendGarbageToServer(int amount, int* lastPulseTime);
+void sendRemovalToServer(int* rows, int numRows, int *lastPulseTime);
 
 #endif
