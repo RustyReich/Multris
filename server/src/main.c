@@ -1,5 +1,7 @@
 #include "../../src/MGF.h"
 
+void startServer(IPaddress address, int tickRate);
+
 int main (int argc, char* argv[])
 {
 
@@ -8,9 +10,6 @@ int main (int argc, char* argv[])
     (void)argv;
 
     const int TICK_RATE = 128;
-    const double TARGET_FRAME_TIME = (double)1 / (double)TICK_RATE;
-
-    Uint32 ticksLastFrame = SDL_GetTicks(); 
 
     printf("Starting server...\n");
 
@@ -30,16 +29,16 @@ int main (int argc, char* argv[])
 
     }
 
-    // Set seed for random number generator
-    srand((int)time(NULL));
-
-    TCPsocket server;
     IPaddress ip;
     bool portSpecified = false;
 
+    bool restartAfterClose = false;
+
+    // Check for launch arguments
 	for (unsigned short i = 1; i < argc; i++)
     {
 
+        // -p launch argument takes the next argument as the port
         if (SDL_strcmp(argv[i], "-p") == 0)
         {
 
@@ -58,11 +57,13 @@ int main (int argc, char* argv[])
 
             }
 
-        }
-
+        }   // -r launch argument sets the server to restart after the game ends
+        else if (SDL_strcmp(argv[i], "-r") == 0)
+            restartAfterClose = true;
 
     }
 
+    // Close server if no port was specified
     if (portSpecified == false)
     {
 
@@ -71,10 +72,36 @@ int main (int argc, char* argv[])
 
     }
 
-    // Open TCP socket
-    server = SDLNet_TCP_Open(&ip);
+    do
+    {
 
-    if (!server)
+        startServer(ip, TICK_RATE);
+
+        if (restartAfterClose)
+            printf("Restarting server...\n");
+
+    }
+    while (restartAfterClose);
+    
+    //Close SDL Stuff
+    SDLNet_Quit();
+    SDL_Quit();
+
+    return 0;
+
+}
+
+void startServer(IPaddress address, int tickRate)
+{
+
+    const double TARGET_FRAME_TIME = (double)1 / (double)tickRate;
+    Uint32 ticksLastFrame = SDL_GetTicks();
+
+    // Open TCP socket
+    TCPsocket socket;
+    socket = SDLNet_TCP_Open(&address);
+
+    if (!socket)
     {
 
         printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
@@ -82,7 +109,7 @@ int main (int argc, char* argv[])
 
     }
     else
-        printf("Opened server on port %d.\n", SDL_SwapBE16(ip.port));
+        printf("Opened server on port %d.\n", SDL_SwapBE16(address.port));
 
     bool running = true;
 
@@ -104,6 +131,7 @@ int main (int argc, char* argv[])
     int *lastPulse = NULL;
     Uint32 TIMEOUT_SECONDS = 10;
 
+    LoopStart:;
     while (running == true)
     {
 
@@ -112,7 +140,7 @@ int main (int argc, char* argv[])
         {
 
             // Check for a connection from a client and accept it
-            clients[numConnectedPlayers] = SDLNet_TCP_Accept(server);
+            clients[numConnectedPlayers] = SDLNet_TCP_Accept(socket);
 
             // If a client connects
             if (clients[numConnectedPlayers])
@@ -228,7 +256,7 @@ int main (int argc, char* argv[])
                             // If a player disconnected, close the server.
                             printf("Player %d disconnected. Closing server.\n", playerID);
                             running = false;
-                            goto Close;
+                            goto LoopStart;
                             
                         }
 
@@ -393,12 +421,18 @@ int main (int argc, char* argv[])
 
     }
 
-    Close:;
-    
-    //Close SDL Stuff
-    SDLNet_Quit();
-    SDL_Quit();
+    // Free memory and close connection
+    for (unsigned short i = 0; i < numConnectedPlayers; i++)
+    {
 
-    return 0;
+        SDLNet_TCP_Close(clients[i]);
+        SDLNet_FreeSocketSet(socketSets[i]);
+
+    }
+    SDL_free(socketSets);
+    SDLNet_TCP_Close(socket);
+    SDL_free(clients);
+
+    printf("Server closed.\n");
 
 }
