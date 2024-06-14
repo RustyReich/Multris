@@ -320,20 +320,27 @@ int main (int argc, char* argv[])
                     for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
                     {
 
-                        // If the data is MAP data
-                        if (SDL_strstr(packets[packetIndex], "MAP") != NULL)
+                        int endHeaderIndex = 0;
+                        for (unsigned short i = 0; i < SDL_strlen(packets[packetIndex]); i++)
+                            if (packets[packetIndex][endHeaderIndex] != '=')
+                                endHeaderIndex++;
+                            else
+                                break;
+                        char* packetHeader = SDL_calloc(endHeaderIndex + 1, sizeof(char));
+                        SDL_strlcpy(packetHeader, packets[packetIndex], endHeaderIndex + 1);
+
+                        if (SDL_strstr(packets[packetIndex], "PULSE") == NULL)
                         {
 
-                            printf("Received MAP from player %d.\n", playerID);
+                            printf("Received %s from player %d.\n", packetHeader, playerID);
 
-                            // Send the MAP data to every other player
                             for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
                             {
 
                                 if (otherPlayerIndex != currentPlayerIndex)
                                 {
 
-                                    printf("Sending MAP from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
+                                    printf("Sending %s from player %d to player %d.\n", packetHeader, playerID, otherPlayerIndex + 1);
                                     int len = SDL_strlen(packets[packetIndex]) + 1;
                                     SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
 
@@ -341,196 +348,10 @@ int main (int argc, char* argv[])
 
                             }
 
-                        }   // if the data is SCORE data   
-                        else if (SDL_strstr(packets[packetIndex], "SCORE") != NULL)
-                        {
-
-                            printf("Received SCORE from player %d.\n", playerID);
-
-                            // Send the SCORE data to every other player
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    printf("Sending SCORE from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
 
                         }
-                        else if (SDL_strstr(packets[packetIndex], "NEXT") != NULL)
-                        {
-
-                            printf("Received NEXT from player %d.\n", playerID);
-
-                            // Send the NEXT data to every other player
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    printf("Sending NEXT from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "LEVEL") != NULL)
-                        {
-
-                            printf("Received LEVEL from player %d.\n", playerID);
-
-                            // Send the LEVEL data to every other player
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-            
-                                    printf("Sending LEVEL from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "LINES") != NULL)
-                        {
-
-                            printf("Received LINES from player %d.\n", playerID);
-
-                            // Send the LINES data to every other player
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-            
-                                    printf("Sending LINES from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "CURRENT") != NULL)
-                        {
-
-                            printf("Received CURRENT from player %d.\n", playerID);
-
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    // Send CURRENT piece data to all other players
-                                    printf("Sending CURRENT from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "HOLD") != NULL)
-                        {
-
-                            printf("Received HOLD from player %d.\n", playerID);
-
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    // Send HOLD piece data to all other players
-                                    printf("Sending HOLD from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "POSITION") != NULL)
-                        {
-
-                            printf("Received POSITION from player %d.\n", playerID);
-
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    // Send POSITION data to all other players
-                                    printf("Sending POSITION from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "SIZEBAG=") != NULL)
-                        {
-
-                            printf("Received SIZEBAG from player %d.\n", playerID);
-
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    // Send SIZEBAG data to all other players
-                                    printf("Send SIZEBAG from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
-                        else if (SDL_strstr(packets[packetIndex], "GARBAGE=") != NULL)
-                        {
-
-                            printf("Received GARBAGE from player %d.\n", playerID);
-
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
-                            {
-
-                                if (otherPlayerIndex != currentPlayerIndex)
-                                {
-
-                                    // Send GARBAGE data to all other players
-                                    printf("Send GARBAGE from player %d to player %d...\n", playerID, otherPlayerIndex + 1);
-                                    int len = SDL_strlen(packets[packetIndex]) + 1;
-                                    SDLNet_TCP_Send(clients[otherPlayerIndex], packets[packetIndex], len);
-
-                                }
-
-                            }
-
-                        }
+                        else
+                            printf("Received PULSE from player %d.\n", playerID);
 
                     }
 
