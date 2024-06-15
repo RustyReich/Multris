@@ -124,9 +124,6 @@ void startServer(IPaddress address, int tickRate)
     
     printf("Waiting for player %d to join...\n", numConnectedPlayers + 1);
 
-    // Game is started once all players connect
-    bool gameStarted = false;
-
     // Variables used for checking for timedout players
     int *lastPulse = NULL;
     Uint32 TIMEOUT_SECONDS = 10;
@@ -135,19 +132,21 @@ void startServer(IPaddress address, int tickRate)
     while (running == true)
     {
 
-        // If game hasn't started yet
-        if (gameStarted == false)
+        // Accept a connection
+        TCPsocket newSocket = SDLNet_TCP_Accept(socket);
+        
+        // If a client connected
+        if (newSocket != NULL)
         {
 
-            // Check for a connection from a client and accept it
-            clients[numConnectedPlayers] = SDLNet_TCP_Accept(socket);
-
-            // If a client connects
-            if (clients[numConnectedPlayers])
+            // Allow the connection as long as the server is not full
+            if (numConnectedPlayers < maxPlayers)
             {
 
+                clients[numConnectedPlayers] = newSocket;
+                
                 // Get their IP address
-                IPaddress *remoteip;
+                IPaddress* remoteip;
                 remoteip = SDLNet_TCP_GetPeerAddress(clients[numConnectedPlayers]);
 
                 // Print error if error getting the IP address of the connected client
@@ -210,14 +209,20 @@ void startServer(IPaddress address, int tickRate)
                     {
 
                         char message[] = "All players joined...";
-                        SDLNet_TCP_Send(clients[i], message, SDL_strlen(message));
+                        SDLNet_TCP_Send(clients[i], message, SDL_strlen(message) + 1);
 
                     }
 
-                    // Once all players have joined, the game starts
-                    gameStarted = true;
+                }      
 
-                }
+            }
+            else    // If the server is full, disconnect the client and let them know the server is full
+            {
+
+                char message[] = "Server is full";
+                SDLNet_TCP_Send(newSocket, message, SDL_strlen(message) + 1);
+                
+                SDLNet_TCP_Close(newSocket);
 
             }
 
@@ -424,6 +429,10 @@ void startServer(IPaddress address, int tickRate)
     // Free memory and close connection
     for (unsigned short i = 0; i < numConnectedPlayers; i++)
     {
+
+        // Tell the client the server has closed
+        char message[] = "Server has closed.";
+        SDLNet_TCP_Send(clients[i], message, SDL_strlen(message) + 1);
 
         SDLNet_TCP_Close(clients[i]);
         SDLNet_FreeSocketSet(socketSets[i]);

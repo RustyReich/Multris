@@ -67,17 +67,42 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
             int len = SDLNet_TCP_Recv(globalInstance->serverSocket, data, 1024);
             data[len] = '\0';
 
-            // And print the messsage received from the server
-            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(data) + 1);
-            SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
-            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
-
-            // If received a messages containing "All players joined", exit multiplayer lobby and move into PLAYMODE.
-            if (SDL_strstr(currMessage, "All players joined") != NULL)
+            // If the length of the data is zero, the server closed
+            if (len == 0)
             {
 
-                freeVars();
-                return PLAY_SCREEN;
+                // So disconnect from the server and set MULTIPLAYER to false
+                disconnectFromServer();
+                MULTIPLAYER = false;
+
+                // If the last message we had was "Waiting for players to join"
+                if (SDL_strstr(currMessage, "Waiting for players to join") != NULL)
+                {
+
+                    // Then that means we lost connection to the server, so display that
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Lost connection to server") + 1);
+                    SDL_strlcpy(currMessage, "Lost connection to server", SDL_strlen("Lost connection to server") + 1);
+                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+                }
+
+            }
+            else    // If the length of the data was not zero
+            {
+
+                // Print the messsage received from the server
+                currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(data) + 1);
+                SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
+                updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+                // If received a messages containing "All players joined", exit multiplayer lobby and move into PLAYMODE.
+                if (SDL_strstr(currMessage, "All players joined") != NULL)
+                {
+
+                    freeVars();
+                    return PLAY_SCREEN;
+
+                }
 
             }
 
