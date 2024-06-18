@@ -28,6 +28,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     //Arrays
     static char* ipString; declareStart(ipString, '\0');
     static char* portString; declareStart(portString, '\0');
+    static char* nameString; declareStart(nameString, '\0');
     static char* currMessage; declareStart(currMessage, '\0');
 
     if (*firstLoop == true)
@@ -247,117 +248,173 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
         }
 
-        // If the selected connection option is IP or PORT
+        // Keep track of the string currently being modified and the maxLength for that string
+        char* strBeingModified = NULL;
+        int maxLength = 0;
+
+        // Check if left or right control button are being held
+        bool controlHeld = (globalInstance->onKeyHold[SDL_SCANCODE_LCTRL] || globalInstance->onKeyHold[SDL_SCANCODE_RCTRL]);
+
+        // Check which option is selected and thus which string is being modified
         if (SDL_strcmp(selected_option, "IP") == 0 || SDL_strcmp(selected_option, "PORT") == 0)
         {
 
             // Check which one it is, IP or PORT
-            char* strBeingModified = ipString;
+            strBeingModified = ipString;
             if (SDL_strcmp(selected_option, "PORT") == 0)
                 strBeingModified = portString;
 
-            // Max length is diffent depending on if the user is editing the IP or the PORT
-            int maxLength = 15;
-            if (strBeingModified == portString)
-                maxLength = 5;
+        }
+        else if (SDL_strcmp(selected_option, "NAME") == 0)
+            strBeingModified = nameString;
 
-            // Define the list of keys which are valid inputs while inputting an IP and PORT
-            int validKeys[] = { SDL_SCANCODE_0, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4, SDL_SCANCODE_5,
-                                SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE };
+        // Set the maxLength depending on the string being modified
+        if (strBeingModified == ipString)
+            maxLength = 15;
+        else if (strBeingModified == portString)
+            maxLength = 5;
+        else if (strBeingModified == nameString)
+            maxLength = 7;
 
-            // Go through all validKeys
-            for (unsigned short i = 0; i < sizeof(validKeys) / sizeof(validKeys[0]); i++)
+        // Don't allow typing while holding the control button
+        if (controlHeld == false)
+        {
+
+            // If the selected connection option is IP or PORT
+            if (strBeingModified == ipString || strBeingModified == portString)
             {
 
-                // Check if this key was just pressed this frame. Skip it if it wasn't
-                int pressedKey = validKeys[i];
-                if (globalInstance->onKeyPress[pressedKey] == false)
-                    continue;
+                // Define the list of keys which are valid inputs while inputting an IP or PORT
+                int validKeys[] = { SDL_SCANCODE_0, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4, SDL_SCANCODE_5,
+                                    SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE };
 
-                // Only allow digits and periods
-                if (globalInstance->onKeyPress[SDL_SCANCODE_PERIOD] || (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_0))
+                // Go through all validKeys
+                for (unsigned short i = 0; i < sizeof(validKeys) / sizeof(validKeys[0]); i++)
                 {
 
-                    // Convert the SDL_SCANCODE to an ascii value
-                    char asciiValue;
-                    if (pressedKey == SDL_SCANCODE_PERIOD)
-                        asciiValue = '.';
-                    else if (pressedKey == SDL_SCANCODE_0)
-                        asciiValue = '0';
-                    else
-                        asciiValue = '1' + (pressedKey - SDL_SCANCODE_1);
+                    // Check if this key was just pressed this frame. Skip it if it wasn't
+                    int pressedKey = validKeys[i];
+                    if (globalInstance->onKeyPress[pressedKey] == false)
+                        continue;
 
-                    // Check if the key that was pressed was a period 
-                    bool pressedPeriod = (pressedKey == SDL_SCANCODE_PERIOD);
-
-                    // Don't allow periods in the PORT and dont allow input past maxLength
-                    if ((int)SDL_strlen(strBeingModified) < maxLength && !(pressedPeriod && strBeingModified == portString))
+                    // Only allow digits and periods
+                    if (globalInstance->onKeyPress[SDL_SCANCODE_PERIOD] || (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_0))
                     {
 
-                        // Expand the currently selected string and concatenate the pressedkey
-                        int currLength = SDL_strlen(strBeingModified) + 1;
-                        strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength + 1));
-                        SDL_strlcat(strBeingModified, &asciiValue, currLength + 1);
+                        // Convert the SDL_SCANCODE to an ascii value
+                        char asciiValue;
+                        if (pressedKey == SDL_SCANCODE_PERIOD)
+                            asciiValue = '.';
+                        else if (pressedKey == SDL_SCANCODE_0)
+                            asciiValue = '0';
+                        else
+                            asciiValue = '1' + (pressedKey - SDL_SCANCODE_1);
 
-                        // Then update the Connectionvalues texture
-                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+                        // Check if the key that was pressed was a period 
+                        bool pressedPeriod = (pressedKey == SDL_SCANCODE_PERIOD);
 
-                    }
-                    
-                }
-                else if (pressedKey == SDL_SCANCODE_BACKSPACE)  // Erase if user presses backspace
-                {
+                        // Don't allow periods in the PORT and dont allow input past maxLength
+                        if ((int)SDL_strlen(strBeingModified) < maxLength && !(pressedPeriod && strBeingModified == portString))
+                        {
 
-                    // Don't allow erase if length of string is already zero
-                    if ((int)SDL_strlen(strBeingModified) > 0)
-                    {
+                            // Expand the currently selected string and concatenate the pressedkey
+                            int currLength = SDL_strlen(strBeingModified) + 1;
+                            strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength + 1));
+                            SDL_strlcat(strBeingModified, &asciiValue, currLength + 1);
 
-                        // Remove the last character from string.
-                        int currLength = SDL_strlen(strBeingModified) + 1;
-                        strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength - 1));
-                        SDL_strlcpy(strBeingModified, strBeingModified, currLength - 1);
+                            // Then update the Connectionvalues texture
+                            updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
 
-                        // And then update the ConnectionValues texture
-                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
-
+                        }
+                        
                     }
 
                 }
 
             }
-
-            // Check if left or right control button are being held
-            bool controlHeld = (globalInstance->onKeyHold[SDL_SCANCODE_LCTRL] || globalInstance->onKeyHold[SDL_SCANCODE_RCTRL]);
-
-            // If Control+V are being held
-            if (controlHeld && globalInstance->onKeyHold[SDL_SCANCODE_V] && *justPasted == false)
+            else if (SDL_strcmp(selected_option, "NAME") == 0)  /// If editing the name
             {
 
-                // Get the text currently on the clipboard
-                char* clipboard = SDL_GetClipboardText();
+                // Allow letters and numbers
+                for (unsigned short i = SDL_SCANCODE_A; i <= SDL_SCANCODE_0; i++)
+                {
 
-                // Don't let the user paste more text than can fit in the current value
-                int currLength = SDL_strlen(strBeingModified) + 1;
-                int newLength = SDL_min(maxLength + 1, SDL_strlen(clipboard) + currLength);
-                strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (newLength + 1));
+                    // Check if the key was just pressed
+                    int pressedKey = i;
+                    if (globalInstance->onKeyPress[pressedKey] == false)
+                        continue;
+
+                    // Convert the key to ascii
+                    char asciiValue;
+                    if (i < SDL_SCANCODE_1)
+                        asciiValue = 'A' + (i - SDL_SCANCODE_A);
+                    else if (i == SDL_SCANCODE_0)
+                        asciiValue = '0';
+                    else
+                        asciiValue = '1' + (i - SDL_SCANCODE_1);
+
+                    // Append asciiValue if name isn't too long
+                    if ((int)SDL_strlen(nameString) < maxLength)
+                    {
+
+                        int currLength = SDL_strlen(nameString) + 1;
+                        nameString = SDL_realloc(nameString, sizeof(char) * (currLength + 1));
+                        SDL_strlcat(nameString, &asciiValue, currLength + 1);
+
+                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+
+                    }
+
+                }
                 
-                // Append text from the clipboard to the end of the strBeingModified
-                SDL_strlcat(strBeingModified, clipboard, newLength);
+            }
 
-                // And then update the ConnectionValues texture
-                updateConnectionValuesText(Texture_ConnectionValues, ipString, portString);
+            if (globalInstance->onKeyPress[SDL_SCANCODE_BACKSPACE])  // Erase if user presses backspace
+            {
 
-                // Free memory taken up by copied clipboard text
-                SDL_free(clipboard);
+                // Don't allow erase if length of string is already zero
+                if ((int)SDL_strlen(strBeingModified) > 0)
+                {
 
-                // Don't paste continuously while holding down Control+V
-                *justPasted = true;
+                    // Remove the last character from string.
+                    int currLength = SDL_strlen(strBeingModified) + 1;
+                    strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength - 1));
+                    SDL_strlcpy(strBeingModified, strBeingModified, currLength - 1);
 
-            }   // Once player lets go of Control or V, they can paste again
-            else if (!controlHeld || !globalInstance->onKeyHold[SDL_SCANCODE_V])
-                *justPasted = false;
+                    // And then update the ConnectionValues texture
+                    updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
 
-        }
+                }
+
+            }
+
+        }   // If control+V is pressed
+        else if (controlHeld && globalInstance->onKeyHold[SDL_SCANCODE_V] && *justPasted == false)
+        {
+
+            // Get the text currently on the clipboard
+            char* clipboard = SDL_GetClipboardText();
+
+            // Don't let the user paste more text than can fit in the current value
+            int currLength = SDL_strlen(strBeingModified) + 1;
+            int newLength = SDL_min(maxLength + 1, SDL_strlen(clipboard) + currLength);
+            strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (newLength + 1));
+            
+            // Append text from the clipboard to the end of the strBeingModified
+            SDL_strlcat(strBeingModified, clipboard, newLength);
+
+            // And then update the ConnectionValues texture
+            updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+
+            // Free memory taken up by copied clipboard text
+            SDL_free(clipboard);
+
+            // Don't paste continuously while holding down Control+V
+            *justPasted = true;
+
+        }   // Once player lets go of Control or V, they can paste again
+        else if (!controlHeld || !globalInstance->onKeyHold[SDL_SCANCODE_V])
+            *justPasted = false;
 
         // Exit to the main menu if EXIT_BUTTON is pressed
         if (onPress(EXIT_BUTTON))

@@ -64,7 +64,7 @@ int getPausedY(unsigned short size, float multi);
 void updatePausedText(SDL_Texture* texture, bool exit);
 UI_list* create_Connect_List();
 SDL_Texture* create_ConnectionValues_Text();
-void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port);
+void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port, char* name);
 SDL_Texture* create_ConnectionMessage_Text();
 void updateConnectionMessageText(SDL_Texture** texture, char* message);
 int getConnectionMessageX(char* message, float multi);

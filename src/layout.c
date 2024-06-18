@@ -841,7 +841,7 @@ void updatePausedText(SDL_Texture* texture, bool exit)
 }
 
 // Function for redrawing the values on the multiplayer lobby screen
-void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port)
+void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port, char* name)
 {
 
 	clearTexture(texture);
@@ -849,10 +849,12 @@ void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port)
 	// Print ":" after each modifiable options
 	printToTexture(":", texture, 0, 0, 1.0, WHITE);
 	printToTexture(":", texture, 0, 14, 1.0, WHITE);
+	printToTexture(":", texture, 0, 28, 1.0, WHITE);
 
 	// Print the values of the options
 	printToTexture(ip, texture, 14, 0, 1.0, WHITE);
 	printToTexture(port, texture, 14, 14, 1.0, WHITE);
+	printToTexture(name, texture, 14, 28, 1.0, WHITE);
 
 }
 
@@ -912,15 +914,15 @@ SDL_Texture* create_ConnectionValues_Text()
 
 	SDL_Texture* texture;
 
-	// There are two options on this screen, "IP" and "PORT"
-	int num_options = 2;
+	// There are three options on this screen, "IP" and "PORT" and "NAME"
+	int num_options = 3;
 	int height = num_options * FONT_HEIGHT + (num_options - 1) * STRING_GAP;
 	int widht = 16 * FONT_WIDTH + 15 * STRING_GAP;
 
 	texture = createTexture(widht, height);
 
-	// Initial values for IP and PORT are empty strings
-	updateConnectionValuesText(texture, "\0", "\0");
+	// Initial values for IP and PORT and NAME are empty strings
+	updateConnectionValuesText(texture, "\0", "\0", "\0");
 
 	return texture;
 
@@ -1352,7 +1354,7 @@ UI_list* create_Connect_List()
 
 	// Initialize the list
 	UI_list* list;
-	list = create_list(WHITE, "IP", "PORT", "CONNECT");
+	list = create_list(WHITE, "IP", "PORT", "NAME", "CONNECT");
 
 	list->selected_entry = 0;
 
