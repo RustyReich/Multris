@@ -868,7 +868,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				// If the data has no "=", that means it is a serverMessage
 				if (SDL_strstr(packets[packetIndex], "=") == NULL)
 					SDL_strlcpy(serverMessage, packets[packetIndex], 1024);
-				else if (SDL_strstr(packets[packetIndex], "MAP") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "MAP=") != NULL)
 				{	// If the data received is MAP data
 
 					int stringIndex = SDL_strlen("MAP=");
@@ -884,7 +884,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 						updateOpponentForeground(opponentForeground, opponentMapString);
 
 				}	// If the data received is SCORE data
-				else if (SDL_strstr(packets[packetIndex], "SCORE") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "SCORE=") != NULL)
 				{
 
 					// Extract the score from the received data and update the Texture_OpponentScore
@@ -892,7 +892,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					updateScore(opponentScore, Texture_OpponentScore);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "NEXT") != NULL)	// If the data received is a NEXT piece from the opponent
+				else if (SDL_strstr(packets[packetIndex], "NEXT=") != NULL)	// If the data received is a NEXT piece from the opponent
 				{
 
 					// Delete the current opponents NEXT piece
@@ -912,7 +912,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					SDL_QueryTexture(Texture_OpponentNext, NULL, NULL, opponentNextText_Width, opponentNextText_Height);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "HOLD") != NULL)	// If the data receveid is a HOLD piece from
+				else if (SDL_strstr(packets[packetIndex], "HOLD=") != NULL)	// If the data receveid is a HOLD piece from
 				{															// the opponent
 
 					// Delete the opponents current HOLD piece
@@ -932,7 +932,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					SDL_QueryTexture(Texture_OpponentHold, NULL, NULL, opponentHoldText_Width, opponentHoldText_Height);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "LEVEL") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "LEVEL=") != NULL)
 				{
 
 					// Extract the level from the received data and update the Texture_OpponentLevel
@@ -940,7 +940,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					updateLevel(*opponentLevel, Texture_OpponentLevel);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "LINES") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "LINES=") != NULL)
 				{
 
 					// Extract the "lines until levelup" value from the received data and update the Texture_OpponentLines
@@ -949,7 +949,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					updateLines(*opponentLinesUntilLevelUp, &Texture_OpponentLines);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "CURRENT") != NULL)	// If the data is a CURRENT piece from
+				else if (SDL_strstr(packets[packetIndex], "CURRENT=") != NULL)	// If the data is a CURRENT piece from
 				{																// the opponent
 
 					// Delete the current CURRENT piece for the opponent
@@ -968,7 +968,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					Texture_OpponentCurrent = createPieceTexture(*opponentCurrentPiece, false);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "POSITION") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "POSITION=") != NULL)
 				{
 
 					// Parse the X and Y values from the payload. Given in the format "POSITION=X|Y|"
@@ -993,7 +993,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					SDL_free(values);
 
 				}
-				else if (SDL_strstr(packets[packetIndex], "SIZEBAG") != NULL)	// If the data recieved is a sizeBag
+				else if (SDL_strstr(packets[packetIndex], "SIZEBAG=") != NULL)	// If the data recieved is a sizeBag
 				{
 
 					// Get all of the values from the payload
@@ -1038,14 +1038,14 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					SDL_free(values);
 
 				}	// if the data received is GARBAGE data
-				else if (SDL_strstr(packets[packetIndex], "GARBAGE") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "GARBAGE=") != NULL)
 				{
 
 					// Extract the amount of garbage lines from the received data and store it in receivedGarbage
 					*receivedGarbage = SDL_atoi(SDL_strstr(packets[packetIndex], "GARBAGE=") + SDL_strlen("GARBAGE=") * sizeof(char));
 
 				}	// If the data is a list of lines to remove from the opponents playfield
-				else if (SDL_strstr(packets[packetIndex], "REMOVE") != NULL)
+				else if (SDL_strstr(packets[packetIndex], "REMOVE=") != NULL)
 				{
 
 					// Get all the values from the payload
@@ -1068,6 +1068,13 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					for (unsigned short i = 0; i < numValues; i++)
 						SDL_free(values[i]);
 					SDL_free(values);
+
+				}	// If the data was a NAME from the opponent
+				else if (SDL_strstr(packets[packetIndex], "NAME=") != NULL)
+				{
+
+					// Extract the name from the payload
+					char* opponentName = &(packets[packetIndex][SDL_strlen("NAME=")]);
 
 				}
 

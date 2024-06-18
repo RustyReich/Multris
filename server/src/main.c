@@ -130,6 +130,8 @@ void startServer(IPaddress address, int tickRate)
 
     // Store the names of the players
     char** names = NULL;
+    int numNames = 0;
+    bool sentNames = false;
 
     LoopStart:;
     while (running == true)
@@ -234,6 +236,40 @@ void startServer(IPaddress address, int tickRate)
         // If at least one player has connected
         if (numConnectedPlayers > 0)
         {
+
+            // Once we have received all the player names
+            if (numNames == maxPlayers && sentNames == false)
+            {
+                
+                for (unsigned short i = 0; i < numConnectedPlayers; i++)
+                {
+
+                    char* currentName = names[i];
+
+                    for (unsigned short j = 0; j < numConnectedPlayers; j++)
+                    {
+
+                        if (j != i)
+                        {
+
+                            // Send the players names to each other
+                            printf("Sending name %s from player %d to player %d.\n", currentName, i + 1, j + 1);
+                            int len = SDL_strlen("NAME=") + SDL_strlen(currentName) + 1;
+                            char* namePacket = SDL_calloc(len, sizeof(char));
+                            SDL_strlcpy(namePacket, "NAME=", len);
+                            SDL_strlcat(namePacket, currentName, len);
+                            SDLNet_TCP_Send(clients[j], namePacket, len);
+                            SDL_free(namePacket);
+
+                        }
+
+                    }
+
+                }
+
+                sentNames = true;
+
+            }
 
             // Check all connected players
             for (int currentPlayerIndex = 0; currentPlayerIndex < numConnectedPlayers; currentPlayerIndex++)
@@ -383,11 +419,12 @@ void startServer(IPaddress address, int tickRate)
                             int nameLength = SDL_strlen(&(packets[packetIndex][nameStartIndex])) + 1;
 
                             // Allocate space for the name
-                            if (numConnectedPlayers == 1)
+                            if (numNames == 0)
                                 names = SDL_calloc(1, sizeof(char*));
                             else
-                                names = SDL_realloc(names, sizeof(char*) * numConnectedPlayers);
+                                names = SDL_realloc(names, sizeof(char*) * (numNames + 1));
                             names[currentPlayerIndex] = SDL_calloc(nameLength, sizeof(char));
+                            numNames++;
 
                             // And store the name
                             SDL_strlcpy(names[currentPlayerIndex], &(packets[packetIndex][nameStartIndex]), nameLength);
