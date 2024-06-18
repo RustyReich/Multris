@@ -128,6 +128,9 @@ void startServer(IPaddress address, int tickRate)
     int *lastPulse = NULL;
     Uint32 TIMEOUT_SECONDS = 10;
 
+    // Store the names of the players
+    char** names = NULL;
+
     LoopStart:;
     while (running == true)
     {
@@ -371,11 +374,33 @@ void startServer(IPaddress address, int tickRate)
                         char* packetHeader = SDL_calloc(endHeaderIndex + 1, sizeof(char));
                         SDL_strlcpy(packetHeader, packets[packetIndex], endHeaderIndex + 1);
 
-                        if (SDL_strstr(packets[packetIndex], "PULSE") == NULL)
+                        // If the received packet is a NAME
+                        if (SDL_strstr(packets[packetIndex], "NAME") != NULL)
+                        {
+
+                            // Find the start of the name value
+                            int nameStartIndex = SDL_strlen("NAME=");
+                            int nameLength = SDL_strlen(&(packets[packetIndex][nameStartIndex])) + 1;
+
+                            // Allocate space for the name
+                            if (numConnectedPlayers == 1)
+                                names = SDL_calloc(1, sizeof(char*));
+                            else
+                                names = SDL_realloc(names, sizeof(char*) * numConnectedPlayers);
+                            names[currentPlayerIndex] = SDL_calloc(nameLength, sizeof(char));
+
+                            // And store the name
+                            SDL_strlcpy(names[currentPlayerIndex], &(packets[packetIndex][nameStartIndex]), nameLength);
+
+                            printf("Received name %s from player %d.\n", names[currentPlayerIndex], playerID);
+
+                        }   // If the packet is not a NAME or PULSE
+                        else if (SDL_strstr(packets[packetIndex], "PULSE") == NULL)
                         {
 
                             printf("Received %s from player %d.\n", packetHeader, playerID);
 
+                            // Forward the packet to all other connected players
                             for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
                             {
 
@@ -444,10 +469,15 @@ void startServer(IPaddress address, int tickRate)
     for (unsigned short i = 0; i < numConnectedPlayers; i++)
     {
 
+        if (names != NULL)
+            SDL_free(names[i]);
+
         SDLNet_TCP_Close(clients[i]);
         SDLNet_FreeSocketSet(socketSets[i]);
 
     }
+    if (names != NULL)
+        SDL_free(names);
     SDL_free(socketSets);
     SDLNet_TCP_Close(socket);
     SDL_free(clients);

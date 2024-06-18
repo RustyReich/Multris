@@ -238,6 +238,15 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                             
                             MULTIPLAYER = true;
                             
+                            // Send name to server
+                            char* namePacket;
+                            int len = SDL_strlen("NAME=") + SDL_strlen(nameString) + 1;
+                            namePacket = SDL_calloc(len, sizeof(char));
+                            SDL_strlcpy(namePacket, "NAME=", len);
+                            SDL_strlcat(namePacket, nameString, len);
+                            SDLNet_TCP_Send(globalInstance->serverSocket, namePacket, len);
+                            SDL_free(namePacket);
+
                         }
 
                     }
