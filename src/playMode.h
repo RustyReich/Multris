@@ -3,7 +3,7 @@
 
 #include "MGF.h"
 
-unsigned short playMode(piece* firstPiece);
+unsigned short playMode(piece* firstPiece, char* serverMessage);
 void removeSizeFromBag(SizeBag* sizeBag, unsigned short size, unsigned short mode, bool customMode, SDL_Texture* sizeBagTexture);
 void removeSizeFromBagTexture(SDL_Texture* sizeBagTexture, unsigned short size);
 void resetSizeBagTexture(SDL_Texture* sizeBagTexture);

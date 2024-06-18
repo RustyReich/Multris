@@ -58,8 +58,7 @@ void mainLoop()
 	}
 
 	static bool firstFrame = true;
-	static bool justDisconnected = false;	// Track if the player just got disconnected from a multiplayer game
-	
+
 	static float fpsSizeMultiplier = 0.75;
 	static int fpsTextureWidth;
 
@@ -91,7 +90,12 @@ void mainLoop()
 
 	//Stores the current game state
 	static unsigned short game_state = TITLE_SCREEN;
-	
+
+	// Store the latest message receieved from the server in multiplayer mode
+		// This is mainly to display the reason for disconnection when the player is 
+		// disconnected
+	static char serverMessage[1024];
+
 	//Display frame rate
 		// Get width of current frame rate in pixels
 	int fpsWidth = getIntStringLength(globalInstance->FPS, fpsSizeMultiplier);
@@ -147,14 +151,14 @@ void mainLoop()
 				firstPiece = generateGamePiece(MODE);
 
 			}
-			game_state = playMode(firstPiece);
+			game_state = playMode(firstPiece, &serverMessage[0]);
 
 			//We can delete the firstPiece after passing it to playMode
 			delPiece(&firstPiece);
 
 		}
 		else     //The firstPiece has been deleted since it is no longer needed
-			game_state = playMode(NULL);	//So we just pass NULL in its place
+			game_state = playMode(NULL, &serverMessage[0]);	//So we just pass NULL in its place
 
 		// This happens when the player just got disconnected from a multiplayer game and goes back to the lobby
 		if (game_state == MULTIPLAYERLOBBY_SCREEN)
@@ -171,9 +175,6 @@ void mainLoop()
 			// Re-generate the firstPiece
 			generateFirst = true;
 
-			// And keep track of the fact that the player just got disconnected so we can display a message to them.
-			justDisconnected = true;
-
 		}
 
 	}
@@ -182,7 +183,7 @@ void mainLoop()
 	else if (game_state == MULTIPLAYERLOBBY_SCREEN)
 	{
 
-		game_state = multiplayerLobby(&firstPiece, &justDisconnected);
+		game_state = multiplayerLobby(&firstPiece, &serverMessage[0]);
 
 		// If entering a multiplayer game, clear the background so that it can be redrawn with two play fields.
 		if (game_state == PLAY_SCREEN && MULTIPLAYER == true)

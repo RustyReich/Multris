@@ -260,6 +260,13 @@ void startServer(IPaddress address, int tickRate)
 
                             // If a player disconnected, close the server.
                             printf("Player %d disconnected. Closing server.\n", playerID);
+
+                            // Tell all other clients a player disconnected
+                            char message[] = "Player disconnected.";
+                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                                if (otherPlayerIndex != currentPlayerIndex)
+                                    SDLNet_TCP_Send(clients[otherPlayerIndex], message, SDL_strlen(message) + 1);
+                            
                             running = false;
                             goto LoopStart;
                             
@@ -406,8 +413,15 @@ void startServer(IPaddress address, int tickRate)
 
                         // Since the client disconnected, close the server.
                         printf("Received no packets from player %d in %d seconds. Closing server.\n", currentPlayerIndex + 1, TIMEOUT_SECONDS);
+                        
+                        // Tell all other clients a player disconnected
+                        char message[] = "Player disconnected.";
+                        for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                            if (otherPlayerIndex != currentPlayerIndex)
+                                SDLNet_TCP_Send(clients[otherPlayerIndex], message, SDL_strlen(message) + 1);
+                        
                         running = false;
-                        continue;                        
+                        goto LoopStart;                        
 
                     }
 
@@ -426,13 +440,9 @@ void startServer(IPaddress address, int tickRate)
 
     }
 
-    // Free memory and close connection
+    // Free memory and close connection to each client
     for (unsigned short i = 0; i < numConnectedPlayers; i++)
     {
-
-        // Tell the client the server has closed
-        char message[] = "Server has closed.";
-        SDLNet_TCP_Send(clients[i], message, SDL_strlen(message) + 1);
 
         SDLNet_TCP_Close(clients[i]);
         SDLNet_FreeSocketSet(socketSets[i]);

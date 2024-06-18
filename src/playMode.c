@@ -1,6 +1,6 @@
 #include "MGF.h"
 
-unsigned short playMode(piece* firstPiece)
+unsigned short playMode(piece* firstPiece, char* serverMessage)
 {
 
 	//Game pieces
@@ -816,6 +816,8 @@ unsigned short playMode(piece* firstPiece)
 		if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
 		{
 
+			bool disconnect = false;
+
 			// Capture data from server in 1024-byte chunks and combine them together into data pointer
 			char* data = NULL;
 			int dataLen = 0;
@@ -825,14 +827,12 @@ unsigned short playMode(piece* firstPiece)
 				char currentData[1024];
 				int currentLen = SDLNet_TCP_Recv(globalInstance->serverSocket, currentData, 1024);
 
-				// If data is length 0, the server closed. So disconnect from the server and return back to lobby.
+				// If data is length 0, the server closed. So disconnect from the server.
 				if (currentLen == 0)
 				{
 
-					disconnectFromServer();
-					freeVars();
-					return MULTIPLAYERLOBBY_SCREEN;
-
+					disconnect = true;
+					break;
 
 				}
 
@@ -864,10 +864,12 @@ unsigned short playMode(piece* firstPiece)
 			// Now go through each packet and process it
 			for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
 			{
-
-				// If the data received is MAP data
-				if (SDL_strstr(packets[packetIndex], "MAP") != NULL)
-				{
+				
+				// If the data has no "=", that means it is a serverMessage
+				if (SDL_strstr(packets[packetIndex], "=") == NULL)
+					SDL_strlcpy(serverMessage, packets[packetIndex], 1024);
+				else if (SDL_strstr(packets[packetIndex], "MAP") != NULL)
+				{	// If the data received is MAP data
 
 					int stringIndex = SDL_strlen("MAP=");
 
@@ -1076,6 +1078,24 @@ unsigned short playMode(piece* firstPiece)
 				SDL_free(packets[i]);
 			SDL_free(packets);
 			SDL_free(data);
+
+			// If disconnect flag has been set
+			if (disconnect == true)
+			{
+
+				// If no serverMessage was received before the server closing, just display a
+				// generic "Server closed" message
+				if (SDL_strlen(serverMessage) == 0)
+					SDL_strlcpy(serverMessage, "Server closed", 1024);
+
+				// And disconnect from the server
+				disconnectFromServer();
+
+				// And free memory and return back to the lobby
+				freeVars();
+				return MULTIPLAYERLOBBY_SCREEN;
+
+			}
 
 		}
 

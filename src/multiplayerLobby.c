@@ -1,6 +1,6 @@
 #include "MGF.h"
 
-unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
+unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 {
 
     //Variables
@@ -37,18 +37,18 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
         *firstLoop = false;
 
         // If the player is being returned back to the lobby after being disconnected from a multiplayer game
-        if (*justDisconnected)
+        if (SDL_strlen(serverMessage) > 0)
         {
 
-            // Display "Disconnected from server" on the screen
-            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Disconnected from server") + 1);
-            SDL_strlcpy(currMessage, "Disconnected from server", SDL_strlen("Disconnected from server") + 1);
+            // Display serverMessage on the screen
+            currMessage = SDL_realloc(currMessage, sizeof(char) * (SDL_strlen(serverMessage) + 1));
+            SDL_strlcpy(currMessage, serverMessage, (SDL_strlen(serverMessage) + 1));
 
             updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
             *error = true;
 
-            // And the user is now no longer "justDisconnected"
-            *justDisconnected = false;
+            // Erase serverMessage since now we are already displaying it on the screen
+            SDL_strlcpy(serverMessage, "\0", 1);
 
         }
 
@@ -79,9 +79,9 @@ unsigned short multiplayerLobby(piece** Piece, bool* justDisconnected)
                 if (SDL_strstr(currMessage, "Waiting for players to join") != NULL)
                 {
 
-                    // Then that means we lost connection to the server, so display that
-                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Lost connection to server") + 1);
-                    SDL_strlcpy(currMessage, "Lost connection to server", SDL_strlen("Lost connection to server") + 1);
+                    // Then that means the server closed, so display that
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Server closed") + 1);
+                    SDL_strlcpy(currMessage, "Server closed", SDL_strlen("Server closed") + 1);
                     updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
                 }
