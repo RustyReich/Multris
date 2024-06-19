@@ -58,7 +58,7 @@ void drawPlayField(SDL_Texture* background, unsigned short size, int XOffset)
 }
 
 //Function for drawing the score box
-void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode, int XOffset)
+void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMode, int XOffset, bool inMultiplayer)
 {
 
 	if (size == 0 || size > MAX_PIECE_SIZE)
@@ -72,25 +72,36 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 	int contentHeight = getStringLength("00000", 1.0);
 	SDL_Texture* content = createTexture(contentWidth, contentHeight);
 
-    //Load the top score and create a string for it
-	int topScore = loadTop(MODE, inCustomMode);
-	char* top_zeros;
-	//Figure out how many zeros should be pre-pended to the score
-	unsigned short zeroLength = 7 - getIntLength(topScore);
-	
-	//top_zeros is the string of zeros that prepend the score
-	top_zeros = SDL_malloc(zeroLength * sizeof(*top_zeros));
-	*(top_zeros + zeroLength) = '\0';
-	for (unsigned short i = 0; i < zeroLength; i++)
-		*(top_zeros + i) = '0';
-
-	//Print all content to 'content' texture
+	//Print score content to 'content' texture
 	int temp = 0.5 * (contentWidth - getStringLength("TOP    ", 1.0));
-	printToTexture("TOP    ", content, temp, 0, 1, WHITE);
-	printToTexture(top_zeros, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
 	printToTexture("SCORE", content, temp, (FONT_WIDTH + STRING_GAP) * 3, 1, WHITE);
-	temp = temp + zeroLength * (FONT_WIDTH + STRING_GAP);
-	intToTexture(topScore, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+
+	// Only display top score if not in a multiplayer game
+	if (inMultiplayer == false)
+	{
+
+		//Load the top score and create a string for it
+		int topScore = loadTop(MODE, inCustomMode);
+		char* top_zeros;
+		//Figure out how many zeros should be pre-pended to the score
+		unsigned short zeroLength = 7 - getIntLength(topScore);
+		
+		//top_zeros is the string of zeros that prepend the score
+		top_zeros = SDL_malloc(zeroLength * sizeof(*top_zeros));
+		*(top_zeros + zeroLength) = '\0';
+		for (unsigned short i = 0; i < zeroLength; i++)
+			*(top_zeros + i) = '0';
+
+		// Print top score content to 'content' texture
+		printToTexture("TOP    ", content, temp, 0, 1, WHITE);
+		printToTexture(top_zeros, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+		temp = temp + zeroLength * (FONT_WIDTH + STRING_GAP);
+		intToTexture(topScore, content, temp, (FONT_HEIGHT + STRING_GAP), 1, WHITE);
+
+		//Free memory
+		SDL_free(top_zeros);
+
+	}
 
     int X = 0;
     int Y = 0;
@@ -169,7 +180,6 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 	drawTexture(content, content_X, content_Y, 1.0);
 
 	//Free memory
-    SDL_free(top_zeros);
 	SDL_DestroyTexture(content);
 
 	//Reset rendering target

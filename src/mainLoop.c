@@ -24,9 +24,9 @@ void mainLoop()
 			drawPlayField(Texture_Background, MODE, width / 2);
 
 		// Draw two score boxes if in multiplayer mode. Second one is offset by half the width of the game.
-		drawScoreBox(Texture_Background, MODE, CUSTOM_MODE, 0);
+		drawScoreBox(Texture_Background, MODE, CUSTOM_MODE, 0, MULTIPLAYER);
 		if (MULTIPLAYER)
-			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE, width / 2);
+			drawScoreBox(Texture_Background, MODE, CUSTOM_MODE, width / 2, MULTIPLAYER);
 
 		// Draw two level boxes if in multiplayer mode. Second one is offset by half the width of the game.
 		drawLevelBox(Texture_Background, MODE, 0);
