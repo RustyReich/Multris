@@ -53,6 +53,25 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
         }
 
+        // Load the players name from the name file if it is there
+        char* loadedName = loadName();
+        if (loadedName != NULL)
+        {
+
+            if (SDL_strlen(loadedName) > 0)
+            {
+
+                nameString = SDL_realloc(nameString, (SDL_strlen(loadedName) + 1) * sizeof(char));
+                SDL_strlcpy(nameString, loadedName, SDL_strlen(loadedName) + 1);
+
+                updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+
+            }
+
+            SDL_free(loadedName);
+
+        }
+
     }
 
     // If connected to a server
@@ -99,6 +118,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 // If received a messages containing "All players joined", exit multiplayer lobby and move into PLAYMODE.
                 if (SDL_strstr(currMessage, "All players joined") != NULL)
                 {
+
+                    // Save the players name once the game starts
+                    saveName(nameString);
 
                     freeVars();
                     return PLAY_SCREEN;
@@ -283,7 +305,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         else if (strBeingModified == portString)
             maxLength = 5;
         else if (strBeingModified == nameString)
-            maxLength = 7;
+            maxLength = MAX_NAME_LENGTH;
 
         // Don't allow typing while holding the control button
         if (controlHeld == false)
@@ -432,6 +454,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             // If we were connected to a server, we need to disconnect
             if (MULTIPLAYER)
                 disconnectFromServer();
+
+            // Save the players name if they leave the lobby
+            saveName(nameString);
 
             playSound(LAND_SOUND);
             freeVars();

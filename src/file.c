@@ -151,6 +151,19 @@ void createTopFile()
 
 }
 
+// Function for creating the "name.cfg" file
+void createNameFile()
+{
+
+	createFile("SAVES/name.cfg");
+
+	// Open nameFile to verify it was created. Then close it.
+	FILE* nameFile = fopen("SAVES/name.cfg", "w");
+	if (nameFile != NULL)
+		fclose(nameFile);
+
+}
+
 //Function for creating the "options.cfg" file
 void createOptions()
 {
@@ -399,6 +412,106 @@ bool brokenProgress()
 		return true;
 
 	return false;
+
+}
+
+// Return true if there are irregularities with the name file
+	// This means the name is either too long, or there are non-alphanumeric characters in the name
+	// or the file has more than one line
+bool brokenNameFile()
+{
+
+	if (getLineCount("SAVES/name.cfg") != 1)
+		return true;
+
+	char currentLine[256];
+
+	FILE* file = NULL;
+	file = fopen("SAVES/name.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			if (SDL_strlen(currentLine) > MAX_NAME_LENGTH)
+			{
+
+				fclose(file);
+				return true;
+
+			}
+
+			int index = 0;
+			while(currentLine[index] != '\0' && currentLine[index] != '\n')
+			{
+
+				if (!SDL_isdigit(currentLine[index]) && !SDL_isalpha(currentLine[index]))
+				{
+
+					fclose(file);
+					return true;
+
+				}
+
+				index++;
+
+			}
+
+		}
+
+		fclose(file);
+		return false;
+	
+	}
+
+	return true;
+
+}
+
+// Function for saving the name to the name.cfg file
+void saveName(char* name)
+{
+
+	// Open the file and write the name to it
+	FILE* file = NULL;
+	file = fopen("SAVES/name.cfg", "w");
+	if (file != NULL)
+	{
+
+		fprintf(file, "%s", name);
+		fclose(file);
+
+	}
+
+}
+
+// Function for loading the name from the name.cfg file
+	// This function returns a dynamically allocated string which must be freed
+char* loadName()
+{
+
+	char currentLine[256];
+	char* name = NULL;
+
+	FILE* file = NULL;
+	file = fopen("SAVES/name.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			name = SDL_calloc(SDL_strlen(currentLine) + 1, sizeof(char));
+			SDL_strlcpy(name, currentLine, SDL_strlen(currentLine) + 1);
+
+		}
+
+		fclose(file);
+
+	}
+
+	return name;
 
 }
 

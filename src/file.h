@@ -24,5 +24,9 @@ unsigned int loadProgress();
 void saveTop(unsigned int score, unsigned short size, bool inCustomMode);
 void saveProgress();
 void saveWindowSettings();
+void createNameFile();
+bool brokenNameFile();
+void saveName(char* name);
+char* loadName();
 
 #endif

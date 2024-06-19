@@ -34,9 +34,12 @@
 
 #define LEVELUP_INCREASE 3
 
-#define NUM_OF_OPTIONS 7
+#define NUM_OF_OPTIONS 				7
+#define NUM_OF_MULTIPLAYER_OPTIONS	3
 
 #define MULTIPLAYER_PULSE_DELAY_SECONDS 1
+
+#define MAX_NAME_LENGTH 7
 
 enum Control_Types {
 	

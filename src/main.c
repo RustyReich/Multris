@@ -94,6 +94,8 @@ int main(int argc, char *argv[]) {
 		createWindowFile();
 	if (!fileExists("SAVES/progress.md") || brokenProgress())
 		createProgressFile();
+	if (!fileExists("SAVES/name.cfg") || brokenNameFile())
+		createNameFile();
 
 	//Now load info from SAVES files
 
