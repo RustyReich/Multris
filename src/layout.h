@@ -13,6 +13,7 @@ void drawSizeBagBox(SDL_Texture* background, unsigned short size, int XOffset);
 int calcMapWidth();
 int calcMapHeight();
 SDL_Texture* create_Score_Text();
+SDL_Texture* create_Name_Text();
 SDL_Texture* create_Level_Text();
 SDL_Texture* create_Lines_Text();
 SDL_Texture* create_Pause_Text();
@@ -69,5 +70,7 @@ SDL_Texture* create_ConnectionMessage_Text();
 void updateConnectionMessageText(SDL_Texture** texture, char* message);
 int getConnectionMessageX(char* message, float multi);
 int getConnectionMessageY(float multi);
+int getNameDrawX(unsigned short size);
+int getNameDrawY(unsigned short size);
 
 #endif

@@ -76,6 +76,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	static SDL_Texture* Texture_OpponentSizeBag; declare_HUD_Text(&Texture_OpponentSizeBag, SIZEBAG_TEXT);
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
 	static SDL_Texture* opponentForeground; declare_HUD_Text(&opponentForeground, FOREGROUND_TEXT);
+	static SDL_Texture* Texture_OpponentName; declare_HUD_Text(&Texture_OpponentName, NAME_TEXT);
 
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
@@ -1076,6 +1077,10 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					// Extract the name from the payload
 					char* opponentName = &(packets[packetIndex][SDL_strlen("NAME=")]);
 
+					// Clear the opponents name texture and print new name to the texture
+					clearTexture(Texture_OpponentName);
+					printToTexture(opponentName, Texture_OpponentName, 0, 0, 1.0, WHITE);
+
 				}
 
 			}
@@ -1166,9 +1171,13 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 		drawTexture(opponentForeground, *opponentForegroundX, *foregroundY, 1.0);
 		
-		drawTexture(Texture_OpponentScore, getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2, getScoreDrawY(MODE), 1);
+		int X = getScoreDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentScore, X, getScoreDrawY(MODE), 1);
 		
-		int X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		X = getNameDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2;
+		drawTexture(Texture_OpponentName, X, getNameDrawY(MODE), 1);
+
+		X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentNext, X, getNextY(MODE, *opponentNextText_Height), 1.0);
 		
 		X = getLevelX(MODE, *opponentLevel) + getGameWidth(MODE, MULTIPLAYER) / 2;

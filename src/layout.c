@@ -102,6 +102,8 @@ void drawScoreBox(SDL_Texture* background, unsigned short size, bool inCustomMod
 		SDL_free(top_zeros);
 
 	}
+	else	// Use top score area to display name in multiplayer mode
+		printToTexture("NAME   ", content, temp, 0, 1, WHITE);
 
     int X = 0;
     int Y = 0;
@@ -707,6 +709,18 @@ int calcMapHeight()
 		return (int)SDL_round(BASE_PLAYFIELD_HEIGHT * MAX_PIECE_SIZE);
 	else
 		return (int)SDL_round(BASE_PLAYFIELD_HEIGHT * MODE);
+
+}
+
+// Function for creating the texture for a player name
+SDL_Texture* create_Name_Text()
+{
+
+	SDL_Texture* texture;
+
+	texture = createTexture(7 * (FONT_WIDTH + STRING_GAP), FONT_HEIGHT);
+
+	return texture;
 
 }
 
@@ -2024,6 +2038,39 @@ bool updateTitle(SDL_Texture* texture, piece** movingPieces)
 		updateOver = true;
 
 	return updateOver;
+
+}
+
+// Get the X coordinate of where to draw the player name to the screen depending on current max size
+int getNameDrawX(unsigned short size)
+{
+
+	if (size == 0 || size == MAX_PIECE_SIZE)
+		return 270;
+	else if (size == 1)
+		return 185;
+	else if (size == 2)
+		return 210;
+	else if (size == 3)
+		return 246;
+	else if (size == 5)
+		return 306;
+	else if (size == 6)
+		return 330;
+	else if (size == 7)
+		return 366;
+	else
+		return 270;
+
+}
+
+// Get the Y coordinate of where to draw the player name to the screen
+int getNameDrawY(unsigned short size)
+{
+
+	// Draw it three lines of above where the score is displayed, since it is displayed in place
+		// of the top score
+	return getScoreDrawY(size) - (FONT_HEIGHT + STRING_GAP) * 3;
 
 }
 
