@@ -77,6 +77,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	static SDL_Texture* foreground; declare_HUD_Text(&foreground, FOREGROUND_TEXT);
 	static SDL_Texture* opponentForeground; declare_HUD_Text(&opponentForeground, FOREGROUND_TEXT);
 	static SDL_Texture* Texture_OpponentName; declare_HUD_Text(&Texture_OpponentName, NAME_TEXT);
+	static SDL_Texture* Texture_Name; declare_HUD_Text(&Texture_Name, NAME_TEXT);
 
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
@@ -114,17 +115,27 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		// Remove the size of the firstPiece from the sizeBag
 		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
-		// If in a multiplayer game, send the sizeBag to the server
-		if (MULTIPLAYER)
-			sendSizeBagToServer(sizeBag, lastPulseTime);
-
 		// If in a multiplayer game
 		if (MULTIPLAYER)
 		{
 
+			// Send the sizeBag to the server
+			sendSizeBagToServer(sizeBag, lastPulseTime);
+
 			// Send the current piece and lines values to the server at the start of the game
 			sendCurrentPieceToServer(currentPiece, lastPulseTime);
 			sendLinesToServer(calcLinesUntilLevelup(*linesAtCurrentLevel, *Level), lastPulseTime);
+
+			// Load name and print it to Texture_Name if a name exists
+			char* name = loadName();
+			if (name != NULL)
+			{
+
+				clearTexture(Texture_Name);
+				printToTexture(name, Texture_Name, 0, 0, 1.0, WHITE);
+				SDL_free(name);
+
+			}
 
 		}
 
@@ -1176,6 +1187,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		
 		X = getNameDrawX(MODE) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentName, X, getNameDrawY(MODE), 1);
+
+		X = getNameDrawX(MODE);
+		drawTexture(Texture_Name, X, getNameDrawY(MODE), 1);
 
 		X = getNextX(MODE, *opponentNextText_Width) + getGameWidth(MODE, MULTIPLAYER) / 2;
 		drawTexture(Texture_OpponentNext, X, getNextY(MODE, *opponentNextText_Height), 1.0);
