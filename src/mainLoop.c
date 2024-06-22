@@ -94,7 +94,7 @@ void mainLoop()
 	// Store the latest message receieved from the server in multiplayer mode
 		// This is mainly to display the reason for disconnection when the player is 
 		// disconnected
-	static char serverMessage[1024];
+	static char serverMessage[SERVERMESSAGE_BUFFER_SIZE];
 
 	//Display frame rate
 		// Get width of current frame rate in pixels

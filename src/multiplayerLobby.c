@@ -12,6 +12,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     DECLARE_VARIABLE(bool, error, false);
     DECLARE_VARIABLE(int, lastPulseTime, 0);
     DECLARE_VARIABLE(bool, justPasted, false);
+    DECLARE_VARIABLE(bool, waitingForReady, false);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -82,14 +83,94 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         if (SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
         {
 
-            // Receive the data if there is any
-            char data[1024];
-            int len = SDLNet_TCP_Recv(globalInstance->serverSocket, data, 1024);
-            data[len] = '\0';
+			bool disconnect = false;
+            bool startGame = false;
 
-            // If the length of the data is zero, the server closed
-            if (len == 0)
-            {
+			// Capture data from server in 1024-byte chunks and combine them together into data pointer
+			char* data = NULL;
+			int dataLen = 0;
+			while(SDLNet_CheckSockets(globalInstance->serverSocketSet, 0))
+			{
+
+				char currentData[1024];
+				int currentLen = SDLNet_TCP_Recv(globalInstance->serverSocket, currentData, 1024);
+
+				// If data is length 0, the server closed. So disconnect from the server.
+				if (currentLen == 0)
+				{
+
+					disconnect = true;
+					break;
+
+				}
+
+				if (data == NULL)
+				{
+
+					data = SDL_calloc(currentLen, sizeof(char));
+					SDL_memcpy(data, currentData, currentLen);
+					dataLen = currentLen;
+
+				}
+				else
+				{
+
+					data = SDL_realloc(data, dataLen + currentLen);
+					SDL_memcpy(&data[dataLen], currentData, currentLen);
+					dataLen += currentLen;
+
+				}
+
+			}
+
+			// Split data into "packets" separated by "\0"
+			int numPackets = 0;
+			char** packets = extractStringsFromDelimitedBytes(data, dataLen, &numPackets, '\0');
+
+			// Now go through each packet and process it
+			for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
+			{
+
+                // If the packet does not have a "=" then it is a server message
+                if (SDL_strstr(packets[packetIndex], "=") == NULL)
+                {
+
+                    // If received a message containing "START", exit multiplayer lobby and move into PLAYMODE.
+                    if (SDL_strstr(packets[packetIndex], "START") != NULL)
+                    {
+
+                        startGame = true;
+                        break;
+
+                    }
+                    else
+                    {
+
+                        // Print the messsage received from the server
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(data) + 1);
+                        SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+                        if (SDL_strstr(currMessage, "Press SELECT when ready") != NULL)
+                            *waitingForReady = true;
+
+                    }
+
+                }   // If the received packet is the name of the opponent, store it in serverMessage
+				else if (SDL_strstr(packets[packetIndex], "NAME=") != NULL)
+                    SDL_strlcat(serverMessage, packets[packetIndex], SERVERMESSAGE_BUFFER_SIZE);
+
+            }
+
+			// Free our data and packets to avoid memory leaks
+			for (int i = 0; i < numPackets; i++)
+				SDL_free(packets[i]);
+			SDL_free(packets);
+			SDL_free(data);
+
+			// If disconnect flag has been set
+			if (disconnect == true)
+			{
 
                 // So disconnect from the server and set MULTIPLAYER to false
                 disconnectFromServer();
@@ -106,28 +187,32 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                 }
 
-            }
-            else    // If the length of the data was not zero
+			}   // If the starGame flag has been set
+            else if (startGame == true)
             {
 
-                // Print the messsage received from the server
-                currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(data) + 1);
-                SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
-                updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                // Save the players name once the game starts
+                saveName(nameString);
 
-                // If received a messages containing "All players joined", exit multiplayer lobby and move into PLAYMODE.
-                if (SDL_strstr(currMessage, "All players joined") != NULL)
-                {
-
-                    // Save the players name once the game starts
-                    saveName(nameString);
-
-                    freeVars();
-                    return PLAY_SCREEN;
-
-                }
+                // Go to playMode
+                freeVars();
+                return PLAY_SCREEN;
 
             }
+
+        }
+
+        // If the server has told you to ready up and you press SELECT_BUTTON
+        if (onPress(SELECT_BUTTON) && *waitingForReady == true)
+        {   
+
+            // Tell the server you are ready and print that to the screen
+            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("READY") + 1);
+            SDL_strlcpy(currMessage, "READY", SDL_strlen("READY") + 1);
+            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+            char message[] = "READY";
+            SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message) + 1);  
 
         }
 

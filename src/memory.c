@@ -487,8 +487,8 @@ char** extractStringsFromDelimitedBytes(char* data, int dataLength, int* numValu
 
             }
 
-        }
-        else    // If the current byte is a delimiter, we have finished reading the current value.
+        }   // If the current byte is a delimiter, we have finished reading the current value.
+        else if (currentStringValue != NULL)    // Skip if current value is of length zero
         {
 
             // So append the current value to the list of values

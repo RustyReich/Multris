@@ -41,6 +41,8 @@
 
 #define MAX_NAME_LENGTH 7
 
+#define SERVERMESSAGE_BUFFER_SIZE 1024
+
 enum Control_Types {
 	
 	LEFT_BUTTON,

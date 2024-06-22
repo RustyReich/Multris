@@ -119,6 +119,44 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		if (MULTIPLAYER)
 		{
 
+			// serverMessage is used to transfer data received during the lobby screen to the
+			// playmode
+			if (SDL_strlen(serverMessage) > 0)
+			{
+
+				// Extract all the packets from the serverMessage
+				int numPackets = 0;
+				char** packets = extractStringsFromDelimitedBytes(serverMessage, SERVERMESSAGE_BUFFER_SIZE, &numPackets, '\0');
+
+				// Go through all the packets
+				for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
+				{
+
+					// If it's a packet for the opponents NAME
+					if (SDL_strstr(packets[packetIndex], "NAME=") != NULL)
+					{
+
+						// Extract the name from the payload
+						char* opponentName = &(packets[packetIndex][SDL_strlen("NAME=")]);
+
+						// Clear the opponents name texture and print new name to the texture
+						clearTexture(Texture_OpponentName);
+						printToTexture(opponentName, Texture_OpponentName, 0, 0, 1.0, WHITE);
+
+					}	
+
+				}
+
+				// Free memory for the packets
+				for (int i = 0; i < numPackets; i++)
+					SDL_free(packets[i]);
+				SDL_free(packets);
+
+				// Reset the serverMessage to an empty string
+				SDL_strlcpy(serverMessage, "\0", 1);
+
+			}
+
 			// Send the sizeBag to the server
 			sendSizeBagToServer(sizeBag, lastPulseTime);
 
@@ -879,7 +917,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				
 				// If the data has no "=", that means it is a serverMessage
 				if (SDL_strstr(packets[packetIndex], "=") == NULL)
-					SDL_strlcpy(serverMessage, packets[packetIndex], 1024);
+					SDL_strlcpy(serverMessage, packets[packetIndex], SERVERMESSAGE_BUFFER_SIZE);
 				else if (SDL_strstr(packets[packetIndex], "MAP=") != NULL)
 				{	// If the data received is MAP data
 
@@ -1082,17 +1120,6 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					SDL_free(values);
 
 				}	// If the data was a NAME from the opponent
-				else if (SDL_strstr(packets[packetIndex], "NAME=") != NULL)
-				{
-
-					// Extract the name from the payload
-					char* opponentName = &(packets[packetIndex][SDL_strlen("NAME=")]);
-
-					// Clear the opponents name texture and print new name to the texture
-					clearTexture(Texture_OpponentName);
-					printToTexture(opponentName, Texture_OpponentName, 0, 0, 1.0, WHITE);
-
-				}
 
 			}
 
@@ -1109,7 +1136,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				// If no serverMessage was received before the server closing, just display a
 				// generic "Server closed" message
 				if (SDL_strlen(serverMessage) == 0)
-					SDL_strlcpy(serverMessage, "Server closed", 1024);
+					SDL_strlcpy(serverMessage, "Server closed", SERVERMESSAGE_BUFFER_SIZE);
 
 				// And disconnect from the server
 				disconnectFromServer();

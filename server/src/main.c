@@ -133,6 +133,13 @@ void startServer(IPaddress address, int tickRate)
     int numNames = 0;
     bool sentNames = false;
 
+    // Variables for the countdown
+    int playersReady = 0;
+    bool countdownGoing = false;
+    int currentCountdownValue = 4;
+    Uint32 timeAllPlayersConnected = 0;
+    bool gameStarted = false;
+
     LoopStart:;
     while (running == true)
     {
@@ -202,18 +209,18 @@ void startServer(IPaddress address, int tickRate)
                     printf("Waiting for player %d to join...\n", numConnectedPlayers + 1);
 
                     // Also let the connected player know that we are waiting for players to join
-                    char message[] = "Waiting for players to join...";
-                    SDLNet_TCP_Send(clients[numConnectedPlayers - 1], message, SDL_strlen(message));
+                    char message[] = "Waiting for players to join";
+                    SDLNet_TCP_Send(clients[numConnectedPlayers - 1], message, SDL_strlen(message) + 1);
 
                 }
                 else
                 {
 
-                    // Send message to all connected players once all players join
+                    // Once all players connect, let all players know to press SELECT when ready
                     for (int i = 0; i < maxPlayers; i++)
                     {
 
-                        char message[] = "All players joined...";
+                        char message[] = "Press SELECT when ready";
                         SDLNet_TCP_Send(clients[i], message, SDL_strlen(message) + 1);
 
                     }
@@ -237,37 +244,79 @@ void startServer(IPaddress address, int tickRate)
         if (numConnectedPlayers > 0)
         {
 
-            // Once we have received all the player names
-            if (numNames == maxPlayers && sentNames == false)
+            // If all players are ready and we have synced all the names, start the countdown
+                // Countdown is sent to each player
+            if (playersReady == maxPlayers && sentNames == true && countdownGoing == false)
             {
-                
-                for (unsigned short i = 0; i < numConnectedPlayers; i++)
+
+                // Start the countdown at 3 seconds
+                countdownGoing = true;
+
+                timeAllPlayersConnected = SDL_GetTicks();
+                printf("All players ready.\n");
+                printf("Starting game in 3...\n");
+
+                for (int playerIndex = 0; playerIndex < maxPlayers; playerIndex++)
                 {
 
-                    char* currentName = names[i];
-
-                    for (unsigned short j = 0; j < numConnectedPlayers; j++)
-                    {
-
-                        if (j != i)
-                        {
-
-                            // Send the players names to each other
-                            printf("Sending name %s from player %d to player %d.\n", currentName, i + 1, j + 1);
-                            int len = SDL_strlen("NAME=") + SDL_strlen(currentName) + 1;
-                            char* namePacket = SDL_calloc(len, sizeof(char));
-                            SDL_strlcpy(namePacket, "NAME=", len);
-                            SDL_strlcat(namePacket, currentName, len);
-                            SDLNet_TCP_Send(clients[j], namePacket, len);
-                            SDL_free(namePacket);
-
-                        }
-
-                    }
+                    char message[] = "Game starting in 3";
+                    SDLNet_TCP_Send(clients[playerIndex], message, SDL_strlen(message) + 1);  
 
                 }
 
-                sentNames = true;
+            }   // Countdown until the game has started
+            else if (countdownGoing == true && gameStarted == false)
+            {
+
+                if ((SDL_GetTicks() - timeAllPlayersConnected) / 1000 >= 3)
+                {
+
+                    // Send "START" message to all players once countdown reaches zero
+                    printf("Starting game!\n");
+
+                    for (int playerIndex = 0; playerIndex < maxPlayers; playerIndex++)
+                    {
+
+                        char message[] = "START";
+                        SDLNet_TCP_Send(clients[playerIndex], message, SDL_strlen(message) + 1);  
+
+                    }
+
+                    gameStarted = true;
+
+                }
+                else if ((SDL_GetTicks() - timeAllPlayersConnected) / 1000 >= 2 && currentCountdownValue > 1)
+                {
+
+                    printf("Starting game in 1...\n");
+
+                    for (int playerIndex = 0; playerIndex < maxPlayers; playerIndex++)
+                    {
+
+                        char message[] = "Game starting in 1";
+                        SDLNet_TCP_Send(clients[playerIndex], message, SDL_strlen(message) + 1);  
+
+                    }
+
+                    currentCountdownValue = 1;
+
+                }
+                else if ((SDL_GetTicks() - timeAllPlayersConnected) / 1000 >= 1 && currentCountdownValue > 2)
+                {
+
+                    printf("Starting game in 2...\n");
+
+                    for (int playerIndex = 0; playerIndex < maxPlayers; playerIndex++)
+                    {
+
+                        char message[] = "Game starting in 2";
+                        SDLNet_TCP_Send(clients[playerIndex], message, SDL_strlen(message) + 1);  
+
+                    }
+
+                    currentCountdownValue = 2;
+
+                }
 
             }
 
@@ -431,7 +480,51 @@ void startServer(IPaddress address, int tickRate)
 
                             printf("Received name %s from player %d.\n", names[currentPlayerIndex], playerID);
 
-                        }   // If the packet is not a NAME or PULSE
+                            // If the NAME we just recieved is the last name, send names to all
+                            // players
+                            if (numNames == maxPlayers)
+                            {
+
+                                for (unsigned short i = 0; i < numConnectedPlayers; i++)
+                                {
+
+                                    char* currentName = names[i];
+
+                                    for (unsigned short j = 0; j < numConnectedPlayers; j++)
+                                    {
+
+                                        if (j != i)
+                                        {
+
+                                            // Send the players names to each other
+                                            printf("Sending name %s from player %d to player %d.\n", currentName, i + 1, j + 1);
+                                            int len = SDL_strlen("NAME=") + SDL_strlen(currentName) + 1;
+                                            char* namePacket = SDL_calloc(len, sizeof(char));
+                                            SDL_strlcpy(namePacket, "NAME=", len);
+                                            SDL_strlcat(namePacket, currentName, len);
+                                            SDLNet_TCP_Send(clients[j], namePacket, len);
+                                            SDL_free(namePacket);
+
+                                        }
+
+                                    }
+
+                                }
+
+                                sentNames = true;
+
+                            }
+
+                        }   // Keep track of when each player is ready
+                        else if (SDL_strstr(packets[packetIndex], "READY") != NULL)
+                        {
+
+                            printf("Player %d is ready.\n", playerID);
+
+                            playersReady++;
+
+                        }
+                           // If the packet is not a NAME or PULSE
                         else if (SDL_strstr(packets[packetIndex], "PULSE") == NULL)
                         {
 
