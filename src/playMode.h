@@ -24,5 +24,6 @@ void move(char keyPress, signed short *X, piece Piece, unsigned short mapWidth);
 void addGarbageLines(unsigned short numOfLines, int* mapData, SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight);
 void playOpponentLineAnimation(SDL_Texture* foreground, unsigned short row, bool *clearingLine, unsigned short* numCompleted);
 void updateOpponentForeground(SDL_Texture* foreground, char* mapString);
+piece* generateSeededPiece(SizeBag* sizeBag, int seed);
 
 #endif

@@ -1,6 +1,7 @@
 #include "../../src/MGF.h"
 
 void startServer(IPaddress address, int tickRate);
+unsigned short getIntLength(int num);
 
 int main (int argc, char* argv[])
 {
@@ -244,10 +245,30 @@ void startServer(IPaddress address, int tickRate)
         if (numConnectedPlayers > 0)
         {
 
-            // If all players are ready and we have synced all the names, start the countdown
-                // Countdown is sent to each player
+            // If all players are ready and we have synced all the names and we haven't started the countdown yet
             if (playersReady == maxPlayers && sentNames == true && countdownGoing == false)
             {
+
+                // Send the RNG seed to all players
+                    // Seed is just the current time
+                int startSeed = (int)time(NULL);
+                for (int playerIndex = 0; playerIndex < maxPlayers; playerIndex++)
+                {
+
+                    char* seedAsString = SDL_calloc(getIntLength(startSeed), sizeof(char));
+                    SDL_itoa(startSeed, seedAsString, 10);
+
+                    int len = SDL_strlen("SEED=") + getIntLength(startSeed) + 1;
+                    char* seedPacket = SDL_calloc(len, sizeof(char));
+                    SDL_strlcpy(seedPacket, "SEED=", len);
+                    SDL_strlcat(seedPacket, seedAsString, len);
+
+                    SDLNet_TCP_Send(clients[playerIndex], seedPacket, len);
+
+                    SDL_free(seedAsString);
+                    SDL_free(seedPacket);  
+
+                }
 
                 // Start the countdown at 3 seconds
                 countdownGoing = true;
@@ -613,5 +634,34 @@ void startServer(IPaddress address, int tickRate)
     SDL_free(clients);
 
     printf("Server closed.\n");
+
+}
+
+//Get the number of digits in an integer
+unsigned short getIntLength(int num)
+{
+
+	unsigned short returnValue = 0;
+	bool isNegative = false;
+
+	// If the value is negative, make it positive...
+	if (num < 0)
+	{
+
+		num = num * -1;
+		isNegative = true;
+
+	}
+
+	if (num == 0)
+		returnValue = 1;
+	else
+		returnValue = (unsigned short)(SDL_floor(SDL_log10(abs(num))) + 1);
+	
+	// ...And then add an extra 1 to the returnValue to account for the minus sign.
+	if (isNegative)
+		returnValue += 1;
+
+	return returnValue;
 
 }

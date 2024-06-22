@@ -147,8 +147,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     {
 
                         // Print the messsage received from the server
-                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(data) + 1);
-                        SDL_strlcpy(currMessage, data, SDL_strlen(data) + 1);
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(packets[packetIndex]) + 1);
+                        SDL_strlcpy(currMessage, packets[packetIndex], SDL_strlen(packets[packetIndex]) + 1);
                         updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
                         if (SDL_strstr(currMessage, "Press SELECT when ready") != NULL)
@@ -156,9 +156,16 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                     }
 
-                }   // If the received packet is the name of the opponent, store it in serverMessage
-				else if (SDL_strstr(packets[packetIndex], "NAME=") != NULL)
+                }
+				else
+                {
+
+                    // If the packet received has an "=", then it is an important game value that needs to be transferred into playMode
+                        // So store it in serverMessage, separating packets with "|"
                     SDL_strlcat(serverMessage, packets[packetIndex], SERVERMESSAGE_BUFFER_SIZE);
+                    SDL_strlcat(serverMessage, "|", SERVERMESSAGE_BUFFER_SIZE);
+
+                }
 
             }
 

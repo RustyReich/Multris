@@ -56,6 +56,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	DECLARE_VARIABLE(bool, aboutToExit, false);
 	DECLARE_VARIABLE(int, lastPulseTime, 0);
 	DECLARE_VARIABLE(int, receivedGarbage, 0);
+	DECLARE_VARIABLE(int, nextPieceSeed, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -113,7 +114,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		*speed = calcSpeed(*Level);
 
 		// Remove the size of the firstPiece from the sizeBag
-		removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
+			// This is only if we are not in MULTIPLAYER because in multiplaye games the pieces are seeded by a value from the server
+		if (MULTIPLAYER == false)
+			removeSizeFromBag(sizeBag, firstPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
 		// If in a multiplayer game
 		if (MULTIPLAYER)
@@ -126,7 +129,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 				// Extract all the packets from the serverMessage
 				int numPackets = 0;
-				char** packets = extractStringsFromDelimitedBytes(serverMessage, SERVERMESSAGE_BUFFER_SIZE, &numPackets, '\0');
+				char** packets = extractStringsFromDelimitedBytes(serverMessage, SERVERMESSAGE_BUFFER_SIZE, &numPackets, '|');
 
 				// Go through all the packets
 				for (unsigned short packetIndex = 0; packetIndex < numPackets; packetIndex++)
@@ -143,8 +146,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 						clearTexture(Texture_OpponentName);
 						printToTexture(opponentName, Texture_OpponentName, 0, 0, 1.0, WHITE);
 
-					}	
-
+					}	// If the packet is the seed for generatin pieces, store it in nextPieceSeed
+					else if (SDL_strstr(packets[packetIndex], "SEED=") != NULL)
+						*nextPieceSeed = SDL_atoi(SDL_strstr(packets[packetIndex], "SEED=") + SDL_strlen("SEED=") * sizeof(char));
 				}
 
 				// Free memory for the packets
@@ -156,6 +160,23 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				SDL_strlcpy(serverMessage, "\0", 1);
 
 			}
+
+			// Delete currentPiece and generate a new one using the nextPieceSeed received from the server
+			delPiece(&currentPiece);
+			SDL_DestroyTexture(Texture_Current);
+			Texture_Current = NULL;
+			SDL_DestroyTexture(Texture_Ghost);
+			Texture_Ghost = NULL;
+			currentPiece = generateSeededPiece(sizeBag, *nextPieceSeed);
+
+			// Always increase nextPieceSeed by one after everytime we generate a new seeded piece so that the next piece is different
+			*nextPieceSeed = *nextPieceSeed + 1;
+
+			//Recalculate ghostY
+			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);
+
+			// Remove the first piece from the sizeBag
+			removeSizeFromBag(sizeBag, currentPiece->numOfBlocks, MODE, CUSTOM_MODE, Texture_SizeBag);
 
 			// Send the sizeBag to the server
 			sendSizeBagToServer(sizeBag, lastPulseTime);
@@ -631,8 +652,18 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	if (nextPiece == NULL)
 	{
 
-		// Pick random size from the sizeBag to generate next piece
-		nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
+		// If we are in a multiplayer game, the pieces are seeded with an RNG seed value received from the server so that both players
+		// get the same pieces
+		if (MULTIPLAYER)
+		{
+
+			nextPiece = generateSeededPiece(sizeBag, *nextPieceSeed);
+			// Increase the seed value so that each piece is different from the last
+			*nextPieceSeed = *nextPieceSeed + 1;
+
+		}
+		else	// Otherwise, in singleplayer, pick random size from the sizeBag to generate next piece
+			nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
 
 		//And create a new texture for it as well
 		if (Texture_Next == NULL)
@@ -1449,6 +1480,24 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	//------------------------------------------------------------------------------
 
 	return PLAY_SCREEN;
+
+}
+
+// Function for generating a piece based on a seeded value. Given the same sizeBag and same seed, the piece will always be the same.
+piece* generateSeededPiece(SizeBag* sizeBag, int seed)
+{
+
+	// Seed the random number generator
+	srand(seed);
+
+	// Generate the piece with a random size taken from the sizeBag
+	piece* nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
+
+	// Re-seed the random number generator with the current time
+	srand((int)time(NULL));
+
+	// Return the generated piece
+	return nextPiece;
 
 }
 
