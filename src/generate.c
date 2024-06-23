@@ -207,7 +207,7 @@ piece* generateGamePiece(unsigned short size)
 		Piece->numOfBlocks = 0;
 		
 		//Pick random color for piece
-		Piece->color = (rand() % (RED - YELLOW + 1)) + YELLOW;
+		Piece->color = (MGF_rand() % (RED - YELLOW + 1)) + YELLOW;
 
 		//Allocate memory for all blocks
 		if (size > 0)
@@ -223,12 +223,12 @@ piece* generateGamePiece(unsigned short size)
 			
 			//There is a 1 in 7 chance of the game piece spawning as just a straight line
 				//It is this way for game balancing reasons
-			if (rand() % 7 == 3)
+			if (MGF_rand() % 7 == 3)
 			{
 
 				//When the game piece does spawn as a straight line, there is a 50/50 shot of whether it will
 				//spawn horizontally or vertically
-				if (rand() % 2 == 1)
+				if (MGF_rand() % 2 == 1)
 				{
 
 					//Go through each block that needs to be generated, simply creating each one directly to the
@@ -275,13 +275,13 @@ piece* generateGamePiece(unsigned short size)
 					//Here, we randomly chose a block that we want our next block to build off of, making sure to
 					//only pick a block that isnt already surrounded by blocks
 					do
-						randID = rand() % i;			//Randomly choose a block to build off of
+						randID = MGF_rand() % i;			//Randomly choose a block to build off of
 					while (isSurrounded(Piece, randID));
 					
 					//Here, we randomly choose a direction from our chosen block to build off from, making sure to
 					//choose a direction that isnt already currently occupied
 					do
-						randDirection = rand() % 4;
+						randDirection = MGF_rand() % 4;
 					while (isOccupied(Piece, randID, randDirection));
 
 					//Set the coordinates of our next block

@@ -11,5 +11,7 @@ void initInstance(gameInstance** instance);
 void updateVolume();
 void setWindowMode(unsigned short mode);
 void findDisplayBounds(gameInstance* instance);
+void MGF_srand(int seed);
+int MGF_rand();
 
 #endif

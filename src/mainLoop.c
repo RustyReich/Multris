@@ -83,7 +83,7 @@ void mainLoop()
 	if (generateFirst == true)
 	{
 
-		firstPiece = generateGamePiece(rand() % MAX_PIECE_SIZE + 1);
+		firstPiece = generateGamePiece(MGF_rand() % MAX_PIECE_SIZE + 1);
 		generateFirst = false;
 		
 	}

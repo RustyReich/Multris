@@ -663,7 +663,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 		}
 		else	// Otherwise, in singleplayer, pick random size from the sizeBag to generate next piece
-			nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
+			nextPiece = generateGamePiece(sizeBag->sizesInBag[MGF_rand() % sizeBag->size]);
 
 		//And create a new texture for it as well
 		if (Texture_Next == NULL)
@@ -1488,13 +1488,13 @@ piece* generateSeededPiece(SizeBag* sizeBag, int seed)
 {
 
 	// Seed the random number generator
-	srand(seed);
+	MGF_srand(seed);
 
 	// Generate the piece with a random size taken from the sizeBag
-	piece* nextPiece = generateGamePiece(sizeBag->sizesInBag[rand() % sizeBag->size]);
+	piece* nextPiece = generateGamePiece(sizeBag->sizesInBag[MGF_rand() % sizeBag->size]);
 
 	// Re-seed the random number generator with the current time
-	srand((int)time(NULL));
+	MGF_srand((int)time(NULL));
 
 	// Return the generated piece
 	return nextPiece;
@@ -1580,7 +1580,7 @@ void addGarbageLines(unsigned short numOfLines, int* mapData, SDL_Texture* foreg
 	{
 
 		// Pick a random block in each row to leave empty
-		int randomHole = rand() % mapWidth;
+		int randomHole = MGF_rand() % mapWidth;
 
 		for (unsigned short j = 0; j < mapWidth; j++)
 		{
@@ -1864,7 +1864,7 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 
 					//Fill the current row with randomly colored BLOCKSs
 					for (unsigned short i = 0; i < mapWidth; i++)
-						drawToTexture(BLOCK_SPRITE_ID, foreground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (rand() % (RED - YELLOW + 1)) + YELLOW);
+						drawToTexture(BLOCK_SPRITE_ID, foreground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
 
 					//Check if we are on the last row
 					if (*row < mapHeight)

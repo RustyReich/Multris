@@ -1631,7 +1631,7 @@ piece** makeTitlePieces()
 		first_run = false;
 
 	}
-	srand((int)title_time);
+	MGF_srand((int)title_time);
 
 	//Allocate memory for array of pieces
 	piece** titlePieces = SDL_calloc(NUM_OF_TITLE_PIECES, sizeof(piece));
@@ -1654,7 +1654,7 @@ piece** makeTitlePieces()
 		{
 
 			//Randomize color for piece
-			currentPiece->color = (rand() % (RED - YELLOW + 1) + YELLOW);
+			currentPiece->color = (MGF_rand() % (RED - YELLOW + 1) + YELLOW);
 
 			//Shapes of every piece are hard-coded
 			if (i == 0)
@@ -1847,7 +1847,7 @@ piece** makeTitlePieces()
 	//Reset random seed to current time
 		// Add 1 to current time to address bug where first and second piece can be the same if player
 		// starts game too quickly after opening the game (within 1 second)
-	srand((int)time(NULL) + 1);
+	MGF_srand((int)time(NULL) + 1);
 
 	return titlePieces;
 

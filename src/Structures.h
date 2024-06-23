@@ -104,6 +104,8 @@ typedef struct gameInstance
     TCPsocket serverSocket;
     SDLNet_SocketSet serverSocketSet;
 
+    int randState;
+
 } gameInstance;
 
 typedef struct block

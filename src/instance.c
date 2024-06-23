@@ -319,3 +319,22 @@ void setWindowMode(unsigned short mode)
     }
 
 }
+
+// Set the seed for the custom rand() function
+void MGF_srand(int seed)
+{
+
+    globalInstance->randState = seed;
+
+}
+
+// Custom rand() function to have identical functionality between Windows and Linux
+int MGF_rand()
+{
+
+    int const a = 1103515245;
+    int const c = 12345;
+    globalInstance->randState = a * globalInstance->randState + c;
+    return (globalInstance->randState >> 16) & 0x7FFF; 
+
+}

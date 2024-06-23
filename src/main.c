@@ -60,15 +60,15 @@ int main(int argc, char *argv[]) {
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 	#endif
 
+	//Initialize game instance
+	initInstance(&globalInstance);
+
 	//Set MAP_WIDTH and MAP_HEIGHT
 	MAP_WIDTH = calcMapWidth();
 	MAP_HEIGHT = calcMapHeight();
 
 	//Set seed for random number generator
-	srand((int)time(NULL));
-
-	//Initialize game instance
-	initInstance(&globalInstance);
+	MGF_srand((int)time(NULL));
 
 	//Used to check if this is the very first frame of the game
 	bool firstLoop = true;
