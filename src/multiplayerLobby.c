@@ -518,6 +518,38 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             // Get the text currently on the clipboard
             char* clipboard = SDL_GetClipboardText();
 
+            // Remove characters from clipboard that aren't allow in the string being modified
+            for (unsigned short i = 0; i < SDL_strlen(clipboard); i++)
+            {
+
+                // Only allow digits and periods in IP and PORT
+                if (strBeingModified == ipString || strBeingModified == portString)
+                {
+
+                    if (SDL_isdigit(clipboard[i]) == false && clipboard[i] != '.')
+                    {
+
+                        SDL_strlcpy(&clipboard[i], &clipboard[i + 1], SDL_strlen(clipboard));
+                        i--;
+
+                    }
+
+                }   // Only allow digits and letters in NAME
+                else if (strBeingModified == nameString)
+                {
+
+                    if (SDL_isdigit(clipboard[i]) == false && SDL_isalpha(clipboard[i]) == false)
+                    {
+
+                        SDL_strlcpy(&clipboard[i], &clipboard[i + 1], SDL_strlen(clipboard));
+                        i--;
+
+                    }
+
+                }
+
+            }
+
             // Don't let the user paste more text than can fit in the current value
             int currLength = SDL_strlen(strBeingModified) + 1;
             int newLength = SDL_min(maxLength + 1, SDL_strlen(clipboard) + currLength);
