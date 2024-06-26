@@ -1,11 +1,14 @@
 #ifndef MGF_H_
 #define MGF_H_
 
+#define _POSIX_C_SOURCE 199506L
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <limits.h>
 #include <time.h>
+#include <signal.h>
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
@@ -31,7 +34,8 @@
 #include "multiplayerLobby.h"
 #include "network.h"
 
-//Fix for cross-compiling mkdir() for windows on linux
+
+// OS-specific includes/macros
 #ifdef _WIN32
 #include <windows.h>
 #define mkdir(dir, mode) mkdir(dir)
