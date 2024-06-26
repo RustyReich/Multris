@@ -13,6 +13,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     DECLARE_VARIABLE(int, lastPulseTime, 0);
     DECLARE_VARIABLE(bool, justPasted, false);
     DECLARE_VARIABLE(bool, waitingForReady, false);
+    DECLARE_VARIABLE(bool, tryingConnection, false);
+    DECLARE_VARIABLE(bool, connectFunctionReturned, false);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
