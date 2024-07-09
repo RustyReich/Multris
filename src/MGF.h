@@ -1,14 +1,12 @@
 #ifndef MGF_H_
 #define MGF_H_
 
-#define _POSIX_C_SOURCE 199506L
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <limits.h>
 #include <time.h>
-#include <signal.h>
+#include <pthread.h>
 
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"

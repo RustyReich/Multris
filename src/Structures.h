@@ -103,6 +103,7 @@ typedef struct gameInstance
     IPaddress serverIP;
     TCPsocket serverSocket;
     SDLNet_SocketSet serverSocketSet;
+    unsigned long connectionThreadID;
 
     int randState;
 

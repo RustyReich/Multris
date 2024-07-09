@@ -98,6 +98,23 @@ void declare_unsigned_short(void** ptr, unsigned short value)
 
 }
 
+// Function for declaring an unsigned long on the varVector array
+void declare_unsigned_long(void** ptr, unsigned long value)
+{
+
+    if (*ptr == NULL)
+    {
+
+        *ptr = SDL_calloc(1, sizeof(unsigned long));
+        **(unsigned long**)(ptr) = value;
+        
+        if (!inVector(ptr))
+            pushAddress(ptr, VARIABLE);
+
+    }
+
+}
+
 //Function for declaring a double on the varVector array
 void declare_double(void** ptr, double value)
 {

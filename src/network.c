@@ -357,3 +357,20 @@ void sendMapToServer(int* mapData, int* lastPuleTime)
 	SDL_free(data);
 
 }
+
+// Function for connecting to a server in a separate thread
+int openConnection(void* functionReturned)
+{
+
+	// Keep track of the ID for this tread so it can be canceled if it timesout
+	globalInstance->connectionThreadID = SDL_GetThreadID(NULL);
+	
+	// Attempt the connection
+	globalInstance->serverSocket = SDLNet_TCP_Open(&(globalInstance->serverIP));
+
+	// Keep track of if the SDLNet_TCP_Open function returned
+	*(bool*)functionReturned = true;
+
+	return 0;
+
+}

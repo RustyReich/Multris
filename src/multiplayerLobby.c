@@ -15,6 +15,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     DECLARE_VARIABLE(bool, waitingForReady, false);
     DECLARE_VARIABLE(bool, tryingConnection, false);
     DECLARE_VARIABLE(bool, connectFunctionReturned, false);
+    DECLARE_VARIABLE(int, timeConnectingStarted, 0);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -240,6 +241,74 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     else
     {
 
+        // If the player is trying to connect to a server
+        if (*tryingConnection == true)
+        {
+
+            // Check if the thread attempting the connection has either already returned or timed out
+            if (*connectFunctionReturned || (SDL_GetTicks() - *timeConnectingStarted) / 1000 > CONNECTION_TIMEOUT_SECONDS)
+            {
+
+                // If it timed out
+                if (*connectFunctionReturned == false)
+                {
+
+                    // Cancel the thread
+                    pthread_cancel(globalInstance->connectionThreadID);
+
+                    // And display that connection timed out
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Connection timed out") + 1);
+                    SDL_strlcpy(currMessage, "Connection timed out", SDL_strlen("Connection timed out") + 1);
+                    
+                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                    *error = true;
+
+                }   // If it didn't time out, check if a successful connection was established
+                else if (!globalInstance->serverSocket)
+                {
+
+                    // Display error message to screen
+                    const char* temp = SDLNet_GetError();
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
+                    SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
+
+                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                    *error = true;
+
+                }
+
+                // If there were no errors connecting to the server
+                if (*error == false)
+                {
+
+                    // Allocate a connection socket and add the connection socket to our socket set
+                    // and set MULTIPLAYER to true
+                    globalInstance->serverSocketSet = SDLNet_AllocSocketSet(1);
+                    SDLNet_TCP_AddSocket(globalInstance->serverSocketSet, globalInstance->serverSocket);
+
+                    // Kepe track of the last time we sent data to the server
+                    *lastPulseTime = SDL_GetTicks();
+
+                    MULTIPLAYER = true;
+
+                    // Send name to server
+                    char* namePacket;
+                    int len = SDL_strlen("NAME=") + SDL_strlen(nameString) + 1;
+                    namePacket = SDL_calloc(len, sizeof(char));
+                    SDL_strlcpy(namePacket, "NAME=", len);
+                    SDL_strlcat(namePacket, nameString, len);
+                    SDLNet_TCP_Send(globalInstance->serverSocket, namePacket, len);
+                    SDL_free(namePacket);
+
+                }
+
+                *tryingConnection = false;
+                *connectFunctionReturned = false;
+
+            }
+
+        }
+
         // Control Logic ----------------------------------------------------
 
         // Keep track of the current selected connection option
@@ -312,7 +381,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     else
                     {
 
-                        // Open connection to server as specified by ipString and portString
+                        // Resolve the host
                         if (SDLNet_ResolveHost(&(globalInstance->serverIP), ipString, SDL_atoi(portString)) == -1)
                         {
 
@@ -325,45 +394,16 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                             *error = true;
 
                         }
+                        
+                        // Attempt connection to server in a separate thread
+                        *tryingConnection = true;
+                        SDL_CreateThread(openConnection, "openConnection", connectFunctionReturned);
+                        *timeConnectingStarted = SDL_GetTicks();
 
-                        globalInstance->serverSocket = SDLNet_TCP_Open(&(globalInstance->serverIP));
-                        if (!globalInstance->serverSocket)
-                        {
-
-                            // Display error message to screen
-                            const char* temp = SDLNet_GetError();
-                            currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
-                            SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
-
-                            updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
-                            *error = true;
-
-                        }
-
-                        // If there were no errors connecting to the server
-                        if (*error == false)
-                        {
-
-                            // Allocate a connection socket and add the connection socket to our socket set and set 
-                            // MULTIPLAYER to true
-                            globalInstance->serverSocketSet = SDLNet_AllocSocketSet(1);
-                            SDLNet_TCP_AddSocket(globalInstance->serverSocketSet, globalInstance->serverSocket);
-                            
-                            // Keep track of the last time we sent data to the server
-                            *lastPulseTime = SDL_GetTicks();
-                            
-                            MULTIPLAYER = true;
-                            
-                            // Send name to server
-                            char* namePacket;
-                            int len = SDL_strlen("NAME=") + SDL_strlen(nameString) + 1;
-                            namePacket = SDL_calloc(len, sizeof(char));
-                            SDL_strlcpy(namePacket, "NAME=", len);
-                            SDL_strlcat(namePacket, nameString, len);
-                            SDLNet_TCP_Send(globalInstance->serverSocket, namePacket, len);
-                            SDL_free(namePacket);
-
-                        }
+                        // Display that we are attempting to connect to the server
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Attempting connection") + 1);
+                        SDL_strlcpy(currMessage, "Attempting connection", SDL_strlen("Attempting connection") + 1);
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
                     }
 

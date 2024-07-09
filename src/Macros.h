@@ -11,7 +11,8 @@
                             unsigned short: declare_unsigned_short, \
                             bool: declare_bool,                     \
                             unsigned int: declare_unsigned_int,     \
-                            short: declare_short                    \
+                            short: declare_short,                   \
+                            unsigned long: declare_unsigned_long    \
                             )
 #define declareStart(var, val) _Generic((var) ,                 \
                             int *: declareEnd(val),             \
@@ -20,7 +21,8 @@
                             unsigned short *: declareEnd(val),  \
                             bool *: declareEnd(val),            \
                             unsigned int *: declareEnd(val),    \
-                            short*: declareEnd(val)             \
+                            short*: declareEnd(val),            \
+                            unsigned long*: declareEnd(val)      \
                             )(((void**)&var), (val))
 #define DECLARE_VARIABLE(type, varName, value) static type* varName; declareStart(varName, value)
 

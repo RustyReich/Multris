@@ -7,6 +7,7 @@ varVector** pushAddress(void** ptr, unsigned short type);
 bool inVector(void** ptr);
 void declare_short(void** ptr, short value);
 void declare_unsigned_short(void** ptr, unsigned short value);
+void declare_unsigned_long(void** ptr, unsigned long value);
 void declare_double(void** ptr, double value);
 void declare_int(void** ptr, int value);
 void declare_char(void** ptr, char value);
