@@ -33,11 +33,11 @@
 #include "multiplayerLobby.h"
 #include "network.h"
 
-
 // OS-specific includes/macros
 #ifdef _WIN32
 #include <windows.h>
 #define mkdir(dir, mode) mkdir(dir)
+#define pthread_cancel(thread_id) TerminateThread(OpenThread(THREAD_TERMINATE, false, thread_id), 0)
 #endif
 
 #endif

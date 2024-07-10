@@ -594,7 +594,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
             // Don't let the user paste more text than can fit in the current value
             int currLength = SDL_strlen(strBeingModified) + 1;
-            int newLength = SDL_min(maxLength + 1, SDL_strlen(clipboard) + currLength);
+            int newLength = SDL_min(maxLength + 1, (int)SDL_strlen(clipboard) + currLength);
             strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (newLength + 1));
             
             // Append text from the clipboard to the end of the strBeingModified
