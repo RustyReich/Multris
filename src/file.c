@@ -177,6 +177,7 @@ void createOptions()
 
 		fprintf(optionsFile, "FULLSCREEN=0\n");
 		fprintf(optionsFile, "VOLUME=10\n");
+		fprintf(optionsFile, "MUSIC=100\n");
 		fprintf(optionsFile, "LIMIT FPS=1\n");
 		fprintf(optionsFile, "SHOW FPS=1\n");
 		fprintf(optionsFile, "CENTER DOT=1\n");
@@ -526,6 +527,7 @@ bool brokenOptions()
 
 	int fullscreen_value = getFileValue("SAVES/options.cfg", "FULLSCREEN");
 	int volume_value = getFileValue("SAVES/options.cfg", "VOLUME");
+	int music_value = getFileValue("SAVES/options.cfg", "MUSIC");
 	int fps_value = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 	int show_fps_value = getFileValue("SAVES/options.cfg", "SHOW FPS");
 	int center_dot_value = getFileValue("SAVES/options.cfg", "CENTER DOT");
@@ -535,6 +537,8 @@ bool brokenOptions()
 	if (fullscreen_value != 0 && fullscreen_value != 1)
 		return true;
 	if (volume_value < 0 || volume_value > 100)
+		return true;
+	if (music_value < 0 || music_value > 100)
 		return true;
 	if (fps_value != 0 && fps_value != 1)
 		return true;

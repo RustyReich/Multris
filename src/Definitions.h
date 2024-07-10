@@ -34,7 +34,7 @@
 
 #define LEVELUP_INCREASE 3
 
-#define NUM_OF_OPTIONS 				7
+#define NUM_OF_OPTIONS 				8
 #define NUM_OF_MULTIPLAYER_OPTIONS	3
 
 #define MULTIPLAYER_PULSE_DELAY_SECONDS 1
@@ -43,6 +43,8 @@
 
 #define SERVERMESSAGE_BUFFER_SIZE 	1024
 #define CONNECTION_TIMEOUT_SECONDS	3
+
+#define MUSIC_FADEOUT_MS 1000
 
 enum Control_Types {
 	
@@ -59,6 +61,14 @@ enum Control_Types {
 	DOWN_BUTTON,
 	UP_BUTTON,
 	NUM_OF_CONTROLS
+
+};
+
+enum Music_Types {
+
+	INTRO_MUSIC_TRACK,
+	LOOP_MUSIC_TRACK,
+	NUM_OF_MUSIC_TRACKS
 
 };
 

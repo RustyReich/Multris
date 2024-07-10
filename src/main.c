@@ -5,6 +5,7 @@ bool UPDATE_FULLSCREEN_MODE = true;
 
 bool FULLSCREEN_MODE = false;
 unsigned short VOLUME = 10;
+unsigned short MUSIC_VOLUME = 100;
 bool LIMIT_FPS = true;
 bool SHOW_FPS = true;
 bool CENTER_DOT = true;
@@ -53,6 +54,11 @@ int main(int argc, char *argv[]) {
 		printf("SDLNet_Init: %s\n", SDLNet_GetError());
 		exit( -1);
 
+	}
+	if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 )
+	{
+		printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError() );
+		exit(-1);
 	}
 
 	// Force openGL on Windows because somewhere there is a bug when resizing the window on Direc3D
@@ -141,6 +147,7 @@ int main(int argc, char *argv[]) {
 
 		FULLSCREEN_MODE = getFileValue("SAVES/options.cfg", "FULLSCREEN");
 		VOLUME = getFileValue("SAVES/options.cfg", "VOLUME");
+		MUSIC_VOLUME = getFileValue("SAVES/options.cfg", "MUSIC");
 		LIMIT_FPS = getFileValue("SAVES/options.cfg", "LIMIT FPS");
 		SHOW_FPS = getFileValue("SAVES/options.cfg", "SHOW FPS");
 		CENTER_DOT = getFileValue("SAVES/options.cfg", "CENTER DOT");
@@ -168,7 +175,7 @@ int main(int argc, char *argv[]) {
 	if (fileExists("SAVES/progress.md"))
 		PROGRESS = getFileValue("SAVES/progress.md", "progress");
 
-	//Update volume to that loaded from options file
+	//Update VOLUME to that loaded from options file
 	updateVolume();
 	
 	//Game loop
@@ -294,6 +301,7 @@ int main(int argc, char *argv[]) {
 	//Save option values to optionsFile when game closes
 	saveToFile("SAVES/options.cfg", "FULLSCREEN", FULLSCREEN_MODE);
 	saveToFile("SAVES/options.cfg", "VOLUME", VOLUME);
+	saveToFile("SAVES/options.cfg", "MUSIC", MUSIC_VOLUME);
 	saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
 	saveToFile("SAVES/options.cfg", "SHOW FPS", SHOW_FPS);
 	saveToFile("SAVES/options.cfg", "CENTER DOT", CENTER_DOT);

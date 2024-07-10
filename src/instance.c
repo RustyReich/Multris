@@ -76,6 +76,20 @@ sound** initSounds()
 
 }
 
+Mix_Music** initMusic()
+{
+
+    // Allocate memory for all music tracks
+    Mix_Music** musicTracks = SDL_calloc(NUM_OF_MUSIC_TRACKS, sizeof(Mix_Music*));
+
+    // Load all music tracks
+    musicTracks[INTRO_MUSIC_TRACK] = Mix_LoadMUS("AUDIO/musicIntro.wav");
+    musicTracks[LOOP_MUSIC_TRACK] = Mix_LoadMUS("AUDIO/musicLoop.wav");
+
+    return musicTracks;
+
+}
+
 //Function for scaling the renderer to the current window size
 void scaleRenderer()
 {
@@ -166,6 +180,9 @@ void initInstance(gameInstance** instance)
     //Load all game sounds
     (*instance)->masterSounds = initSounds();
     (*instance)->sounds = initSounds();
+
+    // Load music files
+    (*instance)->musicTracks = initMusic();
 
     //Initialize PNG loading
     int imgFlags = IMG_INIT_PNG;

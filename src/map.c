@@ -13,6 +13,7 @@ unsigned short drawTitle(piece** firstPiece)
 	DECLARE_VARIABLE(int, titleText_Height, 0);
 	DECLARE_VARIABLE(bool, firstLoop, true);
 	DECLARE_VARIABLE(bool, editingVolume, false);
+	DECLARE_VARIABLE(bool, editingMusic, false);
 	DECLARE_VARIABLE(unsigned int, moveStart, 0);
 	DECLARE_VARIABLE(bool, moveStartBool, false);
 	DECLARE_VARIABLE(unsigned short, customModeSize, 1);
@@ -105,7 +106,7 @@ unsigned short drawTitle(piece** firstPiece)
 				playSound(LAND_SOUND);
 
 		}
-		else if(options->ui->currentlyInteracting && *editingVolume == false)
+		else if(options->ui->currentlyInteracting && !*editingVolume && !*editingMusic)
 		{
 
 			if (options->selected_entry < options->num_entries - 1)
@@ -149,7 +150,7 @@ unsigned short drawTitle(piece** firstPiece)
 			}
 
 		}
-		else if (options->ui->currentlyInteracting && *editingVolume == false)
+		else if (options->ui->currentlyInteracting && !*editingVolume && !*editingMusic)
 		{
 
 			if(options->selected_entry > 0)
@@ -196,6 +197,15 @@ unsigned short drawTitle(piece** firstPiece)
 					playSound(MOVE_SOUND);
 
 				}
+				else if (*editingMusic && MUSIC_VOLUME > 0)
+				{
+
+					MUSIC_VOLUME--;
+					updateValuesText(Texture_Values);
+
+					playSound(MOVE_SOUND);
+
+				}
 				else if (custom->ui->currentlyInteracting && *customModeSize > 1)
 				{
 
@@ -218,6 +228,15 @@ unsigned short drawTitle(piece** firstPiece)
 					updateValuesText(Texture_Values);
 
 					updateVolume();
+					playSound(MOVE_SOUND);
+
+				}
+				else if (*editingMusic && MUSIC_VOLUME < 100)
+				{
+
+					MUSIC_VOLUME++;
+					updateValuesText(Texture_Values);
+
 					playSound(MOVE_SOUND);
 
 				}
@@ -249,7 +268,7 @@ unsigned short drawTitle(piece** firstPiece)
 	{
 
 		//Play ROTATE_SOUND only if pressed when not editing volume
-		if (*editingVolume == false)
+		if (*editingVolume == false && *editingMusic == false)
 			playSound(ROTATE_SOUND);
 
 		//If pressed SELECT when in the modes menu
@@ -343,8 +362,10 @@ unsigned short drawTitle(piece** firstPiece)
 				updateValuesText(Texture_Values);
 
 			}
-			else if (SDL_strcmp(selected_option, "VOLUME") == 0)
+			else if (SDL_strcmp(selected_option, "SFX VOL") == 0)
 				*editingVolume = true;
+			else if (SDL_strcmp(selected_option, "MUSIC VOL") == 0)
+				*editingMusic = true;
 			else if (SDL_strcmp(selected_option, "CONTROLS") == 0)
 			{
 
@@ -429,6 +450,8 @@ unsigned short drawTitle(piece** firstPiece)
 
 			if (*editingVolume == true)
 				*editingVolume = false;
+			else if (*editingMusic == true)
+				*editingMusic = false;
 			else
 			{
 
@@ -438,6 +461,7 @@ unsigned short drawTitle(piece** firstPiece)
 				//Save option values to optionsFile when player leaves options menu
 				saveToFile("SAVES/options.cfg", "FULLSCREEN", FULLSCREEN_MODE);
 				saveToFile("SAVES/options.cfg", "VOLUME", VOLUME);
+				saveToFile("SAVES/options.cfg", "MUSIC", MUSIC_VOLUME);
 				saveToFile("SAVES/options.cfg", "LIMIT FPS", LIMIT_FPS);
 				saveToFile("SAVES/options.cfg", "SHOW FPS", SHOW_FPS);
 				saveToFile("SAVES/options.cfg", "CENTER DOT", CENTER_DOT);
@@ -520,7 +544,7 @@ unsigned short drawTitle(piece** firstPiece)
 		drawTexture(Texture_Values, options->ui->x + optionsWidth, options->ui->y, 1.0);
 
 		//If editing the volume, draw cursors to left and right of volume
-		if (*editingVolume)
+		if (*editingVolume || *editingMusic)
 			drawTexture(Texture_volSlide, options->ui->x + optionsWidth - FONT_WIDTH, getListSelectedEntryY(options), 1.0);
 
 	}

@@ -113,6 +113,10 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		// Calc speed at start incase want to start at different level (for debugging)
 		*speed = calcSpeed(*Level);
 
+		// Play the intro music track and set the volume for music
+		Mix_PlayMusic(globalInstance->musicTracks[INTRO_MUSIC_TRACK], 0);
+		Mix_VolumeMusic(MIX_MAX_VOLUME * (MUSIC_VOLUME / 100.0));
+
 		// Remove the size of the firstPiece from the sizeBag
 			// This is only if we are not in MULTIPLAYER because in multiplaye games the pieces are seeded by a value from the server
 		if (MULTIPLAYER == false)
@@ -201,6 +205,10 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		*firstLoop = false;
 
 	}
+
+	// Once intro is finished playing, play the loop music track on repeat
+	if (Mix_PlayingMusic() == false)
+		Mix_PlayMusic(globalInstance->musicTracks[LOOP_MUSIC_TRACK], -1);
 
 	//CONTROLS ---------------------------------------------------------------
 
@@ -598,6 +606,10 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 			{
 
 				freeVars();
+
+				// Fade out music when we leave PLAY_MODE
+				Mix_FadeOutMusic(MUSIC_FADEOUT_MS);
+
 				return RESET;
 
 			}
@@ -1174,6 +1186,10 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 				// And free memory and return back to the lobby
 				freeVars();
+
+				// Fade out music when we leave PLAY_MODE
+				Mix_FadeOutMusic(MUSIC_FADEOUT_MS);
+				
 				return MULTIPLAYERLOBBY_SCREEN;
 
 			}
@@ -1466,6 +1482,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 				//Free all memory taken by PLAYMODE -----------------------------------
 				freeVars();
+
+				// Fade out music when we leave PLAY_MODE
+				Mix_FadeOutMusic(MUSIC_FADEOUT_MS);
 
 				return RESET;
 

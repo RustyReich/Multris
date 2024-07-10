@@ -100,6 +100,8 @@ typedef struct gameInstance
     sound** sounds;         //This holds the volume adjusted sounds
     sound** masterSounds;   //This holds the original sonuds, that are not volume adjusted
 
+    Mix_Music** musicTracks;
+
     IPaddress serverIP;
     TCPsocket serverSocket;
     SDLNet_SocketSet serverSocketSet;

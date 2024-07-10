@@ -10,6 +10,7 @@ extern bool UPDATE_FULLSCREEN_MODE;
 
 extern bool FULLSCREEN_MODE;
 extern unsigned short VOLUME;
+extern unsigned short MUSIC_VOLUME;
 extern bool LIMIT_FPS;
 extern bool SHOW_FPS;
 extern bool CENTER_DOT;
