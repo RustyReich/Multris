@@ -372,7 +372,7 @@ void startServer(IPaddress address, int tickRate)
 
                             // Tell all other clients a player disconnected
                             char message[] = "Player disconnected.";
-                            for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                            for (int otherPlayerIndex = 0; otherPlayerIndex < numConnectedPlayers; otherPlayerIndex++)
                                 if (otherPlayerIndex != currentPlayerIndex)
                                     SDLNet_TCP_Send(clients[otherPlayerIndex], message, SDL_strlen(message) + 1);
                             
@@ -592,7 +592,7 @@ void startServer(IPaddress address, int tickRate)
                         
                         // Tell all other clients a player disconnected
                         char message[] = "Player disconnected.";
-                        for (int otherPlayerIndex = 0; otherPlayerIndex < maxPlayers; otherPlayerIndex++)
+                        for (int otherPlayerIndex = 0; otherPlayerIndex < numConnectedPlayers; otherPlayerIndex++)
                             if (otherPlayerIndex != currentPlayerIndex)
                                 SDLNet_TCP_Send(clients[otherPlayerIndex], message, SDL_strlen(message) + 1);
                         
