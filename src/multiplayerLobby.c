@@ -305,6 +305,13 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 *tryingConnection = false;
                 *connectFunctionReturned = false;
 
+            }   // Update "Attempting Connection..." counter
+            else if (currMessage[SDL_strlen(currMessage) - 1] != '0' + (char)((SDL_GetTicks() - *timeConnectingStarted) / 1000))
+            {
+
+                currMessage[SDL_strlen(currMessage) - 1] = '0' + ((SDL_GetTicks() - *timeConnectingStarted) / 1000);
+                updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);                
+
             }
 
         }
@@ -401,8 +408,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                         *timeConnectingStarted = SDL_GetTicks();
 
                         // Display that we are attempting to connect to the server
-                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Attempting connection") + 1);
-                        SDL_strlcpy(currMessage, "Attempting connection", SDL_strlen("Attempting connection") + 1);
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Attempting connection...0") + 1);
+                        SDL_strlcpy(currMessage, "Attempting connection...0", SDL_strlen("Attempting connection...0") + 1);
                         updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
                     }
