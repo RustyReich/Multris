@@ -1449,7 +1449,7 @@ UI_list* create_Numerical_List()
 
 	list->selected_entry = 0;
 
-	list->ui->x = 182;
+	list->ui->x = 196;
 	list->ui->y = 28;
 
 	//This list starts off inactive and only becomes active if the player has highlighted
