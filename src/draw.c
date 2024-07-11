@@ -522,3 +522,12 @@ SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot)
 	return texture;
 
 }
+
+// Function for converting a string to all upper case
+void stringToUpper(char* str)
+{
+
+	for (unsigned short i = 0; i < SDL_strlen(str); i++)
+		str[i] = SDL_toupper(str[i]);
+
+}

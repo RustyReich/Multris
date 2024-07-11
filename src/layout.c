@@ -841,14 +841,22 @@ SDL_Texture* create_volSlide_Text()
 void updateConnectionMessageText(SDL_Texture** texture, char* message)
 {
 
+	// Make a copy of the message and capitalize it 
+	char* messageToUpper = SDL_calloc(SDL_strlen(message) + 1, sizeof(char));
+	SDL_strlcpy(messageToUpper, message, SDL_strlen(message) + 1);
+	stringToUpper(messageToUpper);
+
 	SDL_DestroyTexture(*texture);
 
-	int width = getStringLength(message, 1.0);
+	int width = getStringLength(messageToUpper, 1.0);
 	int height = FONT_HEIGHT;
 	*texture = createTexture(width, height);
 
-	printToTexture(message, *texture, 0, 0, 1.0, WHITE);
+	printToTexture(messageToUpper, *texture, 0, 0, 1.0, WHITE);
 		
+	// Free the capitalized message string
+	SDL_free(messageToUpper);
+
 }
 
 // Update the PAUSED texture between saying "PAUSED" and "EXIT?"

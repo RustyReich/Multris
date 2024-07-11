@@ -20,5 +20,6 @@ SDL_Texture* createTexture(int width, int height);
 void drawTexture(SDL_Texture* texture, int X, int Y, float multiplier);
 void drawPiece(piece Piece, SDL_Texture* dstTexture, unsigned short X, unsigned short Y);
 SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot);
+void stringToUpper(char* str);
 
 #endif
