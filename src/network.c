@@ -374,3 +374,12 @@ int openConnection(void* functionReturned)
 	return 0;
 
 }
+
+// Start server as a separate process. Relies on server program being in same directory as game
+int startServer(void* data)
+{
+
+    (void)data;
+    return system("./Multris_Dedicated_Server -p 43233");
+
+}
