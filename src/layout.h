@@ -72,5 +72,6 @@ int getConnectionMessageX(char* message, float multi);
 int getConnectionMessageY(float multi);
 int getNameDrawX(unsigned short size);
 int getNameDrawY(unsigned short size);
+UI_list* create_Multiplayer_List();
 
 #endif

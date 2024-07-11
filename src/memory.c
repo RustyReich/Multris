@@ -400,6 +400,8 @@ void declare_UI_list(UI_list** ptr, int type)
             *ptr = create_Options_List();
         else if (type == CONNECTION_LIST)
             *ptr = create_Connect_List();
+        else if (type == MULTIPLAYER_LIST)
+            *ptr = create_Multiplayer_List();
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, UI_LIST);

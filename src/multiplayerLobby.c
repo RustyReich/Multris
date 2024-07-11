@@ -28,6 +28,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
     //UI elements
     static UI_list* connection; declare_UI_list(&connection, CONNECTION_LIST);
+    static UI_list* multiplayer; declare_UI_list(&multiplayer, MULTIPLAYER_LIST);
 
     //Arrays
     static char* ipString; declareStart(ipString, '\0');
@@ -646,15 +647,32 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     drawTexture(Texture_Lines, 312, 189, 1.0);
     drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
 
-    int connectionX = connection->ui->x;
-    int connectionY = connection->ui->y;
-    drawTexture(connection->ui->texture, connectionX, connectionY, *textMulti);
-    int currsorX = connectionX - 14;
-    int cursorY = connectionY + ((getListSelectedEntryY(connection) - connectionY) * *textMulti);
-    drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
+    // Display the "connection" list if it is currently active
+    if (connection->ui->currentlyInteracting)
+    {
 
-    drawTexture(Texture_ConnectionValues, connectionX + getStringLength("PORT", *textMulti), connectionY, *textMulti);
-    
+        int connectionX = connection->ui->x;
+        int connectionY = connection->ui->y;
+        drawTexture(connection->ui->texture, connectionX, connectionY, *textMulti);
+        int currsorX = connectionX - 14;
+        int cursorY = connectionY + ((getListSelectedEntryY(connection) - connectionY) * *textMulti);
+        drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
+
+        drawTexture(Texture_ConnectionValues, connectionX + getStringLength("PORT", *textMulti), connectionY, *textMulti);
+        
+    }   // Display the "multiplayer" list if it is currently active
+    else if (multiplayer->ui->currentlyInteracting)
+    {
+
+        int multiplayerX = multiplayer->ui->x;
+        int multiplayerY = multiplayer->ui->y;
+        drawTexture(multiplayer->ui->texture, multiplayerX, multiplayerY, *textMulti);
+        int currsorX = multiplayerX - 14;
+        int cursorY = multiplayerY + ((getListSelectedEntryY(connection) - multiplayerY) * *textMulti);
+        drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
+        
+    }
+
     // Display error message if longer than 0 characters
     if (SDL_strlen(currMessage) > 0)
     {
