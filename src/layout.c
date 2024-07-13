@@ -1397,7 +1397,7 @@ UI_list* create_Connect_List()
 	list->ui->x = 28;
 	list->ui->y = 14;
 
-	list->ui->currentlyInteracting = true;
+	list->ui->currentlyInteracting = false;
 
 	return list;
 
@@ -1417,7 +1417,7 @@ UI_list* create_Multiplayer_List()
 	list->ui->x = 28;
 	list->ui->y = 14;
 
-	list->ui->currentlyInteracting = false;
+	list->ui->currentlyInteracting = true;
 
 	return list;
 	
