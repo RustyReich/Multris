@@ -28,7 +28,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
     //UI elements
     static UI_list* connection; declare_UI_list(&connection, CONNECTION_LIST);
-    static UI_list* hosting;
+    static UI_list* hosting; declare_UI_list(&hosting, HOSTING_LIST);
     static UI_list* multiplayer; declare_UI_list(&multiplayer, MULTIPLAYER_LIST);
 
     //Arrays
@@ -36,6 +36,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     static char* portString; declareStart(portString, '\0');
     static char* nameString; declareStart(nameString, '\0');
     static char* currMessage; declareStart(currMessage, '\0');
+
+    // Keep track of the currently active UI_list
+    UI_list* active_list = NULL;
 
     if (*firstLoop == true)
     {
@@ -320,40 +323,40 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
         // Control Logic ----------------------------------------------------
 
-        // Keep track of the current selected option in the currently active list
+        // Keep track of the currently active list and the currently selected option in that list
         const char* selected_option = NULL;
         if (connection->ui->currentlyInteracting)
+        {
+
             selected_option = getListSelectedString(connection);
+            active_list = connection;
+
+        }
         else if (multiplayer->ui->currentlyInteracting)
+        {
+
             selected_option = getListSelectedString(multiplayer);
+            active_list = multiplayer;
+
+        }
+        else if (hosting->ui->currentlyInteracting)
+        {
+
+            selected_option = getListSelectedString(hosting);
+            active_list = hosting;
+
+        }
         
         // If you press DOWN
         if (onPress(DOWN_BUTTON))
         {
 
-            if (connection->ui->currentlyInteracting)
+            // Move cursor down and play MOVE_SOUND if not already at the bottom.
+            if (active_list->selected_entry < active_list->num_entries - 1)
             {
 
-                // Move cursor down and play MOVE_SOUND if not already at the bottom.
-                if (connection->selected_entry < connection->num_entries - 1)
-                {
-
-                    playSound(MOVE_SOUND);
-                    connection->selected_entry++;
-
-                }
-
-            }
-            else if (multiplayer->ui->currentlyInteracting)
-            {
-
-                if (multiplayer->selected_entry < multiplayer->num_entries - 1)
-                {
-
-                    playSound(MOVE_SOUND);
-                    multiplayer->selected_entry++;
-
-                }
+                playSound(MOVE_SOUND);
+                active_list->selected_entry++;
 
             }
             
@@ -363,29 +366,12 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         if (onPress(UP_BUTTON))
         {
 
-            if (connection->ui->currentlyInteracting)
+            // Move cursor up and play MOVE_SOUND if not already at the top
+            if (active_list->selected_entry > 0)
             {
 
-                // Move cursor up and play MOVE_SOUND if not already at the top
-                if (connection->selected_entry > 0)
-                {
-
-                    playSound(MOVE_SOUND);
-                    connection->selected_entry--;
-
-                }
-
-            }
-            else if (multiplayer->ui->currentlyInteracting)
-            {
-
-                if (multiplayer->selected_entry > 0)
-                {
-
-                    playSound(MOVE_SOUND);
-                    multiplayer->selected_entry--;
-
-                }
+                playSound(MOVE_SOUND);
+                active_list->selected_entry--;
 
             }
 
@@ -400,6 +386,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 // When you press SELECT_BUTTON on the CONNECT option
                 if (SDL_strcmp(selected_option, "CONNECT") == 0)
                 {
+
+                    playSound(ROTATE_SOUND);
 
                     // Reset error to false whenever we press the CONNECT button
                     *error = false;
@@ -446,18 +434,18 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                 }
 
-            }
+            }   // Enter the appropriate sub-menu
             else if (multiplayer->ui->currentlyInteracting)
             {
 
-                // Enter connection list and exit multiplayer list if press SELECT_BUTTON on CONNECT
+                playSound(ROTATE_SOUND);
+
+                multiplayer->ui->currentlyInteracting = false;
+
                 if (SDL_strcmp(selected_option, "CONNECT") == 0)
-                {
-
-                    multiplayer->ui->currentlyInteracting = false;
                     connection->ui->currentlyInteracting = true;
-
-                }
+                else if (SDL_strcmp(selected_option, "HOST") == 0)
+                    hosting->ui->currentlyInteracting = true;
 
             }
 
@@ -667,6 +655,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         if (onPress(EXIT_BUTTON))
         {
 
+            playSound(LAND_SOUND);
+
             // If we were connected to a server, we need to disconnect
             if (MULTIPLAYER)
                 disconnectFromServer();
@@ -678,15 +668,15 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 // Save the players name if they leave the lobby
                 saveName(nameString);
 
-                playSound(LAND_SOUND);
                 freeVars();
                 return RESET;
 
-            }   // If in CONNECT list, exit back to MULTIPLAYER list
-            else if (connection->ui->currentlyInteracting)
+            }   // If in not in MULTIPLAYER list, exit back to MULTIPLAYER list
+            else if (multiplayer->ui->currentlyInteracting == false)
             {
 
                 connection->ui->currentlyInteracting = false;
+                hosting->ui->currentlyInteracting = false;
                 multiplayer->ui->currentlyInteracting = true;
 
                 updateConnectionMessageText(&Texture_ConnectionMessage, "\0");
@@ -704,34 +694,20 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     drawTexture(Texture_Lines, 312, 189, 1.0);
     drawTexture(Texture_Next, 318 - (*nextText_Width / 2), 282 - (*nextText_Height / 2), 1.0);
 
-    // Display the "connection" list if it is currently active
+    // Draw the currently active list
+    int listX = active_list->ui->x;
+    int listY = active_list->ui->y;
+    drawTexture(active_list->ui->texture, listX, listY, *textMulti);
+    int currsorX = listX - 14;
+    int cursorY = listY + ((getListSelectedEntryY(active_list) - listY) * *textMulti);
+    drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
+
+    // Display the ConnectionValues texture if CONNECTION list is currently active
     if (connection->ui->currentlyInteracting)
-    {
+        drawTexture(Texture_ConnectionValues, listX + getStringLength("PORT", *textMulti), listY, *textMulti);
 
-        int connectionX = connection->ui->x;
-        int connectionY = connection->ui->y;
-        drawTexture(connection->ui->texture, connectionX, connectionY, *textMulti);
-        int currsorX = connectionX - 14;
-        int cursorY = connectionY + ((getListSelectedEntryY(connection) - connectionY) * *textMulti);
-        drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
-
-        drawTexture(Texture_ConnectionValues, connectionX + getStringLength("PORT", *textMulti), connectionY, *textMulti);
-        
-    }   // Display the "multiplayer" list if it is currently active
-    else if (multiplayer->ui->currentlyInteracting)
-    {
-
-        int multiplayerX = multiplayer->ui->x;
-        int multiplayerY = multiplayer->ui->y;
-        drawTexture(multiplayer->ui->texture, multiplayerX, multiplayerY, *textMulti);
-        int currsorX = multiplayerX - 14;
-        int cursorY = multiplayerY + ((getListSelectedEntryY(multiplayer) - multiplayerY) * *textMulti);
-        drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
-        
-    }
-
-    // Display error message if longer than 0 characters
-    if (SDL_strlen(currMessage) > 0 && connection->ui->currentlyInteracting)
+    // Display error message if longer than 0 characters and not in MULTIPLAYER list
+    if (SDL_strlen(currMessage) > 0 && multiplayer->ui->currentlyInteracting == false)
     {
 
         // Give a square of padding on either side of the currMessage

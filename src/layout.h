@@ -73,5 +73,6 @@ int getConnectionMessageY(float multi);
 int getNameDrawX(unsigned short size);
 int getNameDrawY(unsigned short size);
 UI_list* create_Multiplayer_List();
+UI_list* create_Hosting_List();
 
 #endif

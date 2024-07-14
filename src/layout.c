@@ -1404,7 +1404,7 @@ UI_list* create_Connect_List()
 }
 
 // Create the "Multiplayer" UI element that is displayed on the multiplayer lobby screen for
-// selecting if connceting to a server or hosting
+// selecting if connecting to a server or hosting
 UI_list* create_Multiplayer_List()
 {
 
@@ -1421,6 +1421,25 @@ UI_list* create_Multiplayer_List()
 
 	return list;
 	
+}
+
+// Create the "HOSTING" UI element that is displayed on the multiplayer lobby screen for
+// hosting a server
+UI_list* create_Hosting_List()
+{
+
+	UI_list* list;
+	list = create_list(WHITE, "PORT", "HOST");
+
+	list->selected_entry = 0;
+
+	list->ui->x = 28;
+	list->ui->y = 14;
+
+	list->ui->currentlyInteracting = false;
+
+	return list;
+
 }
 
 //Create the "Modes" UI element on the title screen
