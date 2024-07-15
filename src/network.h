@@ -16,6 +16,6 @@ void sendSizeBagToServer(SizeBag* sizeBag, int* lastPuleTime);
 void sendGarbageToServer(int amount, int* lastPulseTime);
 void sendRemovalToServer(int* rows, int numRows, int *lastPulseTime);
 int openConnection(void* functionReturned);
-int startServer(void* data);
+int startServer(void* portString);
 
 #endif

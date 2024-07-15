@@ -459,6 +459,18 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 }
 
             }
+            else if (hosting->ui->currentlyInteracting)
+            {
+
+                if (SDL_strcmp(selected_option, "HOST") == 0)
+                {
+
+                    // Start server in separate thread
+                    SDL_CreateThread(startServer, "startServer", portString);
+
+                }
+
+            }
 
         }
 
