@@ -872,7 +872,19 @@ void updatePausedText(SDL_Texture* texture, bool exit)
 
 }
 
-// Function for redrawing the values on the multiplayer lobby screen
+// Function for redrawing the values of the HOSTING screen in the multiplayer lobby
+void updateHostingValuesText(SDL_Texture* texture, char* port)
+{
+
+	clearTexture(texture);
+
+	// Print ":" before the modifiable value, and then print the current value
+	printToTexture(":", texture, 0, 0, 1.0, WHITE);
+	printToTexture(port, texture, 14, 0, 1.0, WHITE);
+
+}
+
+// Function for redrawing the values on the CONECTION screen in the multiplayer lobby screen
 void updateConnectionValuesText(SDL_Texture* texture, char* ip, char* port, char* name)
 {
 
@@ -944,7 +956,27 @@ void updateValuesText(SDL_Texture* texture)
 
 }
 
-// Create the texture that displays on the multiplayer lobby screen to connect to a server
+// Create the texture that displays HOSTING screen in the multiplayer lobby
+SDL_Texture* create_HostingValues_Text()
+{
+
+	SDL_Texture* texture;
+
+	// There is only a single option "PORT"
+	int num_options = 1;
+	int height = num_options * FONT_HEIGHT + (num_options - 1) * STRING_GAP;
+	int width = 16 * FONT_WIDTH + 15 * STRING_GAP;
+
+	texture = createTexture(width, height);
+
+	// Initial value for thr port is an empty string
+	updateHostingValuesText(texture, "\0");
+
+	return texture;
+
+}
+
+// Create the texture that displays on the CONNECT screen in the multiplayer lobby
 SDL_Texture* create_ConnectionValues_Text()
 {
 
@@ -953,9 +985,9 @@ SDL_Texture* create_ConnectionValues_Text()
 	// There are three options on this screen, "IP" and "PORT" and "NAME"
 	int num_options = 3;
 	int height = num_options * FONT_HEIGHT + (num_options - 1) * STRING_GAP;
-	int widht = 16 * FONT_WIDTH + 15 * STRING_GAP;
+	int width = 16 * FONT_WIDTH + 15 * STRING_GAP;
 
-	texture = createTexture(widht, height);
+	texture = createTexture(width, height);
 
 	// Initial values for IP and PORT and NAME are empty strings
 	updateConnectionValuesText(texture, "\0", "\0", "\0");

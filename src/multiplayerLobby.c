@@ -25,6 +25,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
     static SDL_Texture* Texture_ConnectionValues; declare_HUD_Text(&Texture_ConnectionValues, CONNECTIONVALUES_TEXT);
     static SDL_Texture* Texture_ConnectionMessage; declare_HUD_Text(&Texture_ConnectionMessage, CONNECTIONMESSAGE_TEXT);
+    static SDL_Texture* Texture_HostingValues; declare_HUD_Text(&Texture_HostingValues, HOSTINGVALUES_TEXT);
 
     //UI elements
     static UI_list* connection; declare_UI_list(&connection, CONNECTION_LIST);
@@ -443,9 +444,19 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 multiplayer->ui->currentlyInteracting = false;
 
                 if (SDL_strcmp(selected_option, "CONNECT") == 0)
+                {
+
                     connection->ui->currentlyInteracting = true;
+                    updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+
+                }
                 else if (SDL_strcmp(selected_option, "HOST") == 0)
+                {
+
                     hosting->ui->currentlyInteracting = true;
+                    updateHostingValuesText(Texture_HostingValues, portString);
+
+                }
 
             }
 
@@ -525,8 +536,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                             strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength + 1));
                             SDL_strlcat(strBeingModified, &asciiValue, currLength + 1);
 
-                            // Then update the Connectionvalues texture
-                            updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                            // Update the values texture depending on what sub-menu we are in
+                            if (active_list == connection)
+                                updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                            else if (active_list == hosting)
+                                updateHostingValuesText(Texture_HostingValues, portString);
 
                         }
                         
@@ -584,8 +598,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     strBeingModified = SDL_realloc(strBeingModified, sizeof(char) * (currLength - 1));
                     SDL_strlcpy(strBeingModified, strBeingModified, currLength - 1);
 
-                    // And then update the ConnectionValues texture
-                    updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                    // Update the values texture depending on what sub-menu we are in
+                    if (active_list == connection)
+                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                    else if (active_list == hosting)
+                        updateHostingValuesText(Texture_HostingValues, portString);
 
                 }
 
@@ -638,8 +655,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             // Append text from the clipboard to the end of the strBeingModified
             SDL_strlcat(strBeingModified, clipboard, newLength);
 
-            // And then update the ConnectionValues texture
-            updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+            // Update the values texture depending on what sub-menu we are in
+            if (active_list == connection)
+                updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+            else if (active_list == hosting)
+                updateHostingValuesText(Texture_HostingValues, portString);
 
             // Free memory taken up by copied clipboard text
             SDL_free(clipboard);
@@ -679,6 +699,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 hosting->ui->currentlyInteracting = false;
                 multiplayer->ui->currentlyInteracting = true;
 
+                // When we leave a sub-menu, reset the portString to an empty string. This is because both the CONNECT and HOST screens
+                // have a port option
+                portString = SDL_realloc(portString, sizeof(char) * 1);
+                SDL_strlcpy(portString, "\0", 1);
+
                 updateConnectionMessageText(&Texture_ConnectionMessage, "\0");
 
             }
@@ -702,9 +727,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     int cursorY = listY + ((getListSelectedEntryY(active_list) - listY) * *textMulti);
     drawTexture(Texture_Cursor, currsorX, cursorY, *textMulti);
 
-    // Display the ConnectionValues texture if CONNECTION list is currently active
+    // Display the values texture of the currently active sub-menu
     if (connection->ui->currentlyInteracting)
         drawTexture(Texture_ConnectionValues, listX + getStringLength("PORT", *textMulti), listY, *textMulti);
+    else if (hosting->ui->currentlyInteracting)
+        drawTexture(Texture_HostingValues, listX + getStringLength("PORT", *textMulti), listY, *textMulti);
 
     // Display error message if longer than 0 characters and not in MULTIPLAYER list
     if (SDL_strlen(currMessage) > 0 && multiplayer->ui->currentlyInteracting == false)

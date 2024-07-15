@@ -279,6 +279,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_ConnectionMessage_Text();
         else if (type == NAME_TEXT)
             *ptr = create_Name_Text();
+        else if (type == HOSTINGVALUES_TEXT)
+            *ptr = create_HostingValues_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
