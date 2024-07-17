@@ -374,18 +374,3 @@ int openConnection(void* functionReturned)
 	return 0;
 
 }
-
-// Start server as a separate process. Relies on server program being in same directory as game
-int startServer(void* portString)
-{
-
-	// Create the string for the console command to start the server
-	int length = SDL_strlen("./Multris_Dedicated_Server -p ");
-	length =  length + SDL_strlen((char*)portString) + 1;
-	char* command = SDL_calloc(length, sizeof(char));
-	SDL_strlcpy(command, "./Multris_Dedicated_Server -p ", length);
-	SDL_strlcat(command, (char*)portString, length);
-
-    return system(command);
-
-}

@@ -35,6 +35,11 @@ int main(int argc, char *argv[]) {
 	(void)argc;
 	(void)argv;
 
+	// Start dedicated server if "--server" launch argument is given
+	if (argc > 1)
+		if (SDL_strcmp(argv[1], "--server") == 0)
+			return startDedicatedServer(argc - 1, &argv[1]);
+
 	//Initialize SDL stuff
     if( SDL_Init( SDL_INIT_VIDEO ) < 0) {
 

@@ -1,9 +1,7 @@
-#include "../../src/MGF.h"
+#include "MGF.h"
 
-void startServer(IPaddress address, int tickRate);
-unsigned short getIntLength(int num);
-
-int main (int argc, char* argv[])
+// Function for starting a dedicated server
+int startDedicatedServer(int argc, char* argv[])
 {
 
     // Added just to get rid of unuused-parameter warning
@@ -92,6 +90,7 @@ int main (int argc, char* argv[])
 
 }
 
+// Function for starting a server (dedicated or from in game)
 void startServer(IPaddress address, int tickRate)
 {
 
@@ -634,34 +633,5 @@ void startServer(IPaddress address, int tickRate)
     SDL_free(clients);
 
     printf("Server closed.\n");
-
-}
-
-//Get the number of digits in an integer
-unsigned short getIntLength(int num)
-{
-
-	unsigned short returnValue = 0;
-	bool isNegative = false;
-
-	// If the value is negative, make it positive...
-	if (num < 0)
-	{
-
-		num = num * -1;
-		isNegative = true;
-
-	}
-
-	if (num == 0)
-		returnValue = 1;
-	else
-		returnValue = (unsigned short)(SDL_floor(SDL_log10(abs(num))) + 1);
-	
-	// ...And then add an extra 1 to the returnValue to account for the minus sign.
-	if (isNegative)
-		returnValue += 1;
-
-	return returnValue;
 
 }

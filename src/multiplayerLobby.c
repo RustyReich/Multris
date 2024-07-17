@@ -84,6 +84,30 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
     }
 
+    // Keep track of the currently active list and the currently selected option in that list
+    const char* selected_option = NULL;
+    if (connection->ui->currentlyInteracting)
+    {
+
+        selected_option = getListSelectedString(connection);
+        active_list = connection;
+
+    }
+    else if (multiplayer->ui->currentlyInteracting)
+    {
+
+        selected_option = getListSelectedString(multiplayer);
+        active_list = multiplayer;
+
+    }
+    else if (hosting->ui->currentlyInteracting)
+    {
+
+        selected_option = getListSelectedString(hosting);
+        active_list = hosting;
+
+    }
+
     // If connected to a server
     if (MULTIPLAYER)
     {
@@ -259,8 +283,12 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 if (*connectFunctionReturned == false)
                 {
 
-                    // Cancel the thread
+                    // Cancel the thread. This is OS-specific
+                    #ifdef _WIN32
+                    TerminateThread(OpenThread(THREAD_TERMINATE, false, globalInstance->connectionThreadID), 0);
+                    #else
                     pthread_cancel(globalInstance->connectionThreadID);
+                    #endif
 
                     // And display that connection timed out
                     currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Connection timed out") + 1);
@@ -323,30 +351,6 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         }
 
         // Control Logic ----------------------------------------------------
-
-        // Keep track of the currently active list and the currently selected option in that list
-        const char* selected_option = NULL;
-        if (connection->ui->currentlyInteracting)
-        {
-
-            selected_option = getListSelectedString(connection);
-            active_list = connection;
-
-        }
-        else if (multiplayer->ui->currentlyInteracting)
-        {
-
-            selected_option = getListSelectedString(multiplayer);
-            active_list = multiplayer;
-
-        }
-        else if (hosting->ui->currentlyInteracting)
-        {
-
-            selected_option = getListSelectedString(hosting);
-            active_list = hosting;
-
-        }
         
         // If you press DOWN
         if (onPress(DOWN_BUTTON))
@@ -455,18 +459,6 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                     hosting->ui->currentlyInteracting = true;
                     updateHostingValuesText(Texture_HostingValues, portString);
-
-                }
-
-            }
-            else if (hosting->ui->currentlyInteracting)
-            {
-
-                if (SDL_strcmp(selected_option, "HOST") == 0)
-                {
-
-                    // Start server in separate thread
-                    SDL_CreateThread(startServer, "startServer", portString);
 
                 }
 
