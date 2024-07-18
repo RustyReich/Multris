@@ -16,6 +16,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     DECLARE_VARIABLE(bool, tryingConnection, false);
     DECLARE_VARIABLE(bool, connectFunctionReturned, false);
     DECLARE_VARIABLE(int, timeConnectingStarted, 0);
+    DECLARE_VARIABLE(bool, hostingGame, false);
 
     //Textures
     static SDL_Texture* Texture_Score; declare_HUD_Text(&Texture_Score, SCORE_TEXT);
@@ -37,6 +38,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     static char* portString; declareStart(portString, '\0');
     static char* nameString; declareStart(nameString, '\0');
     static char* currMessage; declareStart(currMessage, '\0');
+    static char* hostGameData; declareStart(hostGameData, '\0');
 
     // Keep track of the currently active UI_list
     UI_list* active_list = NULL;
@@ -50,6 +52,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         // If the player is being returned back to the lobby after being disconnected from a multiplayer game
         if (SDL_strlen(serverMessage) > 0)
         {
+
+            multiplayer->ui->currentlyInteracting = false;
+            connection->ui->currentlyInteracting = true;
 
             // Display serverMessage on the screen
             currMessage = SDL_realloc(currMessage, sizeof(char) * (SDL_strlen(serverMessage) + 1));
@@ -278,7 +283,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             // Check if the thread attempting the connection has either already returned or timed out
             if (*connectFunctionReturned || (SDL_GetTicks() - *timeConnectingStarted) / 1000 > CONNECTION_TIMEOUT_SECONDS)
             {
-
+                
                 // If it timed out
                 if (*connectFunctionReturned == false)
                 {
@@ -300,7 +305,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 }   // If it didn't time out, check if a successful connection was established
                 else if (!globalInstance->serverSocket)
                 {
-
+                    
                     // Display error message to screen
                     const char* temp = SDLNet_GetError();
                     currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
@@ -314,7 +319,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 // If there were no errors connecting to the server
                 if (*error == false)
                 {
-                    
+
                     // Allocate a connection socket and add the connection socket to our socket set
                     // and set MULTIPLAYER to true
                     globalInstance->serverSocketSet = SDLNet_AllocSocketSet(1);
@@ -324,7 +329,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     *lastPulseTime = SDL_GetTicks();
 
                     MULTIPLAYER = true;
-
+                    
                     // Send name to server
                     char* namePacket;
                     int len = SDL_strlen("NAME=") + SDL_strlen(nameString) + 1;
@@ -347,6 +352,23 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);                
 
             }
+
+        }
+        else if (*hostingGame == true)
+        {
+
+            // If the hostingGameData is no longer holding the portString, that means we got some kind of message back from the hosting
+            // thread.
+            if (SDL_strcmp(hostGameData, portString) != 0)
+            {
+
+                // So display that message
+                currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(hostGameData) + 1);
+                SDL_strlcpy(currMessage, hostGameData, SDL_strlen(hostGameData) + 1);
+                updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+            }
+            
 
         }
 
@@ -397,7 +419,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     // Reset error to false whenever we press the CONNECT button
                     *error = false;
 
-                    // Don'y allow IP address that doesn't have at least one period
+                    // Don't allow IP address that doesn't have at least one period
                     if (SDL_strchr(ipString, '.') == NULL)
                     {
 
@@ -459,6 +481,56 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                     hosting->ui->currentlyInteracting = true;
                     updateHostingValuesText(Texture_HostingValues, portString);
+
+                }
+
+            }
+            else if (hosting->ui->currentlyInteracting)
+            {
+
+                if (SDL_strcmp(selected_option, "HOST") == 0)
+                {
+
+                    playSound(ROTATE_SOUND);
+
+                    // Reset error to false whenever we press the HOST button
+                    *error = false;
+
+                    // hostGameData is used to transmit data between the game thread and the server thread. Initially, we use it to pass
+                    // the port to the server thread
+                    hostGameData = SDL_realloc(hostGameData, sizeof(char) * (SDL_strlen(portString) + 1));
+                    SDL_strlcpy(hostGameData, portString, SDL_strlen(portString) + 1);
+
+                    // Host server in separate thread, passing the port to host it on in hostGameData
+                    SDL_CreateThread(hostGame, "hostGame", (void*)hostGameData);
+
+                    // Now, we attempt to connect to our own server
+
+                    // First, attempt to resolve the host
+                    if (SDLNet_ResolveHost(&(globalInstance->serverIP), "127.0.0.1", SDL_atoi(portString)) == -1)
+                    {
+
+                        // Display error message to screen
+                        const char* temp = SDLNet_GetError();
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
+                        SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
+    
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                        *error = true;
+
+                    }
+                    
+                    // Attempt connection to server in a separate thread
+                    *tryingConnection = true;
+                    SDL_CreateThread(openConnection, "openConnection", connectFunctionReturned);
+                    *timeConnectingStarted = SDL_GetTicks();
+
+                    // Display that we are attempting to connect to the server
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Attempting connection...0") + 1);
+                    SDL_strlcpy(currMessage, "Attempting connection...0", SDL_strlen("Attempting connection...0") + 1);
+                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+                    *hostingGame = true;
 
                 }
 

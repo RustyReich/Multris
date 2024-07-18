@@ -4,6 +4,6 @@
 #include "MGF.h"
 
 int startDedicatedServer(int argc, char* argv[]);
-void startServer(IPaddress address, int tickRate);
+int startServer(IPaddress address, int tickRate);
 
 #endif

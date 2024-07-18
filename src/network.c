@@ -374,3 +374,36 @@ int openConnection(void* functionReturned)
 	return 0;
 
 }
+
+// Function for starting a server in a separate thread. The data variable is used to transmit information between the server thread and the
+// game thread
+int hostGame(void* data)
+{
+
+	IPaddress localIP;
+
+	// If we can't resolve the host
+	if (SDLNet_ResolveHost(&localIP, NULL, SDL_atoi((char*)data)) == -1)
+	{
+
+		// Send the error back to the game thread via the data variable
+		const char* temp = SDLNet_GetError();
+		data = SDL_realloc(data, sizeof(char) * SDL_strlen(temp) + 1);
+		SDL_strlcpy(data, temp, SDL_strlen(temp) + 1);                     
+
+	}
+
+	// If the server returns with a value other than 0
+	if (startServer(localIP, SERVER_TICK_RATE) != 0)
+	{
+
+		// Send the error back to the game thread via the data variable
+		const char* temp = SDLNet_GetError();
+		data = SDL_realloc(data, sizeof(char) * SDL_strlen(temp) + 1);
+		SDL_strlcpy(data, temp, SDL_strlen(temp) + 1);  	
+
+	}
+
+	return 0;
+
+}

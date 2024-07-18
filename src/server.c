@@ -8,8 +8,6 @@ int startDedicatedServer(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
-    const int TICK_RATE = 128;
-
     printf("Starting server...\n");
 
     // Initialize SDL Stuff
@@ -74,7 +72,9 @@ int startDedicatedServer(int argc, char* argv[])
     do
     {
 
-        startServer(ip, TICK_RATE);
+        // Print error if startServer returns a value other than 0
+        if (startServer(ip, SERVER_TICK_RATE) != 0)
+            printf("Error starting server: %s\n", SDLNet_GetError());
 
         if (restartAfterClose)
             printf("Restarting server...\n");
@@ -91,7 +91,7 @@ int startDedicatedServer(int argc, char* argv[])
 }
 
 // Function for starting a server (dedicated or from in game)
-void startServer(IPaddress address, int tickRate)
+int startServer(IPaddress address, int tickRate)
 {
 
     const double TARGET_FRAME_TIME = (double)1 / (double)tickRate;
@@ -101,13 +101,9 @@ void startServer(IPaddress address, int tickRate)
     TCPsocket socket;
     socket = SDLNet_TCP_Open(&address);
 
+    // Return 2 if failed to open socket
     if (!socket)
-    {
-
-        printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-        exit(2);
-
-    }
+        return 2;
     else
         printf("Opened server on port %d.\n", SDL_SwapBE16(address.port));
 
@@ -633,5 +629,7 @@ void startServer(IPaddress address, int tickRate)
     SDL_free(clients);
 
     printf("Server closed.\n");
+
+    return 0;
 
 }
