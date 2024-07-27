@@ -177,7 +177,7 @@ void createOptions()
 
 		fprintf(optionsFile, "FULLSCREEN=0\n");
 		fprintf(optionsFile, "VOLUME=10\n");
-		fprintf(optionsFile, "MUSIC=100\n");
+		fprintf(optionsFile, "MUSIC=35\n");
 		fprintf(optionsFile, "LIMIT FPS=1\n");
 		fprintf(optionsFile, "SHOW FPS=1\n");
 		fprintf(optionsFile, "CENTER DOT=1\n");
