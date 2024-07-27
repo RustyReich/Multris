@@ -57,6 +57,8 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	DECLARE_VARIABLE(int, lastPulseTime, 0);
 	DECLARE_VARIABLE(int, receivedGarbage, 0);
 	DECLARE_VARIABLE(int, nextPieceSeed, 0);
+	DECLARE_VARIABLE(int, garbageQueue, 0);
+	DECLARE_VARIABLE(int, numOpponentCurrentlyRemoved, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -884,18 +886,18 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 		}
 
-		// If we have received garbage, wait until clearingLine animation is not playing and also make sure the game is not over
-		if (!*clearingLine && *receivedGarbage > 0 && !*gameOver)
+		// If garbage is queued, wait until clearingLine animation is not playing and also make sure the game is not over
+		if (!*clearingLine && *garbageQueue > 0 && !*gameOver)
 		{
 
-			// Move the Y value up by the amount of garbage lines we received, but dont go less than zero
-			*Y -= *receivedGarbage;
+			// Move the Y value up by one, but dont go less than zero
+			*Y -= 1;
 			if (*Y < 0)
 				*Y = 0;
 
-			// Add the garbage lines and reset receivedGarbage back to zero
-			addGarbageLines(*receivedGarbage, mapData, foreground, MAP_WIDTH, MAP_HEIGHT);
-			*receivedGarbage = 0;
+			// Add a single garbage line and lower the garbageQueue by 1
+			addGarbageLines(1, mapData, foreground, MAP_WIDTH, MAP_HEIGHT);
+			*garbageQueue = *garbageQueue - 1;
 
 			//Recalculate ghostY
 			*ghostY = calcGhostY(currentPiece, *X, (unsigned short)*Y, mapData, MAP_WIDTH, MAP_HEIGHT);	
@@ -1392,9 +1394,41 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 			// Play a single frame of the opponent's line animation
 			playOpponentLineAnimation(opponentForeground, *opponentCompletedRows, opponentClearingLine, numOpponentCompleted);
 
+			// If an opponent line was removed this frame
+			if (prevNumCompleted != *numOpponentCompleted)
+			{
+
+				// Keep track of the total number of opponent lines removed so far with this play of
+				// the line clearing animation
+				*numOpponentCurrentlyRemoved = *numOpponentCurrentlyRemoved + 1;
+
+				// If the number removed so far is even and we have received garbage
+				if (*numOpponentCurrentlyRemoved % 2 == 0 && *receivedGarbage > 0)
+				{
+					
+					// Move one line of garbage out of receivedGarbage and into the garbageQueue
+					*garbageQueue = *garbageQueue + 1;
+					*receivedGarbage = *receivedGarbage - 1;
+
+				}
+
+			}
+
 			// If the animation is done playing, we can update the opponent's foreground
 			if (*opponentClearingLine == false)
+			{
+
 				updateOpponentForeground(opponentForeground, opponentMapString);
+
+				// Reset the number of opponent lines currently removed
+				*numOpponentCurrentlyRemoved = 0;
+
+				// If there is, for some reason, still receivedGarbage that hasn't been moved into
+				// the garbageQueue, just move it all into the garbageQueue
+				*garbageQueue = *garbageQueue + *receivedGarbage;
+				*receivedGarbage = 0;
+
+			}
 
 			// Remove the first element in opponentCompletedRows array
 				// Also resize opponentCompletedRows array
