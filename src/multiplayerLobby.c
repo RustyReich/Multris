@@ -576,7 +576,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                 // Define the list of keys which are valid inputs while inputting an IP or PORT
                 int validKeys[] = { SDL_SCANCODE_0, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4, SDL_SCANCODE_5,
-                                    SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE };
+                                    SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE,
+                                    SDL_SCANCODE_KP_0, SDL_SCANCODE_KP_1, SDL_SCANCODE_KP_2, SDL_SCANCODE_KP_3, SDL_SCANCODE_KP_4,
+                                    SDL_SCANCODE_KP_5, SDL_SCANCODE_KP_6, SDL_SCANCODE_KP_7, SDL_SCANCODE_KP_8, SDL_SCANCODE_KP_9 };
 
                 // Go through all validKeys
                 for (unsigned short i = 0; i < sizeof(validKeys) / sizeof(validKeys[0]); i++)
@@ -595,10 +597,12 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                         char asciiValue;
                         if (pressedKey == SDL_SCANCODE_PERIOD)
                             asciiValue = '.';
-                        else if (pressedKey == SDL_SCANCODE_0)
+                        else if (pressedKey == SDL_SCANCODE_0 || pressedKey == SDL_SCANCODE_KP_0)
                             asciiValue = '0';
-                        else
+                        else if (pressedKey >= SDL_SCANCODE_1 && pressedKey <= SDL_SCANCODE_9)
                             asciiValue = '1' + (pressedKey - SDL_SCANCODE_1);
+                        else if (pressedKey >= SDL_SCANCODE_KP_1 && pressedKey <= SDL_SCANCODE_KP_9)
+                            asciiValue = '1' + (pressedKey - SDL_SCANCODE_KP_1);
 
                         // Check if the key that was pressed was a period 
                         bool pressedPeriod = (pressedKey == SDL_SCANCODE_PERIOD);
