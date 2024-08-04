@@ -866,6 +866,17 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				playSound(OVER_SOUND);
 				*gameOver = true;
 
+				// If in a multiplayer game, tell server that you got a game over
+				if (MULTIPLAYER)
+				{
+
+					char message[] = "GAMEOVER=";
+					SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message) + 1);
+
+					*lastPulseTime = SDL_GetTicks();
+
+				}
+
 			}
 
 		}
@@ -1164,7 +1175,15 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 						SDL_free(values[i]);
 					SDL_free(values);
 
-				}	// If the data was a NAME from the opponent
+				}
+				else if (SDL_strstr(packets[packetIndex], "GAMEOVER=") != NULL)
+				{
+
+					// If other player gets a game over, end the game for this player as well
+					playSound(OVER_SOUND);
+					*gameOver = true;					
+
+				}
 
 			}
 
@@ -1461,35 +1480,35 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		if (*overAnimation == false)
 		{
 
-			*overAnimation = playOverAnimation(foreground, MAP_WIDTH, MAP_HEIGHT);
+			*overAnimation = playOverAnimation(foreground, opponentForeground, MAP_WIDTH, MAP_HEIGHT);
 
 			//Once animation is over, print GAME OVER to screen
 			if (*overAnimation == true)
 			{
 
-				//Calculate multiplier, width, and height for "GAME" and "OVER"
+				//Calculate multiplier, width, and height for "GAME" and "OVER". Give 5% padding on each side
 				float multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)(getStringLength("GAME", 1)) * 0.9;
-				int width = getStringLength("GAME", multi);
-				int height = multi * FONT_HEIGHT;
+				int width = getStringLength("GAME", multi) * 1.05;
+				int height = (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP)) * 1.05;
+				int heightDifference = height - (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP));
 
 				//Calculate X and Y value to print "GAME" at
-				int x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - getStringLength("GAME", multi));
-				int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - (height * 2 + SDL_round(multi * STRING_GAP))));
+				int x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - width);
+				int y = (0.5 * (MAP_HEIGHT * SPRITE_HEIGHT - height));
+
+				drawSimpleRect(foreground, x, y, width, height, BLACK, 75);
+				drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
 
 				//Print "GAME"
 					//Draw black rectangle behind it 
-				drawSimpleRect(foreground, x, y, width, height, BLACK);
-				printToTexture("GAME", foreground, x, y, multi, WHITE);
-				
-				//Draw black rectangle between GAME and OVER
-				y = y + height;
-				drawSimpleRect(foreground, x, y, width, SDL_round(multi * STRING_GAP), BLACK);
+				printToTexture("GAME", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
+				printToTexture("GAME", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 
 				//Calculate Y value for "OVER" and print it
 					//Also draw a black box behind it
-				y = y + SDL_round(multi * STRING_GAP);
-				drawSimpleRect(foreground, x, y, width, height, BLACK);
-				printToTexture("OVER", foreground, x, y, multi, WHITE);
+				y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
+				printToTexture("OVER", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
+				printToTexture("OVER", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 
 				//Save score once overAnimation is finished playing
 					// Don't save score if in a multiplayer game
@@ -1866,7 +1885,7 @@ unsigned short calcGhostY(piece* Piece, int X, int startY, int* mapData, int map
 }
 
 //Function for playing a single frame of the overAnimation
-bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight)
+bool playOverAnimation(SDL_Texture* foreground, SDL_Texture* opponentForeground, unsigned short mapWidth, unsigned short mapHeight)
 {
 
 	//Return if the animation is done playing or not
@@ -1917,7 +1936,12 @@ bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigne
 
 					//Fill the current row with randomly colored BLOCKSs
 					for (unsigned short i = 0; i < mapWidth; i++)
+					{
+
 						drawToTexture(BLOCK_SPRITE_ID, foreground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
+						drawToTexture(BLOCK_SPRITE_ID, opponentForeground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
+
+					}
 
 					//Check if we are on the last row
 					if (*row < mapHeight)

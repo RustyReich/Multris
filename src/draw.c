@@ -317,7 +317,7 @@ void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, i
 }
 
 //Draw a solid rectangle of the given color, doesn't use sprites
-void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color)
+void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color, int opacity)
 {
 
 	//Save current rendering target
@@ -333,8 +333,8 @@ void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height
 	//Set rendering target
 	SDL_SetRenderTarget(globalInstance->renderer, dstTexture);
 
-	//Set rendering color
-	SDL_SetRenderDrawColor(globalInstance->renderer,getColor_R(color),getColor_G(color),getColor_B(color),255);
+	//Set rendering color and opacity
+	SDL_SetRenderDrawColor(globalInstance->renderer,getColor_R(color),getColor_G(color),getColor_B(color),255 * (opacity / 100.0));
 
 	//Draw rectangle
 	SDL_Rect rect = { .x = x, .y = y, .w = width, .h = height };
@@ -515,7 +515,7 @@ SDL_Texture* createPieceTexture(piece Piece, bool drawCenterDot)
 
 		int drawX = (SPRITE_WIDTH / 2) + (SPRITE_WIDTH * centerX) - 2;
 		int drawY = (SPRITE_HEIGHT / 2) + (SPRITE_HEIGHT * centerY) - 2;
-		drawSimpleRect(texture, drawX, drawY, 4, 4, DARK_GRAY);
+		drawSimpleRect(texture, drawX, drawY, 4, 4, DARK_GRAY, 100);
 
 	}
 

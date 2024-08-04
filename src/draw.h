@@ -11,7 +11,7 @@ void printToTexture(char* string, SDL_Texture* dstTexture, int X, int Y, float m
 void intToTexture(int num, SDL_Texture* dstTexture, int X, int Y, float multiplier, unsigned short color);
 void drawToTexture(int SpriteID, SDL_Texture* dstTexture, int X, int Y, float multiplier, Uint8 color);
 void drawRectangle(int spriteID, SDL_Texture* dstTexture, int X, int Y, int W, int H, int color, bool fill);
-void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color);
+void drawSimpleRect(SDL_Texture* dstTexture, int x, int y, int width, int height, int color, int opacity);
 int getStringLength(char* str, float multiplier);
 int getIntStringLength(int num, float multiplier);
 void clearTexture(SDL_Texture* texture);

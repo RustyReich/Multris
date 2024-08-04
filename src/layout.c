@@ -800,7 +800,7 @@ SDL_Texture* create_Foreground_Text()
 
 	//Make entire foreground black to begin with.
 		// This is to deal with rounding errors with CUSTOM_MODE foregrounds
-	drawSimpleRect(texture, 0, 0, FONT_WIDTH * MAP_WIDTH, FONT_HEIGHT * MAP_HEIGHT, BLACK);	
+	drawSimpleRect(texture, 0, 0, FONT_WIDTH * MAP_WIDTH, FONT_HEIGHT * MAP_HEIGHT, BLACK, 100);	
 
 	return texture;
 

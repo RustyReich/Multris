@@ -174,6 +174,9 @@ void initInstance(gameInstance** instance)
     //Set renderer size
     SDL_RenderSetLogicalSize(globalInstance->renderer, INITIAL_INTERNAL_WIDTH, INITIAL_INTERNAL_HEIGHT);
 
+    // Set renderer blend mode
+    SDL_SetRenderDrawBlendMode((*instance)->renderer, SDL_BLENDMODE_BLEND);
+
     //Initialize audioDevice and wavSpec
     (*instance)->audioDevice = prepareAudioDevice(&globalInstance->wavSpec);
 

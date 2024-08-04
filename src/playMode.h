@@ -10,7 +10,7 @@ void resetSizeBagTexture(SDL_Texture* sizeBagTexture);
 double calcSpeed(unsigned short level);
 unsigned short calcLinesUntilLevelup(unsigned short linesAtCurrentLevel, unsigned short currentLevel);
 unsigned short calcGhostY(piece* Piece, int X, int startY, int* mapData, int mapWidth, int mapHeight);
-bool playOverAnimation(SDL_Texture* foreground, unsigned short mapWidth, unsigned short mapHeight);
+bool playOverAnimation(SDL_Texture* foreground, SDL_Texture* opponentForeground, unsigned short mapWidth, unsigned short mapHeight);
 void updateLines(unsigned short lines, SDL_Texture** linesTexture);
 void updateLevel(unsigned short level, SDL_Texture* levelTexture);
 void updateScore(unsigned int score, SDL_Texture* scoreTexture);
