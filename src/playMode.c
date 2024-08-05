@@ -1501,38 +1501,42 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
 
 				//Print "GAME"
-					//Draw black rectangle behind it 
 				printToTexture("GAME", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 				printToTexture("GAME", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 
 				//Calculate Y value for "OVER" and print it
-					//Also draw a black box behind it
 				y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
 				printToTexture("OVER", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 				printToTexture("OVER", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 
+				// If in MULTRIS mode, diplay the time the game took on the game over screen
 				if (MODE == 0)
 				{
 
+					// Calculate multiplier, width, and height for "TIME" and "000:00". Give 15% padding on each side.
 					multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)(getStringLength("000:00", 1)) * 0.50;
 					width = getStringLength("000:00", multi) * 1.15;
 					height = (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP)) * 1.15;
 					heightDifference = height - (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP));
 
+					// Calculate X and Y value to print "TIME" at
 					x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - width);
 					y = (0.75 * (MAP_HEIGHT * SPRITE_HEIGHT - height));
 
+					// Draw dark background for the words
 					drawSimpleRect(foreground, x, y, width, height, BLACK, 75);
 					drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
 
+					// Print "TIME"
 					printToTexture("TIME", foreground, x + 0.5 * (width - getStringLength("TIME", multi)), y + heightDifference / 2, multi, WHITE);
 					printToTexture("TIME", opponentForeground, x + 0.5 * (width - getStringLength("TIME", multi)), y + heightDifference / 2, multi, WHITE);
 
+					// Calculate Y value to print the timeString
 					y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
 					char timeString[] = { '0', '0', '0' , ':' , '0', '0', '\0' };
 
+					// Generate the timeString
 					int gameLengthSec = (SDL_GetTicks() - *gameStartTime) / 1000;
-
 					for (unsigned short i = 0; i < SDL_strlen(timeString); i++)
 					{
 
@@ -1569,6 +1573,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 					}
 
+					// Print the timeString
 					printToTexture(timeString, foreground, x + 0.5 * (width - getStringLength(timeString, multi)), y + heightDifference / 2, multi, WHITE);
 					printToTexture(timeString, opponentForeground, x + 0.5 * (width - getStringLength(timeString, multi)), y + heightDifference / 2, multi, WHITE);
 
@@ -2084,9 +2089,7 @@ void updateScore(unsigned int score, SDL_Texture* scoreTexture)
 	rect.w = length * (FONT_WIDTH + STRING_GAP);
 	rect.h = FONT_HEIGHT;
 	rect.y = 0;
-	SDL_SetRenderTarget(globalInstance->renderer, scoreTexture);
-	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
-	SDL_RenderFillRect(globalInstance->renderer, &rect);
+	drawSimpleRect(scoreTexture, rect.x, rect.y, rect.w, rect.h, BLACK, 100);
 
 	//Draw new score to scoreTexture
 	intToTexture(score, scoreTexture, rect.x, rect.y, 1, WHITE);
