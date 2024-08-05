@@ -59,6 +59,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	DECLARE_VARIABLE(int, nextPieceSeed, 0);
 	DECLARE_VARIABLE(int, garbageQueue, 0);
 	DECLARE_VARIABLE(int, numOpponentCurrentlyRemoved, 0);
+	DECLARE_VARIABLE(int, gameStartTime, SDL_GetTicks());
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -1509,6 +1510,69 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
 				printToTexture("OVER", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 				printToTexture("OVER", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
+
+				if (MODE == 0)
+				{
+
+					multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)(getStringLength("000:00", 1)) * 0.50;
+					width = getStringLength("000:00", multi) * 1.15;
+					height = (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP)) * 1.15;
+					heightDifference = height - (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP));
+
+					x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - width);
+					y = (0.75 * (MAP_HEIGHT * SPRITE_HEIGHT - height));
+
+					drawSimpleRect(foreground, x, y, width, height, BLACK, 75);
+					drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
+
+					printToTexture("TIME", foreground, x + 0.5 * (width - getStringLength("TIME", multi)), y + heightDifference / 2, multi, WHITE);
+					printToTexture("TIME", opponentForeground, x + 0.5 * (width - getStringLength("TIME", multi)), y + heightDifference / 2, multi, WHITE);
+
+					y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
+					char timeString[] = { '0', '0', '0' , ':' , '0', '0', '\0' };
+
+					int gameLengthSec = (SDL_GetTicks() - *gameStartTime) / 1000;
+
+					for (unsigned short i = 0; i < SDL_strlen(timeString); i++)
+					{
+
+						if (i == 0 && gameLengthSec >= 60 * 100)
+						{
+
+							timeString[i] = '0' + gameLengthSec / (60 * 100);
+							gameLengthSec = gameLengthSec % (60 * 100);
+
+						}
+						else if (i == 1 && gameLengthSec >= 60 * 10)
+						{
+
+							timeString[i] = '0' + gameLengthSec / (60 * 10);
+							gameLengthSec = gameLengthSec % (60 * 10);
+
+						}
+						else if (i == 2 && gameLengthSec >= 60)
+						{
+
+							timeString[i] = '0' + gameLengthSec / 60;
+							gameLengthSec = gameLengthSec % 60;
+
+						}
+						else if (i == 4 && gameLengthSec >= 10)
+						{
+
+							timeString[i] = '0' + gameLengthSec / 10;
+							gameLengthSec = gameLengthSec % 10;
+
+						}
+						else if (i == 5)
+							timeString[i] = '0' + gameLengthSec;
+
+					}
+
+					printToTexture(timeString, foreground, x + 0.5 * (width - getStringLength(timeString, multi)), y + heightDifference / 2, multi, WHITE);
+					printToTexture(timeString, opponentForeground, x + 0.5 * (width - getStringLength(timeString, multi)), y + heightDifference / 2, multi, WHITE);
+
+				}
 
 				//Save score once overAnimation is finished playing
 					// Don't save score if in a multiplayer game
