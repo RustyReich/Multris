@@ -873,7 +873,7 @@ void updatePausedText(SDL_Texture* texture, bool exit)
 }
 
 // Function for redrawing the values of the HOSTING screen in the multiplayer lobby
-void updateHostingValuesText(SDL_Texture* texture, char* port)
+void updateHostingValuesText(SDL_Texture* texture, char* port, char* name)
 {
 
 	clearTexture(texture);
@@ -881,6 +881,8 @@ void updateHostingValuesText(SDL_Texture* texture, char* port)
 	// Print ":" before the modifiable value, and then print the current value
 	printToTexture(":", texture, 0, 0, 1.0, WHITE);
 	printToTexture(port, texture, 14, 0, 1.0, WHITE);
+	printToTexture(":", texture, 0, 14, 1.0, WHITE);
+	printToTexture(name, texture, 14, 14, 1.0, WHITE);
 
 }
 
@@ -962,15 +964,15 @@ SDL_Texture* create_HostingValues_Text()
 
 	SDL_Texture* texture;
 
-	// There is only a single option "PORT"
-	int num_options = 1;
+	// There are two options, "PORT" and "NAME"
+	int num_options = 2;
 	int height = num_options * FONT_HEIGHT + (num_options - 1) * STRING_GAP;
 	int width = 16 * FONT_WIDTH + 15 * STRING_GAP;
 
 	texture = createTexture(width, height);
 
 	// Initial value for thr port is an empty string
-	updateHostingValuesText(texture, "\0");
+	updateHostingValuesText(texture, "\0", "\0");
 
 	return texture;
 
@@ -1461,7 +1463,7 @@ UI_list* create_Hosting_List()
 {
 
 	UI_list* list;
-	list = create_list(WHITE, "PORT", "HOST");
+	list = create_list(WHITE, "PORT", "NAME", "HOST");
 
 	list->selected_entry = 0;
 

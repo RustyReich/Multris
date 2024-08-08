@@ -79,7 +79,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 nameString = SDL_realloc(nameString, (SDL_strlen(loadedName) + 1) * sizeof(char));
                 SDL_strlcpy(nameString, loadedName, SDL_strlen(loadedName) + 1);
 
+                // Update the ConnectionValues and HostingValues textures with the name that was loaded
                 updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
             }
 
@@ -480,7 +482,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 {
 
                     hosting->ui->currentlyInteracting = true;
-                    updateHostingValuesText(Texture_HostingValues, portString);
+                    updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
                 }
 
@@ -620,7 +622,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                             if (active_list == connection)
                                 updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
                             else if (active_list == hosting)
-                                updateHostingValuesText(Texture_HostingValues, portString);
+                                updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
                         }
                         
@@ -658,7 +660,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                         nameString = SDL_realloc(nameString, sizeof(char) * (currLength + 1));
                         SDL_strlcat(nameString, &asciiValue, currLength + 1);
 
-                        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                        // Update the values texture depending on what sub-menu we are in
+                        if (active_list == connection)
+                            updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+                        else if (active_list == hosting)
+                            updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
                     }
 
@@ -682,7 +688,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     if (active_list == connection)
                         updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
                     else if (active_list == hosting)
-                        updateHostingValuesText(Texture_HostingValues, portString);
+                        updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
                 }
 
@@ -739,7 +745,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             if (active_list == connection)
                 updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
             else if (active_list == hosting)
-                updateHostingValuesText(Texture_HostingValues, portString);
+                updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
             // Free memory taken up by copied clipboard text
             SDL_free(clipboard);

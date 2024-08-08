@@ -75,6 +75,6 @@ int getNameDrawY(unsigned short size);
 UI_list* create_Multiplayer_List();
 UI_list* create_Hosting_List();
 SDL_Texture* create_HostingValues_Text();
-void updateHostingValuesText(SDL_Texture* texture, char* port);
+void updateHostingValuesText(SDL_Texture* texture, char* port, char* name);
 
 #endif
