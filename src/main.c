@@ -107,6 +107,8 @@ int main(int argc, char *argv[]) {
 		createProgressFile();
 	if (!fileExists("SAVES/name.cfg") || brokenNameFile())
 		createNameFile();
+	if (!fileExists("SAVES/hostPort.cfg") || brokenHostPortFile())
+		createHostPortFile();
 
 	//Now load info from SAVES files
 

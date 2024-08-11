@@ -28,5 +28,9 @@ void createNameFile();
 bool brokenNameFile();
 void saveName(char* name);
 char* loadName();
+void createHostPortFile();
+bool brokenHostPortFile();
+void saveHostPort(char* portString);
+char* loadHostPort();
 
 #endif

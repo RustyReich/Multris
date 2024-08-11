@@ -234,7 +234,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                 }
 
-			}   // If the starGame flag has been set
+			}   // If the startGame flag has been set
             else if (startGame == true)
             {
 
@@ -483,6 +483,25 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                     hosting->ui->currentlyInteracting = true;
                     updateHostingValuesText(Texture_HostingValues, portString, nameString);
+
+                    // Load the hostPort from disk when entering the hosting screen
+                    char* loadedPort = loadHostPort();
+                    if (loadedPort != NULL)
+                    {
+
+                        if (SDL_strlen(loadedPort) > 0)
+                        {
+
+                            portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
+                            SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
+
+                            updateHostingValuesText(Texture_HostingValues, portString, nameString);
+
+                        }
+
+                        SDL_free(loadedPort);
+
+                    }
 
                 }
 
@@ -780,6 +799,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             }   // If in not in MULTIPLAYER list, exit back to MULTIPLAYER list
             else if (multiplayer->ui->currentlyInteracting == false)
             {
+
+                // Save the hostPort when exiting the hosting menu
+                if (hosting->ui->currentlyInteracting == true)
+                    saveHostPort(portString);
 
                 connection->ui->currentlyInteracting = false;
                 hosting->ui->currentlyInteracting = false;

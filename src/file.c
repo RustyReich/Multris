@@ -164,6 +164,19 @@ void createNameFile()
 
 }
 
+// Function for creating the "hostPort.cfg" file
+void createHostPortFile()
+{
+
+	createFile("SAVES/hostPort.cfg");
+
+	// Open hostPort file to verify it was created. Then close it.
+	FILE* hostPortFile = fopen("SAVES/hostPort.cfg", "w");
+	if (hostPortFile != NULL)
+		fclose(hostPortFile);
+
+}
+
 //Function for creating the "options.cfg" file
 void createOptions()
 {
@@ -470,6 +483,59 @@ bool brokenNameFile()
 
 }
 
+// Return true if there are irregularities with the hostPort file
+	// This means the hostPort is either too long, or there are non-numeric characters in the port or the file has more than one line
+bool brokenHostPortFile()
+{
+
+	if (getLineCount("SAVES/hostPort.cfg") != 1)
+		return true;
+
+	char currentLine[256];
+
+	FILE* file = NULL;
+	file = fopen("SAVES/hostPort.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			if (SDL_strlen(currentLine) > 5)
+			{
+
+				fclose(file);
+				return true;
+
+			}
+
+			int index = 0;
+			while(currentLine[index] != '\0' && currentLine[index] != '\n')
+			{
+
+				if (!SDL_isdigit(currentLine[index]))
+				{
+
+					fclose(file);
+					return true;
+
+				}
+
+				index++;
+
+			}
+
+		}
+
+		fclose(file);
+		return false;
+	
+	}
+
+	return true;
+
+}
+
 // Function for saving the name to the name.cfg file
 void saveName(char* name)
 {
@@ -481,6 +547,23 @@ void saveName(char* name)
 	{
 
 		fprintf(file, "%s", name);
+		fclose(file);
+
+	}
+
+}
+
+// Function for saving the hostPort to the hostPort.cfg file
+void saveHostPort(char* portString)
+{
+
+	// Open the file and write the name to it
+	FILE* file = NULL;
+	file = fopen("SAVES/hostPort.cfg", "w");
+	if (file != NULL)
+	{
+
+		fprintf(file, "%s", portString);
 		fclose(file);
 
 	}
@@ -513,6 +596,35 @@ char* loadName()
 	}
 
 	return name;
+
+}
+
+// Function for loading the hostPort from the hostPort.cfg file
+	// This function returns a dynamically allocated string which must be freed
+char* loadHostPort()
+{
+
+	char currentLine[256];
+	char* hostPort = NULL;
+
+	FILE* file = NULL;
+	file = fopen("SAVES/hostPort.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			hostPort = SDL_calloc(SDL_strlen(currentLine) + 1, sizeof(char));
+			SDL_strlcpy(hostPort, currentLine, SDL_strlen(currentLine) + 1);
+
+		}
+
+		fclose(file);
+
+	}
+
+	return hostPort;
 
 }
 
