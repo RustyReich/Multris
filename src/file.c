@@ -164,6 +164,32 @@ void createNameFile()
 
 }
 
+// Function for creating the "connectIP.cfg" file
+void createIPFile()
+{
+	
+	createFile("SAVES/connectIP.cfg");
+
+	// Open connectIP file to verify it was created. Then close it.
+	FILE* ipFile = fopen("SAVES/connectIP.cfg", "w");
+	if (ipFile != NULL)
+		fclose(ipFile);
+
+}
+
+// Function for creating the "connectPort.cfg" file
+void createConnectPortFile()
+{
+
+	createFile("SAVES/connectPort.cfg");
+
+	// Open connectPort file to verify it was created. Then close it.
+	FILE* connectPortFile = fopen("SAVES/connectPort.cfg", "w");
+	if (connectPortFile != NULL)
+		fclose(connectPortFile);
+
+}
+
 // Function for creating the "hostPort.cfg" file
 void createHostPortFile()
 {
@@ -483,6 +509,59 @@ bool brokenNameFile()
 
 }
 
+// Return true if there are irregularities with the IP file
+	// This means the IP is either too long, or there are characters that are not digits and not periods, or the file has more than one line
+bool brokenIPFile()
+{
+
+	if (getLineCount("SAVES/connectIP.cfg") != 1)
+		return true;
+
+	char currentLine[256];
+
+	FILE* file = NULL;
+	file = fopen("SAVES/connectIP.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			if (SDL_strlen(currentLine) > 15)
+			{
+				
+				fclose(file);
+				return true;
+
+			}
+
+			int index = 0;
+			while(currentLine[index] != '\0' && currentLine[index] != '\n')
+			{
+
+				if (!SDL_isdigit(currentLine[index]) && (currentLine[index] != '.'))
+				{
+					
+					fclose(file);
+					return true;
+
+				}
+
+				index++;
+
+			}
+
+		}
+
+		fclose(file);
+		return false;
+	
+	}
+
+	return true;
+
+}
+
 // Return true if there are irregularities with the hostPort file
 	// This means the hostPort is either too long, or there are non-numeric characters in the port or the file has more than one line
 bool brokenHostPortFile()
@@ -495,6 +574,59 @@ bool brokenHostPortFile()
 
 	FILE* file = NULL;
 	file = fopen("SAVES/hostPort.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			if (SDL_strlen(currentLine) > 5)
+			{
+
+				fclose(file);
+				return true;
+
+			}
+
+			int index = 0;
+			while(currentLine[index] != '\0' && currentLine[index] != '\n')
+			{
+
+				if (!SDL_isdigit(currentLine[index]))
+				{
+
+					fclose(file);
+					return true;
+
+				}
+
+				index++;
+
+			}
+
+		}
+
+		fclose(file);
+		return false;
+	
+	}
+
+	return true;
+
+}
+
+// Return true if there are irregularities with the connectPort file
+	// This means the connectPort is either too long, or there are non-numeric characters in the port or the file is more than one line
+bool brokenConnectPort()
+{
+
+	if (getLineCount("SAVES/connectPort.cfg") != 1)
+		return true;
+
+	char currentLine[256];
+
+	FILE* file = NULL;
+	file = fopen("SAVES/connectPort.cfg", "r");
 	if (file != NULL)
 	{
 
@@ -553,11 +685,45 @@ void saveName(char* name)
 
 }
 
+// Function for saving the IP to the connectIP.cfg file
+void saveIP(char* ipString)
+{
+
+	// Open the file and write the IP to it
+	FILE* file = NULL;
+	file = fopen("SAVES/connectIP.cfg", "w");
+	if (file != NULL)
+	{
+
+		fprintf(file, "%s", ipString);
+		fclose(file);
+
+	}	
+
+}
+
+// Function for saving the connectPort to the connectPort.cfg file
+void saveConnectPort(char* portString)
+{
+
+	// Open the file and write the connect port to it
+	FILE* file = NULL;
+	file = fopen("SAVES/connectPort.cfg", "w");
+	if (file != NULL)
+	{
+
+		fprintf(file, "%s", portString);
+		fclose(file);
+
+	}
+
+}
+
 // Function for saving the hostPort to the hostPort.cfg file
 void saveHostPort(char* portString)
 {
 
-	// Open the file and write the name to it
+	// Open the file and write the host port to it
 	FILE* file = NULL;
 	file = fopen("SAVES/hostPort.cfg", "w");
 	if (file != NULL)
@@ -625,6 +791,64 @@ char* loadHostPort()
 	}
 
 	return hostPort;
+
+}
+
+// Function for loading the connectPort from the connectPort.cfg file
+	// This function returns a dynamically allocated string which must be freed
+char* loadConnectPort()
+{
+
+	char currentLine[256];
+	char* connectPort = NULL;
+
+	FILE* file = NULL;
+	file = fopen("SAVES/connectPort.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			connectPort = SDL_calloc(SDL_strlen(currentLine) + 1, sizeof(char));
+			SDL_strlcpy(connectPort, currentLine, SDL_strlen(currentLine) + 1);
+
+		}
+
+		fclose(file);
+
+	}
+
+	return connectPort;
+
+}
+
+// Function for loading the IP from the connectIP.cfg file
+	// This function returns a dynamically allocated string which must be freed
+char* loadIP()
+{
+
+	char currentLine[256];
+	char* connectIP = NULL;
+
+	FILE* file = NULL;
+	file = fopen("SAVES/connectIP.cfg", "r");
+	if (file != NULL)
+	{
+
+		if (fgets(currentLine, sizeof(currentLine), file) != NULL)
+		{
+
+			connectIP = SDL_calloc(SDL_strlen(currentLine) + 1, sizeof(char));
+			SDL_strlcpy(connectIP, currentLine, SDL_strlen(currentLine) + 1);
+
+		}
+
+		fclose(file);
+
+	}
+
+	return connectIP;
 
 }
 

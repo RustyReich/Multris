@@ -109,6 +109,10 @@ int main(int argc, char *argv[]) {
 		createNameFile();
 	if (!fileExists("SAVES/hostPort.cfg") || brokenHostPortFile())
 		createHostPortFile();
+	if (!fileExists("SAVES/connectIP.cfg") || brokenIPFile())
+		createIPFile();
+	if (!fileExists("SAVES/connectPort.cfg") || brokenConnectPort())
+		createConnectPortFile();
 
 	//Now load info from SAVES files
 

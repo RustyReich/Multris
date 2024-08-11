@@ -475,6 +475,40 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 {
 
                     connection->ui->currentlyInteracting = true;
+                    
+                    // Load the connect IP and PORT from disk when entering the connection screen and update the ConnectionValues texture
+                    char* loadedIP = loadIP();
+                    if (loadedIP != NULL)
+                    {
+
+                        if (SDL_strlen(loadedIP) > 0)
+                        {
+
+                            ipString = SDL_realloc(ipString, (SDL_strlen(loadedIP) + 1) * sizeof(char));
+                            SDL_strlcpy(ipString, loadedIP, SDL_strlen(loadedIP) + 1);
+
+                        }
+
+                        SDL_free(loadedIP);
+
+                    }
+
+                    char* loadedPort = loadConnectPort();
+                    if (loadedPort != NULL)
+                    {
+
+                        if (SDL_strlen(loadedPort) > 0)
+                        {
+
+                            portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
+                            SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
+
+                        }
+
+                        SDL_free(loadedPort);
+
+                    }
+
                     updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
 
                 }
@@ -482,9 +516,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 {
 
                     hosting->ui->currentlyInteracting = true;
-                    updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
-                    // Load the hostPort from disk when entering the hosting screen
+                    // Load the hostPort from disk when entering the hosting screen and update the HostingValues texture
                     char* loadedPort = loadHostPort();
                     if (loadedPort != NULL)
                     {
@@ -495,13 +528,13 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                             portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
                             SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
 
-                            updateHostingValuesText(Texture_HostingValues, portString, nameString);
-
                         }
 
                         SDL_free(loadedPort);
 
                     }
+
+                    updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
                 }
 
@@ -803,6 +836,14 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 // Save the hostPort when exiting the hosting menu
                 if (hosting->ui->currentlyInteracting == true)
                     saveHostPort(portString);
+                else if (connection->ui->currentlyInteracting == true)
+                {
+
+                    // Save the connectPort and connectIP when exiting the connection menu
+                    saveIP(ipString);
+                    saveConnectPort(portString);
+
+                }
 
                 connection->ui->currentlyInteracting = false;
                 hosting->ui->currentlyInteracting = false;

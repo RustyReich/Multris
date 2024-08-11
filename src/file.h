@@ -32,5 +32,13 @@ void createHostPortFile();
 bool brokenHostPortFile();
 void saveHostPort(char* portString);
 char* loadHostPort();
+void createIPFile();
+bool brokenIPFile();
+void saveIP(char* ipString);
+char* loadIP();
+char* loadConnectPort();
+void saveConnectPort(char* portString);
+bool brokenConnectPort();
+void createConnectPortFile();
 
 #endif
