@@ -101,6 +101,10 @@ int startServer(IPaddress address, int tickRate)
     TCPsocket socket;
     socket = SDLNet_TCP_Open(&address);
 
+    // Add server socket to socket set
+    SDLNet_SocketSet serverSocketSet = SDLNet_AllocSocketSet(1);
+    SDLNet_TCP_AddSocket(serverSocketSet, socket);
+
     // Return 2 if failed to open socket
     if (!socket)
         return 2;
@@ -140,8 +144,10 @@ int startServer(IPaddress address, int tickRate)
     while (running == true)
     {
 
-        // Accept a connection
-        TCPsocket newSocket = SDLNet_TCP_Accept(socket);
+        // Accept a connection if there is incoming data on the server socket
+        TCPsocket newSocket = NULL;
+        if (SDLNet_CheckSockets(serverSocketSet, 0))
+            newSocket = SDLNet_TCP_Accept(socket);
         
         // If a client connected
         if (newSocket != NULL)
