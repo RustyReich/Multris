@@ -13,6 +13,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     DECLARE_VARIABLE(int, lastPulseTime, 0);
     DECLARE_VARIABLE(bool, justPasted, false);
     DECLARE_VARIABLE(bool, waitingForReady, false);
+    DECLARE_VARIABLE(bool, playerReady, false);
     DECLARE_VARIABLE(bool, tryingConnection, false);
     DECLARE_VARIABLE(bool, connectFunctionReturned, false);
     DECLARE_VARIABLE(int, timeConnectingStarted, 0);
@@ -268,7 +269,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         }
 
         // If the server has told you to ready up and you press SELECT_BUTTON
-        if (onPress(SELECT_BUTTON) && *waitingForReady == true)
+        if (onPress(SELECT_BUTTON) && *waitingForReady == true && *playerReady == false)
         {   
 
             // Tell the server you are ready and print that to the screen
@@ -277,7 +278,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
             char message[] = "READY";
-            SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message) + 1);  
+            SDLNet_TCP_Send(globalInstance->serverSocket, message, SDL_strlen(message) + 1);
+
+            // Don't allow player to ready up after they have already readied up
+            *playerReady = true;  
 
         }
 
