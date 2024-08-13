@@ -66,6 +66,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             // Erase serverMessage since now we are already displaying it on the screen
             SDL_strlcpy(serverMessage, "\0", 1);
 
+            // Load values needed depending on the screen we are in
+            if (connection->ui->currentlyInteracting == true)
+                loadIPandPortForConnectScreen(ipString, portString);
+
         }
 
         // Load the players name from the name file if it is there
@@ -88,6 +92,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             SDL_free(loadedName);
 
         }
+
+        // Update the ConnectionValues and HostingValues textures now that some data may have been loaded from disk
+        updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
+        updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
     }
 
@@ -477,37 +485,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     connection->ui->currentlyInteracting = true;
                     
                     // Load the connect IP and PORT from disk when entering the connection screen and update the ConnectionValues texture
-                    char* loadedIP = loadIP();
-                    if (loadedIP != NULL)
-                    {
-
-                        if (SDL_strlen(loadedIP) > 0)
-                        {
-
-                            ipString = SDL_realloc(ipString, (SDL_strlen(loadedIP) + 1) * sizeof(char));
-                            SDL_strlcpy(ipString, loadedIP, SDL_strlen(loadedIP) + 1);
-
-                        }
-
-                        SDL_free(loadedIP);
-
-                    }
-
-                    char* loadedPort = loadConnectPort();
-                    if (loadedPort != NULL)
-                    {
-
-                        if (SDL_strlen(loadedPort) > 0)
-                        {
-
-                            portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
-                            SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
-
-                        }
-
-                        SDL_free(loadedPort);
-
-                    }
+                    loadIPandPortForConnectScreen(ipString, portString);
 
                     updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
 
@@ -518,21 +496,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     hosting->ui->currentlyInteracting = true;
 
                     // Load the hostPort from disk when entering the hosting screen and update the HostingValues texture
-                    char* loadedPort = loadHostPort();
-                    if (loadedPort != NULL)
-                    {
-
-                        if (SDL_strlen(loadedPort) > 0)
-                        {
-
-                            portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
-                            SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
-
-                        }
-
-                        SDL_free(loadedPort);
-
-                    }
+                    loadPortForHostScreen(portString);
 
                     updateHostingValuesText(Texture_HostingValues, portString, nameString);
 
@@ -900,5 +864,65 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     // ------------------------------------------------------------------
 
     return MULTIPLAYERLOBBY_SCREEN;
+
+}
+
+// Function for loading the IP and PORT from disk for the CONNECT screen
+void loadIPandPortForConnectScreen(char* ipString, char* portString)
+{
+
+    char* loadedIP = loadIP();
+    if (loadedIP != NULL)
+    {
+
+        if (SDL_strlen(loadedIP) > 0)
+        {
+
+            ipString = SDL_realloc(ipString, (SDL_strlen(loadedIP) + 1) * sizeof(char));
+            SDL_strlcpy(ipString, loadedIP, SDL_strlen(loadedIP) + 1);
+
+        }
+
+        SDL_free(loadedIP);
+
+    }
+
+    char* loadedPort = loadConnectPort();
+    if (loadedPort != NULL)
+    {
+
+        if (SDL_strlen(loadedPort) > 0)
+        {
+
+            portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
+            SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
+
+        }
+
+        SDL_free(loadedPort);
+
+    }
+
+}
+
+// Function for loading the PORT from disk for the HOST screen
+void loadPortForHostScreen(char* portString)
+{
+
+    char* loadedPort = loadHostPort();
+    if (loadedPort != NULL)
+    {
+
+        if (SDL_strlen(loadedPort) > 0)
+        {
+
+            portString = SDL_realloc(portString, (SDL_strlen(loadedPort) + 1) * sizeof(char));
+            SDL_strlcpy(portString, loadedPort, SDL_strlen(loadedPort) + 1);
+
+        }
+
+        SDL_free(loadedPort);
+
+    }    
 
 }
