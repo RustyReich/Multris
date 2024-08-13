@@ -106,6 +106,7 @@ typedef struct gameInstance
     TCPsocket serverSocket;
     SDLNet_SocketSet serverSocketSet;
     unsigned long connectionThreadID;
+    bool hosting;
 
     int randState;
 

@@ -54,7 +54,12 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         {
 
             multiplayer->ui->currentlyInteracting = false;
-            connection->ui->currentlyInteracting = true;
+            
+            // If we just got out of a game that we were hosting, we should be exited into the HOST menu. Otherwise, the CONNECT menu.
+            if (globalInstance->hosting == true)
+                hosting->ui->currentlyInteracting = true;
+            else
+                connection->ui->currentlyInteracting = true;
 
             // Display serverMessage on the screen
             currMessage = SDL_realloc(currMessage, sizeof(char) * (SDL_strlen(serverMessage) + 1));
@@ -69,6 +74,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
             // Load values needed depending on the screen we are in
             if (connection->ui->currentlyInteracting == true)
                 loadIPandPortForConnectScreen(ipString, portString);
+            else if (hosting->ui->currentlyInteracting == true)
+                loadPortForHostScreen(portString);
 
         }
 
@@ -96,6 +103,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         // Update the ConnectionValues and HostingValues textures now that some data may have been loaded from disk
         updateConnectionValuesText(Texture_ConnectionValues, ipString, portString, nameString);
         updateHostingValuesText(Texture_HostingValues, portString, nameString);
+
+        // We are no longer hosting a game since we're in the multiplayer lobby
+        globalInstance->hosting = false;
 
     }
 
@@ -348,6 +358,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     SDL_strlcat(namePacket, nameString, len);
                     SDLNet_TCP_Send(globalInstance->serverSocket, namePacket, len);
                     SDL_free(namePacket);
+
+                    // Set global hosting value so that we know when we are the ones hosting the game that we are in
+                    if (*hostingGame)
+                        globalInstance->hosting = true;
 
                 }
 

@@ -213,6 +213,9 @@ void mainLoop()
 		// We need to re-generate the firstPiece when we RESET
 		generateFirst = true;
 
+		// If we got returned to the main menu, reset global hosting value. This is just in case it for some reason didn't get reset already.
+		globalInstance->hosting = false;
+
 	}
 
 }
