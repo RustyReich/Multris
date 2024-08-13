@@ -1598,9 +1598,23 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 			if (onPress(SELECT_BUTTON))
 			{
 
+				// Flag for keep track of whether the player should be returned to the multiplayer lobby or not
+				bool returnToMultiplayerLobby = false;
+
 				// Disconnect from server when player tries to return back to the main menu after getting a game over
 				if (MULTIPLAYER)
+				{
+
+					// Populate the serverMessage that the player left the server
+					SDL_strlcpy(serverMessage, "Left Server", SERVERMESSAGE_BUFFER_SIZE);
+
+					// Disconnect from the server
 					disconnectFromServer();
+
+					// Set flag to return back to the multiplayer lobby
+					returnToMultiplayerLobby = true;
+
+				}
 
 				//Free all memory taken by PLAYMODE -----------------------------------
 				freeVars();
@@ -1608,7 +1622,11 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				// Fade out music when we leave PLAY_MODE
 				Mix_FadeOutMusic(MUSIC_FADEOUT_MS);
 
-				return RESET;
+				// Return back to either multiplayer lobby or main menu depending on the value of returnToMultiplayerLobby
+				if (returnToMultiplayerLobby)
+					return MULTIPLAYERLOBBY_SCREEN;
+				else
+					return RESET;
 
 			}
 
