@@ -222,6 +222,8 @@ int startServer(IPaddress address, int tickRate)
                     for (int i = 0; i < maxPlayers; i++)
                     {
 
+                        printf("Telling player %d to ready up...\n", i + 1);
+
                         char message[] = "Press SELECT when ready";
                         SDLNet_TCP_Send(clients[i], message, SDL_strlen(message) + 1);
 
