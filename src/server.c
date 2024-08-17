@@ -364,8 +364,8 @@ int startServer(IPaddress address, int tickRate)
                         char currentData[1024];
                         int currentLen = SDLNet_TCP_Recv(clients[currentPlayerIndex], currentData, 1024);
 
-                        // If the data is of length 0, that means the client closed the connection
-                        if (currentLen == 0)
+                        // If the data is of length <= 0, that means the client closed the connection
+                        if (currentLen <= 0)
                         {
 
                             // If a player disconnected, close the server.
