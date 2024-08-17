@@ -388,8 +388,9 @@ int hostGame(void* data)
 
 		// Send the error back to the game thread via the data variable
 		const char* temp = SDLNet_GetError();
-		data = SDL_realloc(data, sizeof(char) * SDL_strlen(temp) + 1);
-		SDL_strlcpy(data, temp, SDL_strlen(temp) + 1);                     
+		SDL_strlcpy(data, temp, HOST_GAME_DATA_MAX_LENGTH);
+
+		return 0;                   
 
 	}
 
@@ -399,8 +400,7 @@ int hostGame(void* data)
 
 		// Send the error back to the game thread via the data variable
 		const char* temp = SDLNet_GetError();
-		data = SDL_realloc(data, sizeof(char) * SDL_strlen(temp) + 1);
-		SDL_strlcpy(data, temp, SDL_strlen(temp) + 1);  	
+		SDL_strlcpy(data, temp, HOST_GAME_DATA_MAX_LENGTH);
 
 	}
 

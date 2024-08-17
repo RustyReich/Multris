@@ -417,6 +417,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 SDL_strlcpy(currMessage, hostGameData, SDL_strlen(hostGameData) + 1);
                 updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
 
+                // The server must not be running if we got this data
+                *hostingGame = false;
+                globalInstance->hosting = false;
+
             }
             
 
@@ -563,7 +567,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                     // hostGameData is used to transmit data between the game thread and the server thread. Initially, we use it to pass
                     // the port to the server thread
-                    hostGameData = SDL_realloc(hostGameData, sizeof(char) * (SDL_strlen(portString) + 1));
+                    hostGameData = SDL_realloc(hostGameData, sizeof(char) * HOST_GAME_DATA_MAX_LENGTH);
                     SDL_strlcpy(hostGameData, portString, SDL_strlen(portString) + 1);
 
                     // Host server in separate thread, passing the port to host it on in hostGameData
