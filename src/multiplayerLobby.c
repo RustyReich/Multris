@@ -154,8 +154,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 				char currentData[1024];
 				int currentLen = SDLNet_TCP_Recv(globalInstance->serverSocket, currentData, 1024);
 
-				// If data is length 0, the server closed. So disconnect from the server.
-				if (currentLen == 0)
+				// If data is length <= 0, the server closed. So disconnect from the server.
+				if (currentLen <= 0)
 				{
 
 					disconnect = true;
@@ -242,14 +242,36 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 disconnectFromServer();
                 MULTIPLAYER = false;
 
-                // If the last message we had was "Waiting for players to join"
-                if (SDL_strstr(currMessage, "Waiting for players to join") != NULL)
+                // If the last message we had was not "Attempting connection"
+                if (SDL_strstr(currMessage, "Attempting connection") == NULL)
                 {
 
-                    // Then that means the server closed, so display that
-                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Server closed") + 1);
-                    SDL_strlcpy(currMessage, "Server closed", SDL_strlen("Server closed") + 1);
-                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+                    // If the last message received from server was the "Waiting for players" or
+                    // "Press SELECT" messages, that means server stopped suddenly and so we don't
+                    // have a disconnection message to display. So display generic "Server closed"
+                    // message.
+                    if (SDL_strstr(currMessage, "Waiting") != NULL || SDL_strstr(currMessage, "Press") != NULL)
+                    {
+
+                        // Then that means the server closed, so display that
+                        currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Server closed") + 1);
+                        SDL_strlcpy(currMessage, "Server closed", SDL_strlen("Server closed") + 1);
+                        updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
+
+                    }
+
+                }
+                else
+                {
+
+                    // If it was, that means we were never able to fully connect because the
+                    // connection was refused
+                        // This likely means you connected to a TCP server that was not a Multris
+                        // server
+                    char message[] = "Connection Refused";
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(message) + 1);
+                    SDL_strlcpy(currMessage, message, SDL_strlen(message) + 1);
+                    updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);    
 
                 }
 
