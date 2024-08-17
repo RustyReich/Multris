@@ -466,6 +466,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                     playSound(ROTATE_SOUND);
 
+                    // Save IP and port you are attempting to connect to
+                    saveIP(ipString);
+                    saveConnectPort(portString);
+
                     // Reset error to false whenever we press the CONNECT button
                     *error = false;
 
@@ -550,6 +554,9 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 {
 
                     playSound(ROTATE_SOUND);
+
+                    // Save port you are hosting on
+                    saveHostPort(portString);
 
                     // Reset error to false whenever we press the HOST button
                     *error = false;
