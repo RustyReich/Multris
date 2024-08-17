@@ -247,13 +247,13 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 {
 
                     // If the last message received from server was the "Waiting for players" or
-                    // "Press SELECT" messages, that means server stopped suddenly and so we don't
-                    // have a disconnection message to display. So display generic "Server closed"
-                    // message.
-                    if (SDL_strstr(currMessage, "Waiting") != NULL || SDL_strstr(currMessage, "Press") != NULL)
+                    // "Press SELECT" or "READY" messages, that means server stopped suddenly and 
+                    //so we don't have a disconnection message to display. So display generic 
+                    // "Server closed" message.
+                        // Otherwise, the last message receieved from the server would be displayed
+                    if (SDL_strstr(currMessage, "Waiting") != NULL || SDL_strstr(currMessage, "Press") != NULL || SDL_strstr(currMessage, "READY") != NULL)
                     {
 
-                        // Then that means the server closed, so display that
                         currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Server closed") + 1);
                         SDL_strlcpy(currMessage, "Server closed", SDL_strlen("Server closed") + 1);
                         updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
