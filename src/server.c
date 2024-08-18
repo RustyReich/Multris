@@ -140,6 +140,9 @@ int startServer(IPaddress address, int tickRate)
     Uint32 timeAllPlayersConnected = 0;
     bool gameStarted = false;
 
+    // Keep track of when we have received the first packet from a particular player
+    bool* receivedFirstPacket = SDL_calloc(maxPlayers, sizeof(bool));
+
     LoopStart:;
     while (running == true)
     {
@@ -401,6 +404,19 @@ int startServer(IPaddress address, int tickRate)
 
                         }
                         
+                        // If our received data does not end in a null-byte, 
+                        //add a null-byte to the end of it
+                            // This is to avoid out-of-bounds errors since we will treat this
+                            // data as a string, which expects a null-byte at the end.
+                        if (data[dataLen - 1] != '\0')
+                        {
+
+                            data = SDL_realloc(data, dataLen + 1);
+                            data[dataLen] = '\0';
+                            dataLen += 1;
+
+                        }
+
                     }
 
                     // Split data into "packets". A packet is basically a set of data for a specific variable.
@@ -436,26 +452,34 @@ int startServer(IPaddress address, int tickRate)
                         else
                         {
 
-                            if (numPackets == 0)
+                            // Only append a new packet if the currentStringValue is not null.
+                            // This is to avoid crashes where data is received with two null-bytes
+                            // in a row.
+                            if (currentStringValue != NULL)
                             {
 
-                                packets = SDL_calloc(1, sizeof(char*));
-                                numPackets++;
+                                if (numPackets == 0)
+                                {
+
+                                    packets = SDL_calloc(1, sizeof(char*));
+                                    numPackets++;
+
+                                }
+                                else
+                                {
+
+                                    packets = SDL_realloc(packets, (numPackets + 1) * sizeof(char*));
+                                    numPackets++;                                
+
+                                }
+
+                                packets[numPackets - 1] = SDL_calloc(SDL_strlen(currentStringValue) + 1, sizeof(char));
+                                SDL_strlcpy(packets[numPackets - 1], currentStringValue, SDL_strlen(currentStringValue) + 1);
+
+                                SDL_free(currentStringValue);
+                                currentStringValue = NULL;
 
                             }
-                            else
-                            {
-
-                                packets = SDL_realloc(packets, (numPackets + 1) * sizeof(char*));
-                                numPackets++;                                
-
-                            }
-
-                            packets[numPackets - 1] = SDL_calloc(SDL_strlen(currentStringValue) + 1, sizeof(char));
-                            SDL_strlcpy(packets[numPackets - 1], currentStringValue, SDL_strlen(currentStringValue) + 1);
-
-                            SDL_free(currentStringValue);
-                            currentStringValue = NULL;
 
                         }
 
@@ -482,6 +506,39 @@ int startServer(IPaddress address, int tickRate)
                                 break;
                         char* packetHeader = SDL_calloc(endHeaderIndex + 1, sizeof(char));
                         SDL_strlcpy(packetHeader, packets[packetIndex], endHeaderIndex + 1);
+
+                        // If this is the first packet received from this player
+                        if (receivedFirstPacket[currentPlayerIndex] == false)
+                        {
+
+                            // The first packet MUST be a NAME packet. Otherwise, it is likely not
+                            // a Multris client that connected to the server. And in that case, we
+                            // should close the server.
+                            if (SDL_strstr(packets[packetIndex], "NAME=") == NULL)
+                            {
+
+                                printf("Unexpected packet from player %d. Closing server.\n", playerID);
+
+                                char message[] = "Unexpected packet from player. Server closed.";
+                                for (int otherPlayerIndex = 0; otherPlayerIndex < numConnectedPlayers; otherPlayerIndex++)
+                                    if (otherPlayerIndex != currentPlayerIndex)
+                                        SDLNet_TCP_Send(clients[otherPlayerIndex], message, SDL_strlen(message) + 1);
+                                
+                                // Since we are closing the server, we need to free our packets
+                                for (int i = 0; i < numPackets; i++)
+                                    SDL_free(packets[i]);
+                                SDL_free(packets);
+                                SDL_free(data);
+
+                                // Close the server
+                                running = false;
+                                goto LoopStart;       
+
+                            }
+
+                            receivedFirstPacket[currentPlayerIndex] = true;
+
+                        }
 
                         // If the received packet is a NAME
                         if (SDL_strstr(packets[packetIndex], "NAME") != NULL)
