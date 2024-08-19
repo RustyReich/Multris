@@ -4,9 +4,9 @@
 
 # Compiler settings - Can be customized.
 CC = 	x86_64-w64-mingw32-gcc	 													\
-		-LSDL2-devel-2.30.3-mingw/SDL2-2.30.3/x86_64-w64-mingw32/lib				\
-		-ISDL2-devel-2.30.3-mingw/SDL2-2.30.3/x86_64-w64-mingw32/include			\
-		-ISDL2-devel-2.30.3-mingw/SDL2-2.30.3/x86_64-w64-mingw32/include/SDL2		\
+		-LSDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32/lib				\
+		-ISDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32/include			\
+		-ISDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32/include/SDL2		\
 		-LSDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/lib		\
 		-ISDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/include 	\
 		-LSDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32/lib			\
