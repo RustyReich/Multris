@@ -15,7 +15,6 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     DECLARE_VARIABLE(bool, waitingForReady, false);
     DECLARE_VARIABLE(bool, playerReady, false);
     DECLARE_VARIABLE(bool, tryingConnection, false);
-    DECLARE_VARIABLE(bool, connectFunctionReturned, false);
     DECLARE_VARIABLE(int, timeConnectingStarted, 0);
     DECLARE_VARIABLE(bool, hostingGame, false);
 
@@ -40,6 +39,7 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
     static char* nameString; declareStart(nameString, '\0');
     static char* currMessage; declareStart(currMessage, '\0');
     static char* hostGameData; declareStart(hostGameData, '\0');
+    static char* connectGameData; declareStart(connectGameData, '\0');
 
     // Keep track of the currently active UI_list
     UI_list* active_list = NULL;
@@ -327,11 +327,11 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
         {
             
             // Check if the thread attempting the connection has either already returned or timed out
-            if (*connectFunctionReturned || (SDL_GetTicks() - *timeConnectingStarted) / 1000 > CONNECTION_TIMEOUT_SECONDS)
+            if (SDL_strlen(connectGameData) > 0 || (SDL_GetTicks() - *timeConnectingStarted) / 1000 > CONNECTION_TIMEOUT_SECONDS)
             {
                 
                 // If it timed out
-                if (*connectFunctionReturned == false)
+                if (SDL_strlen(connectGameData) == 0)
                 {
 
                     // Cancel the thread. This is OS-specific
@@ -353,9 +353,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 {
                     
                     // Display error message to screen
-                    const char* temp = SDLNet_GetError();
-                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(temp) + 1);
-                    SDL_strlcpy(currMessage, temp, SDL_strlen(temp) + 1);
+                    currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen(connectGameData) + 1);
+                    SDL_strlcpy(currMessage, connectGameData, SDL_strlen(connectGameData) + 1);
 
                     updateConnectionMessageText(&Texture_ConnectionMessage, currMessage);
                     *error = true;
@@ -392,7 +391,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                 }
 
                 *tryingConnection = false;
-                *connectFunctionReturned = false;
+
+                // Reset the connectGameData, which stores the message that has been transferred back from the connecting thread
+                connectGameData = SDL_realloc(connectGameData, sizeof(char) * 1);
+                connectGameData[0] = '\0';
 
             }   // Update "Attempting Connection..." counter
             else if (currMessage[SDL_strlen(currMessage) - 1] != '0' + (char)((SDL_GetTicks() - *timeConnectingStarted) / 1000))
@@ -506,8 +508,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                         }
                         
                         // Attempt connection to server in a separate thread
+                            // connectGameData is used to transfer information from the connecting thread to the main thread
                         *tryingConnection = true;
-                        SDL_CreateThread(openConnection, "openConnection", connectFunctionReturned);
+                        connectGameData = SDL_realloc(connectGameData, sizeof(char) * CONNECT_GAME_DATA_MAX_LENGTH);
+                        SDL_CreateThread(openConnection, "openConnection", connectGameData);
                         *timeConnectingStarted = SDL_GetTicks();
 
                         // Display that we are attempting to connect to the server
@@ -590,8 +594,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     }
                     
                     // Attempt connection to server in a separate thread
+                        // connectGameData is used to transfer information from the connecting thread to the main thread
                     *tryingConnection = true;
-                    SDL_CreateThread(openConnection, "openConnection", connectFunctionReturned);
+                    connectGameData = SDL_realloc(connectGameData, sizeof(char) * CONNECT_GAME_DATA_MAX_LENGTH);
+                    SDL_CreateThread(openConnection, "openConnection", connectGameData);
                     *timeConnectingStarted = SDL_GetTicks();
 
                     // Display that we are attempting to connect to the server

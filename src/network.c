@@ -359,7 +359,7 @@ void sendMapToServer(int* mapData, int* lastPuleTime)
 }
 
 // Function for connecting to a server in a separate thread
-int openConnection(void* functionReturned)
+int openConnection(void* data)
 {
 
 	// Keep track of the ID for this tread so it can be canceled if it timesout
@@ -367,9 +367,20 @@ int openConnection(void* functionReturned)
 	
 	// Attempt the connection
 	globalInstance->serverSocket = SDLNet_TCP_Open(&(globalInstance->serverIP));
+	
+	// If failed to open connection, return the error message to the main thread via the data variable
+	if (globalInstance->serverSocket == NULL)
+	{
+
+		const char* temp = SDLNet_GetError();
+		SDL_strlcpy(data, temp, HOST_GAME_DATA_MAX_LENGTH);
+
+		return 0;
+
+	}
 
 	// Keep track of if the SDLNet_TCP_Open function returned
-	*(bool*)functionReturned = true;
+	SDL_strlcpy(data, "true", HOST_GAME_DATA_MAX_LENGTH);
 
 	return 0;
 
