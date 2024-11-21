@@ -76,5 +76,8 @@ UI_list* create_Multiplayer_List();
 UI_list* create_Hosting_List();
 SDL_Texture* create_HostingValues_Text();
 void updateHostingValuesText(SDL_Texture* texture, char* port, char* name);
+UI_list* create_Pause_list();
+SDL_Texture* create_PausedValues_Text();
+void updatePausedValuesText(SDL_Texture* texture);
 
 #endif

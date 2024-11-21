@@ -281,6 +281,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_Name_Text();
         else if (type == HOSTINGVALUES_TEXT)
             *ptr = create_HostingValues_Text();
+        else if (type == PAUSEDVALUES_TEXT)
+            *ptr = create_PausedValues_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);
@@ -406,6 +408,8 @@ void declare_UI_list(UI_list** ptr, int type)
             *ptr = create_Multiplayer_List();
         else if (type == HOSTING_LIST)
             *ptr = create_Hosting_List();
+        else if (type == PAUSE_LIST)
+            *ptr = create_Pause_list();
 
         if (!inVector((void**)ptr))
             pushAddress((void**)ptr, UI_LIST);

@@ -24,6 +24,7 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	DECLARE_VARIABLE(bool, clearingLine, false);
 	DECLARE_VARIABLE(bool, opponentClearingLine, false);
 	DECLARE_VARIABLE(bool, paused, false);
+	DECLARE_VARIABLE(bool, justUnPaused, false);
 	DECLARE_VARIABLE(bool, overAnimation, false);
 	DECLARE_VARIABLE(bool, justHeld, false);
 	DECLARE_VARIABLE(unsigned short, numCompleted, 0);
@@ -53,13 +54,14 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	DECLARE_VARIABLE(bool, playing_progress_sound, false);
 	DECLARE_VARIABLE(unsigned int, progress_sound_start, 0);
 	DECLARE_VARIABLE(int, length_of_progress_sound, 0);
-	DECLARE_VARIABLE(bool, aboutToExit, false);
 	DECLARE_VARIABLE(int, lastPulseTime, 0);
 	DECLARE_VARIABLE(int, receivedGarbage, 0);
 	DECLARE_VARIABLE(int, nextPieceSeed, 0);
 	DECLARE_VARIABLE(int, garbageQueue, 0);
 	DECLARE_VARIABLE(int, numOpponentCurrentlyRemoved, 0);
 	DECLARE_VARIABLE(int, gameStartTime, SDL_GetTicks());
+	DECLARE_VARIABLE(bool, editingVolume, false);
+	DECLARE_VARIABLE(bool, editingMusic, false);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -82,6 +84,12 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	static SDL_Texture* opponentForeground; declare_HUD_Text(&opponentForeground, FOREGROUND_TEXT);
 	static SDL_Texture* Texture_OpponentName; declare_HUD_Text(&Texture_OpponentName, NAME_TEXT);
 	static SDL_Texture* Texture_Name; declare_HUD_Text(&Texture_Name, NAME_TEXT);
+	static SDL_Texture* Texture_PausedValues; declare_HUD_Text(&Texture_PausedValues, PAUSEDVALUES_TEXT);
+	static SDL_Texture* Texture_Cursor; declare_HUD_Text(&Texture_Cursor, CURSOR_TEXT);
+	static SDL_Texture* Texture_volSlide; declare_HUD_Text(&Texture_volSlide, VOLSLIDE_TEXT);
+
+	//UI elements
+	static UI_list* pauseList; declare_UI_list(&pauseList, PAUSE_LIST);
 
 	//Arrays
 		//Initialize completedRows to only include a row that is offscreen
@@ -109,9 +117,13 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		*opponentForegroundX = *foregroundX + getGameWidth(MODE, MULTIPLAYER) / 2;
 
 		//Calculate multiplier for PAUSED text when it would be wider than the playfield
-		if (MODE != 0)
-			if (getStringLength("PAUSED", 1.0) > SDL_round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH)
-				*pausedMulti = SDL_round(BASE_PLAYFIELD_WIDTH * MODE) * SPRITE_WIDTH / getStringLength("PAUSED", 1.0);
+			// The second element in the list is the longest, so use it to calculate multiplier
+		if (getStringLength(pauseList->entry_texts[1], 1.0) > MAP_WIDTH * SPRITE_WIDTH)
+			*pausedMulti = (float)MAP_WIDTH * (float)SPRITE_WIDTH / (float)getStringLength(pauseList->entry_texts[1], 1.0);
+
+		// Get the x and y positions for the paused menu to display based on the current MODE
+		pauseList->ui->x = getPausedX(MODE, *pausedMulti);
+		pauseList->ui->y = getPausedY(MODE, *pausedMulti);
 
 		// Calc speed at start incase want to start at different level (for debugging)
 		*speed = calcSpeed(*Level);
@@ -599,32 +611,6 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	if (!*gameOver)	//These controls work even when paused, as long as the game is
 	{				//not over
 
-		//Pausing
-			// Player cannot pause in multiplayer
-		if (onPress(SELECT_BUTTON) && MULTIPLAYER == false)
-		{
-
-			// If aboutToExit and press SELECT_BUTTON, exit to main menu
-			if (*aboutToExit == true)
-			{
-
-				freeVars();
-
-				// Fade out music when we leave PLAY_MODE
-				Mix_FadeOutMusic(MUSIC_FADEOUT_MS);
-
-				return RESET;
-
-			}
-			else {
-
-				// If not aboutToExit, just pause the game normally
-				playSound(PAUSE_SOUND);
-				*paused = !*paused;	
-
-			}
-
-		}
 		// Also pause if window loses focus
 			// Game will not pause in multiplayer
 		if (!(SDL_GetWindowFlags(globalInstance->window) & SDL_WINDOW_INPUT_FOCUS) && !*paused && MULTIPLAYER == false)
@@ -635,25 +621,215 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 		}
 
-		if (*paused && onPress(EXIT_BUTTON))
+		// If the game is paused
+		if (*paused)
 		{
 
-			// When press EXIT_BUTTON while paused, switch between aboutToExit and not
-			*aboutToExit = !*aboutToExit;
-
-			playSound(ROTATE_SOUND);
-
-			// Updpate the PAUSED texture with the aboutToExit value
-			updatePausedText(Texture_Paused, *aboutToExit);
-
-			// If you press EXIT_BUTTON while aboutToExit, leave the pause menu
-			if (*aboutToExit == false)
+			// If the players presses the down button while in pause menu
+			if (onPress(DOWN_BUTTON) && pauseList->selected_entry < pauseList->num_entries - 1)
 			{
 
-				playSound(PAUSE_SOUND);
-				*paused = !*paused;
+				// As long as the player is not editing volume
+				if (!*editingVolume && !*editingMusic)
+				{
+
+					// Move down in the pause menu
+					playSound(MOVE_SOUND);
+					pauseList->selected_entry++;
+
+				}
+
+			}	// If the player presses the up button while in the pause menu
+			else if (onPress(UP_BUTTON) && pauseList->selected_entry > 0)
+			{
+
+				// As long as the player is not editing volume
+				if (!*editingVolume && !*editingMusic)
+				{
+
+					// Move up in the pause menu
+					playSound(MOVE_SOUND);
+					pauseList->selected_entry--;
+
+				}
+
+			}	// If the player presses the SELECT_BUTTON
+			else if (onPress(SELECT_BUTTON))
+			{
+
+				//Play ROTATE_SOUND only if pressed when not editing volume
+				if (*editingVolume == false && *editingMusic == false)
+					playSound(ROTATE_SOUND);
+
+				// If the player selected "EXIT"
+				if (SDL_strstr(getListSelectedString(pauseList), "EXIT") != NULL)
+				{
+
+					// Free memory
+					freeVars();
+
+					// Fade out music when we leave PLAY_MODE
+					Mix_FadeOutMusic(MUSIC_FADEOUT_MS);
+
+					// And leave PLAY_MODE
+					return RESET;
+
+				}	// If player selected "FULLSCREEN", toggle FULLSCREEN
+				else if (SDL_strstr(getListSelectedString(pauseList), "FULLSCREEN") != NULL)
+				{
+
+					FULLSCREEN_MODE = !FULLSCREEN_MODE;
+					UPDATE_FULLSCREEN_MODE = true;
+
+					updatePausedValuesText(Texture_PausedValues);
+
+				}	// If player selected "LIMIT FPS", toggle LIMIT FPS
+				else if (SDL_strstr(getListSelectedString(pauseList), "LIMIT FPS") != NULL)
+				{
+
+					LIMIT_FPS = !LIMIT_FPS;
+
+					updatePausedValuesText(Texture_PausedValues);
+
+				}	// If player selected "SHOW FPS", toggle SHOW FPS
+				else if (SDL_strstr(getListSelectedString(pauseList), "SHOW FPS") != NULL)
+				{
+
+					SHOW_FPS = !SHOW_FPS;
+
+					updatePausedValuesText(Texture_PausedValues);
+
+				}	// If player selected "SFX VOL" or "MUSIC VOL", start editing the volume
+				else if (SDL_strstr(getListSelectedString(pauseList), "SFX VOL") != NULL)
+					*editingVolume = true;
+				else if (SDL_strstr(getListSelectedString(pauseList), "MUSIC VOL") != NULL)
+					*editingMusic = true;
+				else if (SDL_strstr(getListSelectedString(pauseList), "RESUME") != NULL)
+				{
+
+					// If player selected "RESUME", un-pause the game
+					*paused = false;
+					// Keep track of the frame that we left the pause menu to avoid immdiately
+					// opening the pause menu again in the same frame.
+					*justUnPaused = true;
+
+				}
 
 			}
+			else if (onPress(EXIT_BUTTON))
+			{
+
+				playSound(LAND_SOUND);
+
+				// Stop editing volume if player presses the EXIT_BUTTON while editing volume.
+				if (*editingVolume == true)
+					*editingVolume = false;
+				else if (*editingMusic == true)
+					*editingMusic = false;
+				else	// Un-pause if player presses the EXIT_BUTTON while not editing volume.
+					*paused = false;		
+
+			}
+
+			//Holding LEFT or RIGHT is only used for changing the volume
+			if (onHold(LEFT_BUTTON) || onHold(RIGHT_BUTTON))
+			{
+
+				Uint32 currTicks = SDL_GetTicks();
+
+				//Start the counter for holding the LEFT or RIGHT buttons
+				if (*moveStart == 0)
+				{
+
+					*moveStart = currTicks;
+					*moveStartBool = true;
+
+				}
+
+				//Logic for volume or custom value changing rapidly if you hold the button
+				if (*moveStartBool || (currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+				{
+
+					if (onHold(LEFT_BUTTON))
+					{
+
+						if (*editingVolume && VOLUME > 0)
+						{
+
+							VOLUME--;
+							updatePausedValuesText(Texture_PausedValues);
+
+							updateVolume();
+							playSound(MOVE_SOUND);
+
+						}
+						else if (*editingMusic && MUSIC_VOLUME > 0)
+						{
+
+							MUSIC_VOLUME--;
+							updatePausedValuesText(Texture_PausedValues);
+
+							Mix_VolumeMusic(MIX_MAX_VOLUME * (MUSIC_VOLUME / 100.0));
+
+						}
+
+					}
+					
+					if (onHold(RIGHT_BUTTON))
+					{
+
+						if (*editingVolume && VOLUME < 100)
+						{
+
+							VOLUME++;
+							updatePausedValuesText(Texture_PausedValues);
+
+							updateVolume();
+							playSound(MOVE_SOUND);
+
+						}
+						else if (*editingMusic && MUSIC_VOLUME < 100)
+						{
+
+							MUSIC_VOLUME++;
+							updatePausedValuesText(Texture_PausedValues);
+
+							Mix_VolumeMusic(MIX_MAX_VOLUME * (MUSIC_VOLUME / 100.0));
+							
+						}
+
+					}
+
+					*moveStartBool = false;
+
+					if ((currTicks - *moveStart) >= (MOVEMENT_WAIT + MOVEMENT_TIME))
+						*moveStart = currTicks - MOVEMENT_WAIT;
+
+				}
+
+			}
+			else
+				*moveStart = 0;
+
+		}
+
+		//Pausing
+			// Player cannot pause in multiplayer
+		if (onPress(SELECT_BUTTON) && MULTIPLAYER == false)
+		{
+			
+			// If the SELEC_BUTTON has been pressed and we are not currently paused and we did not
+			// just un-pause in the current frame, then pause the game
+			if (*paused == false && *justUnPaused == false)
+			{
+
+				// Pause
+				playSound(PAUSE_SOUND);
+				*paused = true;	
+
+			}	// If we are not paused but we just un-paused this frame, don't pause.
+			else if (*paused == false && *justUnPaused == true)
+				*justUnPaused = false;
 
 		}
 
@@ -1334,10 +1510,31 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 	}
 
-	//Draw PAUSED if game is paused
-		//Center the text
+	//Draw pause screen if game is paused
 	if (*paused)
-		drawTexture(Texture_Paused, getPausedX(MODE, *pausedMulti), getPausedY(MODE, *pausedMulti), *pausedMulti);
+	{
+
+		// Draw pauseList
+		drawTexture(pauseList->ui->texture, pauseList->ui->x, pauseList->ui->y, *pausedMulti);
+
+		// Draw PausedValues
+		int x = pauseList->ui->x + getStringLength(" FULLSCREEN:", *pausedMulti);
+		x += (float)STRING_GAP * (float)*pausedMulti;
+		drawTexture(Texture_PausedValues, x, getPausedY(MODE, *pausedMulti), *pausedMulti);
+
+		int y = getPausedY(MODE, *pausedMulti);
+		int index = pauseList->selected_entry;
+		y += (float)*pausedMulti * (float)index * (float)(FONT_HEIGHT + STRING_GAP);
+
+		// Draw volume controls if editing volume for SFX or MUSIC
+		if (*editingVolume || *editingMusic)
+			drawTexture(Texture_volSlide, x - (float)*pausedMulti * (float)FONT_WIDTH, y, *pausedMulti);
+
+		// Draw cursor
+		x = pauseList->ui->x + (float)*pausedMulti * (float)(STRING_GAP + FONT_WIDTH);
+		drawTexture(Texture_Cursor, x, y, *pausedMulti);
+
+	}
 
 	//Animations -----------------------------------------------------------------
 

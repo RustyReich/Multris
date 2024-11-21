@@ -958,6 +958,56 @@ void updateValuesText(SDL_Texture* texture)
 
 }
 
+// Function for redrawing the paused values texture
+void updatePausedValuesText(SDL_Texture* texture)
+{
+
+	clearTexture(texture);
+
+	//Print FULLSCREEN value
+	if (FULLSCREEN_MODE == 0)
+		printToTexture("OFF", texture, 14, 14, 1.0, RED);
+	else
+		printToTexture("ON", texture, 14, 14, 1.0, GREEN);
+
+	//Print VOLUME value
+	intToTexture(VOLUME, texture, 14, 28, 1.0, CYAN);
+
+	// Print MUSIC_VOLUME value
+	intToTexture(MUSIC_VOLUME, texture, 14, 42, 1.0, CYAN);
+
+	//Print LIMIT_FPS value
+	if (LIMIT_FPS == 0)
+		printToTexture("OFF", texture, 14, 56, 1.0, RED);
+	else
+		printToTexture("ON", texture, 14, 56, 1.0, GREEN);
+
+	//Print SHOW_FPS value
+	if (SHOW_FPS == 0)
+		printToTexture("OFF", texture, 14, 70, 1.0, RED);
+	else
+		printToTexture("ON", texture, 14, 70, 1.0, GREEN);
+
+}
+
+// Function for creating the paused values texture
+SDL_Texture* create_PausedValues_Text()
+{
+
+	SDL_Texture* texture;
+
+	int height = NUM_OF_PAUSED_OPTIONS * FONT_HEIGHT + (NUM_OF_PAUSED_OPTIONS - 1) * STRING_GAP;
+	// "  FULLSCREEN:     " is the longest option in the list
+	int width = getStringLength("  FULLSCREEN:     ", 1.0);
+
+	texture = createTexture(width, height);
+
+	updatePausedValuesText(texture);
+
+	return texture;
+	
+}
+
 // Create the texture that displays HOSTING screen in the multiplayer lobby
 SDL_Texture* create_HostingValues_Text()
 {
@@ -1430,6 +1480,26 @@ UI_list* create_Connect_List()
 
 	list->ui->x = 28;
 	list->ui->y = 14;
+
+	list->ui->currentlyInteracting = false;
+
+	return list;
+
+}
+
+// Create the Pause screne UI element that is displayed when the player pauses the game while in
+// PLAY_MODE
+UI_list* create_Pause_list()
+{
+
+	//Initialize the list
+	UI_list* list;
+	list = create_list(WHITE, "  RESUME", "  FULLSCREEN:     ", "  SFX VOL   :", "  MUSIC VOL :", "  LIMIT FPS :", "  SHOW FPS  :", "  EXIT");
+
+	list->selected_entry = 0;
+
+	list->ui->x = 0;
+	list->ui->y = 0;
 
 	list->ui->currentlyInteracting = false;
 
@@ -2603,9 +2673,9 @@ int getPausedX(unsigned short size, float multi)
 		size = MAX_PIECE_SIZE;
 
 	int start = getForegroundX(size);
-	int width = SDL_round(BASE_PLAYFIELD_WIDTH * size) * SPRITE_WIDTH;
+	int width = MAP_WIDTH * SPRITE_WIDTH;
 
-	return (start + 0.5 * (width - getStringLength("PAUSED", multi)));
+	return (start + 0.5 * (width - getStringLength("  FULLSCREEN:     ", multi)));
 
 }
 
@@ -2619,6 +2689,6 @@ int getPausedY(unsigned short size, float multi)
 	int start = getForegroundY(size);
 	int height = SDL_round(BASE_PLAYFIELD_HEIGHT * size) * SPRITE_HEIGHT;
 
-	return (start + 0.5 * (height - FONT_HEIGHT * multi));
+	return (start + 0.5 * (height - (FONT_HEIGHT * NUM_OF_PAUSED_OPTIONS + (NUM_OF_PAUSED_OPTIONS - 1) * STRING_GAP) * multi));
 
 }
