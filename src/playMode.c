@@ -2516,7 +2516,7 @@ void removeLine(unsigned short row, int* mapData, SDL_Texture* foreground, unsig
 
 	//Clear area of foreground above the clearedLine
 	SDL_SetRenderTarget(globalInstance->renderer, foreground);
-	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 0);
+	SDL_SetRenderDrawColor(globalInstance->renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(globalInstance->renderer, &srcRect);
 
 	SDL_Rect dstRect = { .x = 0, .y = SPRITE_HEIGHT, .w = srcRect.w, .h = srcRect.h };
