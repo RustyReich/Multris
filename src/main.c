@@ -11,7 +11,7 @@ bool SHOW_FPS = true;
 bool CENTER_DOT = true;
 bool GRAPHICS = true;
 
-int PROGRESS = 1;
+int PROGRESS = FIRST_NUMERICAL_SIZE;
 
 int MODE = 0;
 int MAP_WIDTH = 0;

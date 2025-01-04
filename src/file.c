@@ -99,7 +99,7 @@ void createProgressFile()
 	if (progressFile != NULL)
 	{
 
-		fprintf(progressFile, "progress=1");
+		fprintf(progressFile, "progress=%d", FIRST_NUMERICAL_SIZE);
 		fclose(progressFile);
 
 	}
@@ -448,7 +448,7 @@ bool brokenProgress()
 
 	int progress_value = getFileValue("SAVES/progress.md", "progress");
 
-	if (progress_value < 1 || progress_value > 8)
+	if (progress_value < FIRST_NUMERICAL_SIZE || progress_value > MAX_PIECE_SIZE)
 		return true;
 
 	return false;
@@ -1099,8 +1099,8 @@ unsigned int loadProgress()
 
 	int prog = getFileValue("SAVES/progress.md", "progress");
 
-	if (prog < 1 || prog > MAX_PIECE_SIZE)
-		return 1;
+	if (prog < FIRST_NUMERICAL_SIZE || prog > MAX_PIECE_SIZE)
+		return FIRST_NUMERICAL_SIZE;
 	else
 		return prog;
 

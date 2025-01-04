@@ -1573,11 +1573,11 @@ UI_list* create_Modes_List()
 UI_list* create_Numerical_List()
 {
 
-	UI_list* list = create_list(GREEN, "1", "2", "3", "4", "5", "6", "7", "8");
+	UI_list* list = create_list(GREEN, "4", "5", "6", "7", "8");
 
 	//This list has the unique aspect of entries being different colors. This loop is making the appropriate
 	//entries have red text
-	for (unsigned short i = list->num_entries - 1; i > PROGRESS - 1; i--)
+	for (unsigned short i = list->num_entries - 1; i > PROGRESS - FIRST_NUMERICAL_SIZE; i--)
 	{
 
 		int texture_height;

@@ -95,7 +95,7 @@ unsigned short drawTitle(piece** firstPiece)
 		else if(numerical->ui->currentlyInteracting)
 		{
 
-			if (numerical->selected_entry < PROGRESS - 1)
+			if (numerical->selected_entry < PROGRESS - FIRST_NUMERICAL_SIZE)
 			{
 
 				playSound(MOVE_SOUND);

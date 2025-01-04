@@ -50,6 +50,8 @@
 
 #define MUSIC_FADEOUT_MS 1000
 
+#define FIRST_NUMERICAL_SIZE 4
+
 enum Control_Types {
 	
 	LEFT_BUTTON,
