@@ -1514,6 +1514,15 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	if (*paused)
 	{
 
+		//Draw transparent black box around pause menu
+		int pauseListWidth, pauseListHeight;
+		SDL_QueryTexture(pauseList->ui->texture, NULL, NULL, &pauseListWidth, &pauseListHeight);
+		int boxWidth = (float)(pauseListWidth - 2 * FONT_WIDTH) * *pausedMulti;
+		int boxHeight = (float)pauseListHeight * *pausedMulti * 1.15;
+		int boxX = pauseList->ui->x + (float)FONT_WIDTH * *pausedMulti;
+		int boxY = pauseList->ui->y - (boxHeight / (float)2 - (float)pauseListHeight * *pausedMulti / (float)2);
+		drawSimpleRect(NULL, boxX, boxY, boxWidth, boxHeight, BLACK, 75);
+
 		// Draw pauseList
 		drawTexture(pauseList->ui->texture, pauseList->ui->x, pauseList->ui->y, *pausedMulti);
 
