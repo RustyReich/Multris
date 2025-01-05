@@ -30,7 +30,6 @@ LEFT / RIGHT ARROW - Move. Hold to move quicker.
                  C - Mirror piece over Y-Axis
              ENTER - Select/Pause
             ESCAPE - Exit current menu.
-                     Return to main menu if pressed when game paused.
 ``` 
 ##### GAME MODES
 ```
@@ -52,7 +51,8 @@ Score - You score points by completing lines.
 ##### OPTIONS
 ```
   FULLSCREEN - Enable or disable fullscreen mode
-      VOLUME - Set the volume of the game audio. Between 0-100
+     SFX VOL - Set the volume of the game audio. Between 0-100.
+   MUSIC VOL - Set the volume of the background music. Between 0-100.
    LIMIT FPS - Limit the FPS of the game to twice that of the refresh rate of the display.
                This is to lower CPU usage.
     SHOW FPS - Enable/Disable drawing the FPS to the screen.
@@ -69,11 +69,13 @@ Score - You score points by completing lines.
 
 ###### Make sure that you have the development libraries as well as the runtime binaries installed
 
-[SDL2](https://www.libsdl.org/download-2.0.php)
+[SDL2](https://github.com/libsdl-org/SDL)
 
-[SDL2_Image](https://www.libsdl.org/projects/SDL_image/)
+[SDL_Image](https://github.com/libsdl-org/SDL_image)
 
-[SDL2_Net](https://github.com/libsdl-org/SDL_net)
+[SDL_Net](https://github.com/libsdl-org/SDL_net)
+
+[SDL_Mixer](https://github.com/libsdl-org/SDL_mixer)
 
 For all following instructions, replace `make -f Makefile_Linux` with `make -f Makefile_Windows` if you are on Windows.
 
@@ -82,8 +84,6 @@ For all following instructions, replace `make -f Makefile_Linux` with `make -f M
 ```
 git clone https://github.com/RustyReich/Multris
 cd Multris
-make -f Makefile_Linux
-cd server
 make -f Makefile_Linux
 ```
 
@@ -94,8 +94,6 @@ make -f Makefile_Linux
 ```
 git clone https://github.com/RustyReich/Multris --branch v1.x.x
 cd Multris
-make -f Makefile_Linux
-cd server
 make -f Makefile_Linux
 ```
 
