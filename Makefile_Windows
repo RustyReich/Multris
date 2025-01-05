@@ -2,8 +2,8 @@
 ####################### Makefile Template ##############################
 ########################################################################
 
-SDL2_DIR = SDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32
-SDL2IMAGE_DIR = SDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32
+SDL2_DIR = SDL2-devel-2.30.11-mingw/SDL2-2.30.11/x86_64-w64-mingw32
+SDL2IMAGE_DIR = SDL2_image-devel-2.8.4-mingw/SDL2_image-2.8.4/x86_64-w64-mingw32
 SDL2NET_DIR = SDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32
 SDL2MIXER_DIR = SDL2_mixer-devel-2.8.0-mingw/SDL2_mixer-2.8.0/x86_64-w64-mingw32
 
