@@ -12,12 +12,9 @@ APPNAME = build/Multris
 EXT = .c
 SRCDIR = src
 OBJDIR = unix_obj
-DEPDIR = unix_dep
 
-############## Do not change anything from here downwards! #############
 SRC = $(wildcard $(SRCDIR)/*$(EXT))
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
-DEP = $(OBJ:$(OBJDIR)/%.o=$(DEPDIR)%.d)
 # UNIX-based OS variables & settings
 RM = rm
 DELOBJ = $(OBJ)
@@ -30,8 +27,10 @@ WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
 ####################### Targets beginning here #########################
 ########################################################################
 
+$(shell mkdir -p $(OBJDIR))
+
 all: $(APPNAME)
-	rm $(OBJ)
+	rm -rf $(OBJDIR)
 
 # Builds the app
 $(APPNAME): $(OBJ)
@@ -40,9 +39,6 @@ $(APPNAME): $(OBJ)
 # Creates the dependecy rules
 %.d: $(SRCDIR)/%$(EXT)
 	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
-
-# Includes all .h files
--include $(DEP)
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
 $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)

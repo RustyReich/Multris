@@ -2,17 +2,22 @@
 ####################### Makefile Template ##############################
 ########################################################################
 
+SDL2_DIR = SDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32
+SDL2IMAGE_DIR = SDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32
+SDL2NET_DIR = SDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32
+SDL2MIXER_DIR = SDL2_mixer-devel-2.8.0-mingw/SDL2_mixer-2.8.0/x86_64-w64-mingw32
+
 # Compiler settings - Can be customized.
-CC = 	x86_64-w64-mingw32-gcc	 													\
-		-LSDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32/lib				\
-		-ISDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32/include			\
-		-ISDL2-devel-2.30.6-mingw/SDL2-2.30.6/x86_64-w64-mingw32/include/SDL2		\
-		-LSDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/lib		\
-		-ISDL2_image-devel-2.8.2-mingw/SDL2_image-2.8.2/x86_64-w64-mingw32/include 	\
-		-LSDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32/lib			\
-		-ISDL2_net-devel-2.2.0-mingw/SDL2_net-2.2.0/x86_64-w64-mingw32/include		\
-		-LSDL2_mixer-devel-2.8.0-mingw/SDL2_mixer-2.8.0/x86_64-w64-mingw32/lib		\
-		-ISDL2_mixer-devel-2.8.0-mingw/SDL2_mixer-2.8.0/x86_64-w64-mingw32/include	\
+CC = 	x86_64-w64-mingw32-gcc	 	\
+		-L$(SDL2_DIR)/lib			\
+		-I$(SDL2_DIR)/include		\
+		-I$(SDL2_DIR)/include/SDL2	\
+		-L$(SDL2IMAGE_DIR)/lib		\
+		-I$(SDL2IMAGE_DIR)/include 	\
+		-L$(SDL2NET_DIR)/lib		\
+		-I$(SDL2NET_DIR)/include	\
+		-L$(SDL2MIXER_DIR)/lib		\
+		-I$(SDL2MIXER_DIR)/include	\
 
 CXXFLAGS = -std=c17 -Wall -Wextra -g -O3
 LDFLAGS = -lmingw32 -mwindows -lSDL2main -lSDL2 -lSDL2_image -lSDL2_net -lSDL2_mixer -lssp -lm
@@ -22,12 +27,9 @@ APPNAME = build_windows/Multris
 EXT = .c
 SRCDIR = src
 OBJDIR = win_obj
-DEPDIR = win_dep
 
-############## Do not change anything from here downwards! #############
 SRC = $(wildcard $(SRCDIR)/*$(EXT))
 OBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)/%.o)
-DEP = $(OBJ:$(OBJDIR)/%.o=$(DEPDIR)%.d)
 # UNIX-based OS variables & settings
 RM = rm
 DELOBJ = $(OBJ)
@@ -40,8 +42,10 @@ WDELOBJ = $(SRC:$(SRCDIR)/%$(EXT)=$(OBJDIR)\\%.o)
 ####################### Targets beginning here #########################
 ########################################################################
 
+$(shell mkdir -p $(OBJDIR))
+
 all: $(APPNAME)
-	rm $(OBJ)
+	rm -rf $(OBJDIR)
 
 # Builds the app
 $(APPNAME): $(OBJ)
@@ -50,9 +54,6 @@ $(APPNAME): $(OBJ)
 # Creates the dependecy rules
 %.d: $(SRCDIR)/%$(EXT)
 	@$(CPP) $(CFLAGS) $< -MM -MT $(@:%.d=$(OBJDIR)/%.o) >$@
-
-# Includes all .h files
--include $(DEP)
 
 # Building rule for .o files and its .c/.cpp in combination with all .h
 $(OBJDIR)/%.o: $(SRCDIR)/%$(EXT)
