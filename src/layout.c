@@ -2673,7 +2673,7 @@ int getPausedX(unsigned short size, float multi)
 		size = MAX_PIECE_SIZE;
 
 	int start = getForegroundX(size);
-	int width = MAP_WIDTH * SPRITE_WIDTH;
+	int width = SDL_round(BASE_PLAYFIELD_WIDTH * size) * SPRITE_WIDTH;
 
 	return (start + 0.5 * (width - getStringLength("  FULLSCREEN:     ", multi)));
 
