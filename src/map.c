@@ -16,7 +16,7 @@ unsigned short drawTitle(piece** firstPiece)
 	DECLARE_VARIABLE(bool, editingMusic, false);
 	DECLARE_VARIABLE(unsigned int, moveStart, 0);
 	DECLARE_VARIABLE(bool, moveStartBool, false);
-	DECLARE_VARIABLE(unsigned short, customModeSize, 1);
+	DECLARE_VARIABLE(unsigned short, customModeSize, MIN_CUSTOM_SIZE);
 
 	//Textures
 	static SDL_Texture* Texture_Next; declare_Piece_Text(&Texture_Next, *firstPiece, false);
@@ -206,7 +206,7 @@ unsigned short drawTitle(piece** firstPiece)
 					playSound(MOVE_SOUND);
 
 				}
-				else if (custom->ui->currentlyInteracting && *customModeSize > 1)
+				else if (custom->ui->currentlyInteracting && *customModeSize > MIN_CUSTOM_SIZE)
 				{
 
 					*customModeSize -= 1;

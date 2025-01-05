@@ -1368,7 +1368,7 @@ SDL_Texture* create_Custom_Text()
 
 	texture = createTexture(width, height);
 
-	updateCustomText(texture, 1);
+	updateCustomText(texture, MIN_CUSTOM_SIZE);
 
 	return texture;
 

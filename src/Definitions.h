@@ -30,6 +30,7 @@
 
 #define HOLD_TEXTURE_MULTI 0.75
 
+#define MIN_CUSTOM_SIZE 4
 #define MAX_CUSTOM_SIZE 15
 
 #define LEVELUP_INCREASE 3

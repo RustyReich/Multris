@@ -116,7 +116,7 @@ void createCustomTopFile()
 	if (customTopFile != NULL) 
 	{
 
-		for (unsigned short i = 0; i <= MAX_CUSTOM_SIZE; i++)
+		for (unsigned short i = MIN_CUSTOM_SIZE; i <= MAX_CUSTOM_SIZE; i++)
 			if (i != MAX_CUSTOM_SIZE)
 				fprintf(customTopFile, "%d=0\n", i);
 			else
