@@ -77,7 +77,7 @@ Score - You score points by completing lines.
 
 [SDL_Mixer](https://github.com/libsdl-org/SDL_mixer)
 
-For all following instructions, replace `make -f Makefile_Linux` with `make -f Makefile_Windows` if you are on Windows.
+For all following instructions, replace `make -f Makefile_Linux` with `make -f Makefile_Windows` if you are on Windows. Also, edit `Makefile_Windows` to set the `SDL2_DIR`, `SDL2IMAGE_DIR`, `SDL2NET_DIR`, `SDL2MIXER_DIR` to the appropriate folders for your SDL2 development files.
 
 #### Building the Latest Development Version (Unstable)
 
