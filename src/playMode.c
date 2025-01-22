@@ -1715,8 +1715,8 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				printToTexture("OVER", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 				printToTexture("OVER", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
 
-				// If in MULTRIS mode, diplay the time the game took on the game over screen
-				if (MODE == 0)
+				// If not in CUSTOM_MODE, diplay the time the game took on the game over screen
+				if (CUSTOM_MODE == false)
 				{
 
 					// Calculate multiplier, width, and height for "TIME" and "000:00". Give 15% padding on each side.
