@@ -251,7 +251,8 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
                     //so we don't have a disconnection message to display. So display generic 
                     // "Server closed" message.
                         // Otherwise, the last message receieved from the server would be displayed
-                    if (SDL_strstr(currMessage, "Waiting") != NULL || SDL_strstr(currMessage, "Press") != NULL || SDL_strstr(currMessage, "READY") != NULL)
+                    char* m = currMessage;
+                    if (SDL_strstr(m, "Waiting") != NULL || SDL_strstr(m, "Press") != NULL || SDL_strstr(m, "READY") != NULL)
                     {
 
                         currMessage = SDL_realloc(currMessage, sizeof(char) * SDL_strlen("Server closed") + 1);
@@ -651,9 +652,10 @@ unsigned short multiplayerLobby(piece** Piece, char* serverMessage)
 
                 // Define the list of keys which are valid inputs while inputting an IP or PORT
                 int validKeys[] = { SDL_SCANCODE_0, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, SDL_SCANCODE_4, SDL_SCANCODE_5,
-                                    SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, SDL_SCANCODE_BACKSPACE,
-                                    SDL_SCANCODE_KP_0, SDL_SCANCODE_KP_1, SDL_SCANCODE_KP_2, SDL_SCANCODE_KP_3, SDL_SCANCODE_KP_4,
-                                    SDL_SCANCODE_KP_5, SDL_SCANCODE_KP_6, SDL_SCANCODE_KP_7, SDL_SCANCODE_KP_8, SDL_SCANCODE_KP_9 };
+                                    SDL_SCANCODE_6, SDL_SCANCODE_7, SDL_SCANCODE_8, SDL_SCANCODE_9, SDL_SCANCODE_PERIOD, 
+                                    SDL_SCANCODE_BACKSPACE, SDL_SCANCODE_KP_0, SDL_SCANCODE_KP_1, SDL_SCANCODE_KP_2, SDL_SCANCODE_KP_3, 
+                                    SDL_SCANCODE_KP_4, SDL_SCANCODE_KP_5, SDL_SCANCODE_KP_6, SDL_SCANCODE_KP_7, SDL_SCANCODE_KP_8, 
+                                    SDL_SCANCODE_KP_9 };
 
                 // Go through all validKeys
                 for (unsigned short i = 0; i < sizeof(validKeys) / sizeof(validKeys[0]); i++)

@@ -951,7 +951,8 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 
 				//Scoring formula was derived by plotting the scoring table from the NES 
 				//version of tetris and then finding a best-fit line
-				*Score += ((93.333 * SDL_pow(*numCompleted, 3) - 490 * SDL_pow(*numCompleted, 2) + 876.67 * *numCompleted - 440) * (*Level + 1));
+				unsigned short numCom = *numCompleted;
+				*Score += ((93.333 * SDL_pow(numCom, 3) - 490 * SDL_pow(numCom, 2) + 876.67 * numCom - 440) * (*Level + 1));
 				updateScore(*Score, Texture_Score);
 
 				// Send score to the server if in a multiplayer game
@@ -1707,13 +1708,14 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
 
 				//Print "GAME"
-				printToTexture("GAME", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
-				printToTexture("GAME", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
+				x += 0.5 * (width - getStringLength("GAME", multi));
+				printToTexture("GAME", foreground, x, y + heightDifference / 2, multi, WHITE);
+				printToTexture("GAME", opponentForeground, x, y + heightDifference / 2, multi, WHITE);
 
 				//Calculate Y value for "OVER" and print it
 				y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
-				printToTexture("OVER", foreground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
-				printToTexture("OVER", opponentForeground, x + 0.5 * (width - getStringLength("GAME", multi)), y + heightDifference / 2, multi, WHITE);
+				printToTexture("OVER", foreground, x, y + heightDifference / 2, multi, WHITE);
+				printToTexture("OVER", opponentForeground, x, y + heightDifference / 2, multi, WHITE);
 
 				// If not in CUSTOM_MODE, diplay the time the game took on the game over screen
 				if (CUSTOM_MODE == false)
@@ -1734,8 +1736,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
 
 					// Print "TIME"
-					printToTexture("TIME", foreground, x + 0.5 * (width - getStringLength("TIME", multi)), y + heightDifference / 2, multi, WHITE);
-					printToTexture("TIME", opponentForeground, x + 0.5 * (width - getStringLength("TIME", multi)), y + heightDifference / 2, multi, WHITE);
+					y += heightDifference / 2;
+					printToTexture("TIME", foreground, x + 0.5 * (width - getStringLength("TIME", multi)), y, multi, WHITE);
+					printToTexture("TIME", opponentForeground, x + 0.5 * (width - getStringLength("TIME", multi)), y, multi, WHITE);
 
 					// Calculate Y value to print the timeString
 					y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
@@ -1780,8 +1783,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					}
 
 					// Print the timeString
-					printToTexture(timeString, foreground, x + 0.5 * (width - getStringLength(timeString, multi)), y + heightDifference / 2, multi, WHITE);
-					printToTexture(timeString, opponentForeground, x + 0.5 * (width - getStringLength(timeString, multi)), y + heightDifference / 2, multi, WHITE);
+					y += heightDifference / 2;
+					printToTexture(timeString, foreground, x + 0.5 * (width - getStringLength(timeString, multi)), y, multi, WHITE);
+					printToTexture(timeString, opponentForeground, x + 0.5 * (width - getStringLength(timeString, multi)), y, multi, WHITE);
 
 				}
 
@@ -2231,8 +2235,10 @@ bool playOverAnimation(SDL_Texture* foreground, SDL_Texture* opponentForeground,
 					for (unsigned short i = 0; i < mapWidth; i++)
 					{
 
-						drawToTexture(BLOCK_SPRITE_ID, foreground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
-						drawToTexture(BLOCK_SPRITE_ID, opponentForeground, SPRITE_WIDTH * i, SPRITE_HEIGHT * *row, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
+						int x = SPRITE_WIDTH * i;
+						int y = SPRITE_HEIGHT * *row;
+						drawToTexture(BLOCK_SPRITE_ID, foreground, x, y, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
+						drawToTexture(BLOCK_SPRITE_ID, opponentForeground, x, y, 1, (MGF_rand() % (RED - YELLOW + 1)) + YELLOW);
 
 					}
 
