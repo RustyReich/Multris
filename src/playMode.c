@@ -62,6 +62,8 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 	DECLARE_VARIABLE(int, gameStartTime, SDL_GetTicks());
 	DECLARE_VARIABLE(bool, editingVolume, false);
 	DECLARE_VARIABLE(bool, editingMusic, false);
+	DECLARE_VARIABLE(int, totalPauseTime, 0);
+	DECLARE_VARIABLE(int, pauseStartTime, 0);
 
 	//Texutures
 	static SDL_Texture* Texture_Current; declare_Piece_Text(&Texture_Current, currentPiece, CENTER_DOT);
@@ -713,6 +715,9 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					// opening the pause menu again in the same frame.
 					*justUnPaused = true;
 
+					// Keep track of how long we were paused for
+					*totalPauseTime += SDL_GetTicks() - *pauseStartTime;
+
 				}
 
 			}
@@ -727,7 +732,14 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				else if (*editingMusic == true)
 					*editingMusic = false;
 				else	// Un-pause if player presses the EXIT_BUTTON while not editing volume.
+				{
+
 					*paused = false;		
+
+					// Keep track of how long we were paused for
+					*totalPauseTime += SDL_GetTicks() - *pauseStartTime;
+
+				}
 
 			}
 
@@ -818,14 +830,17 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		if (onPress(SELECT_BUTTON) && MULTIPLAYER == false)
 		{
 			
-			// If the SELEC_BUTTON has been pressed and we are not currently paused and we did not
+			// If the SELECT_BUTTON has been pressed and we are not currently paused and we did not
 			// just un-pause in the current frame, then pause the game
 			if (*paused == false && *justUnPaused == false)
 			{
 
 				// Pause
 				playSound(PAUSE_SOUND);
-				*paused = true;	
+				*paused = true;
+
+				// Keep track of the time we paused the game
+				*pauseStartTime = SDL_GetTicks();	
 
 			}	// If we are not paused but we just un-paused this frame, don't pause.
 			else if (*paused == false && *justUnPaused == true)
@@ -1745,7 +1760,8 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 					char timeString[] = { '0', '0', '0' , ':' , '0', '0', '\0' };
 
 					// Generate the timeString
-					int gameLengthSec = (SDL_GetTicks() - *gameStartTime) / 1000;
+						// Subtract the amount of time we were paused for
+					int gameLengthSec = (SDL_GetTicks() - *gameStartTime - *totalPauseTime) / 1000;
 					for (unsigned short i = 0; i < SDL_strlen(timeString); i++)
 					{
 
