@@ -2,7 +2,7 @@
 
 unsigned short playMode(piece* firstPiece, char* serverMessage)
 {
-
+	
 	//Game pieces
 	static piece* currentPiece; declare_Piece(&currentPiece, firstPiece);
 	static piece* opponentCurrentPiece; declare_Piece(&opponentCurrentPiece, NULL);
@@ -130,7 +130,8 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 		// Calc speed at start incase want to start at different level (for debugging)
 		*speed = calcSpeed(*Level);
 
-		// Play the intro music track and set the volume for music
+		// Stop the currently playing music and play the intro music track and set the volume for music
+		Mix_HaltMusic();
 		Mix_PlayMusic(globalInstance->musicTracks[INTRO_MUSIC_TRACK], 0);
 		Mix_VolumeMusic(MIX_MAX_VOLUME * (MUSIC_VOLUME / 100.0));
 
