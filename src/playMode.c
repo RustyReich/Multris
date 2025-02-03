@@ -1733,78 +1733,73 @@ unsigned short playMode(piece* firstPiece, char* serverMessage)
 				printToTexture("OVER", foreground, x, y + heightDifference / 2, multi, WHITE);
 				printToTexture("OVER", opponentForeground, x, y + heightDifference / 2, multi, WHITE);
 
-				// If not in CUSTOM_MODE, diplay the time the game took on the game over screen
-				if (CUSTOM_MODE == false)
+				// Diplay the time the game took on the game over screen				
+					// Calculate multiplier, width, and height for "TIME" and "000:00". Give 15% padding on each side.
+				multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)(getStringLength("000:00", 1)) * 0.50;
+				width = getStringLength("000:00", multi) * 1.15;
+				height = (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP)) * 1.15;
+				heightDifference = height - (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP));
+
+				// Calculate X and Y value to print "TIME" at
+				x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - width);
+				y = (0.75 * (MAP_HEIGHT * SPRITE_HEIGHT - height));
+
+				// Draw dark background for the words
+				drawSimpleRect(foreground, x, y, width, height, BLACK, 75);
+				drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
+
+				// Print "TIME"
+				y += heightDifference / 2;
+				printToTexture("TIME", foreground, x + 0.5 * (width - getStringLength("TIME", multi)), y, multi, WHITE);
+				printToTexture("TIME", opponentForeground, x + 0.5 * (width - getStringLength("TIME", multi)), y, multi, WHITE);
+
+				// Calculate Y value to print the timeString
+				y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
+				char timeString[] = { '0', '0', '0' , ':' , '0', '0', '\0' };
+
+				// Generate the timeString
+					// Subtract the amount of time we were paused for
+				int gameLengthSec = (SDL_GetTicks() - *gameStartTime - *totalPauseTime) / 1000;
+				for (unsigned short i = 0; i < SDL_strlen(timeString); i++)
 				{
 
-					// Calculate multiplier, width, and height for "TIME" and "000:00". Give 15% padding on each side.
-					multi = (float)(MAP_WIDTH * SPRITE_WIDTH) / (float)(getStringLength("000:00", 1)) * 0.50;
-					width = getStringLength("000:00", multi) * 1.15;
-					height = (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP)) * 1.15;
-					heightDifference = height - (multi * FONT_HEIGHT * 2 + SDL_round(multi * STRING_GAP));
-
-					// Calculate X and Y value to print "TIME" at
-					x = 0.5 * (MAP_WIDTH * SPRITE_WIDTH - width);
-					y = (0.75 * (MAP_HEIGHT * SPRITE_HEIGHT - height));
-
-					// Draw dark background for the words
-					drawSimpleRect(foreground, x, y, width, height, BLACK, 75);
-					drawSimpleRect(opponentForeground, x, y, width, height, BLACK, 75);
-
-					// Print "TIME"
-					y += heightDifference / 2;
-					printToTexture("TIME", foreground, x + 0.5 * (width - getStringLength("TIME", multi)), y, multi, WHITE);
-					printToTexture("TIME", opponentForeground, x + 0.5 * (width - getStringLength("TIME", multi)), y, multi, WHITE);
-
-					// Calculate Y value to print the timeString
-					y = y + SDL_round(multi * STRING_GAP) + SDL_round(multi * FONT_HEIGHT);
-					char timeString[] = { '0', '0', '0' , ':' , '0', '0', '\0' };
-
-					// Generate the timeString
-						// Subtract the amount of time we were paused for
-					int gameLengthSec = (SDL_GetTicks() - *gameStartTime - *totalPauseTime) / 1000;
-					for (unsigned short i = 0; i < SDL_strlen(timeString); i++)
+					if (i == 0 && gameLengthSec >= 60 * 100)
 					{
 
-						if (i == 0 && gameLengthSec >= 60 * 100)
-						{
-
-							timeString[i] = '0' + gameLengthSec / (60 * 100);
-							gameLengthSec = gameLengthSec % (60 * 100);
-
-						}
-						else if (i == 1 && gameLengthSec >= 60 * 10)
-						{
-
-							timeString[i] = '0' + gameLengthSec / (60 * 10);
-							gameLengthSec = gameLengthSec % (60 * 10);
-
-						}
-						else if (i == 2 && gameLengthSec >= 60)
-						{
-
-							timeString[i] = '0' + gameLengthSec / 60;
-							gameLengthSec = gameLengthSec % 60;
-
-						}
-						else if (i == 4 && gameLengthSec >= 10)
-						{
-
-							timeString[i] = '0' + gameLengthSec / 10;
-							gameLengthSec = gameLengthSec % 10;
-
-						}
-						else if (i == 5)
-							timeString[i] = '0' + gameLengthSec;
+						timeString[i] = '0' + gameLengthSec / (60 * 100);
+						gameLengthSec = gameLengthSec % (60 * 100);
 
 					}
+					else if (i == 1 && gameLengthSec >= 60 * 10)
+					{
 
-					// Print the timeString
-					y += heightDifference / 2;
-					printToTexture(timeString, foreground, x + 0.5 * (width - getStringLength(timeString, multi)), y, multi, WHITE);
-					printToTexture(timeString, opponentForeground, x + 0.5 * (width - getStringLength(timeString, multi)), y, multi, WHITE);
+						timeString[i] = '0' + gameLengthSec / (60 * 10);
+						gameLengthSec = gameLengthSec % (60 * 10);
+
+					}
+					else if (i == 2 && gameLengthSec >= 60)
+					{
+
+						timeString[i] = '0' + gameLengthSec / 60;
+						gameLengthSec = gameLengthSec % 60;
+
+					}
+					else if (i == 4 && gameLengthSec >= 10)
+					{
+
+						timeString[i] = '0' + gameLengthSec / 10;
+						gameLengthSec = gameLengthSec % 10;
+
+					}
+					else if (i == 5)
+						timeString[i] = '0' + gameLengthSec;
 
 				}
+
+				// Print the timeString
+				y += heightDifference / 2;
+				printToTexture(timeString, foreground, x + 0.5 * (width - getStringLength(timeString, multi)), y, multi, WHITE);
+				printToTexture(timeString, opponentForeground, x + 0.5 * (width - getStringLength(timeString, multi)), y, multi, WHITE);
 
 				//Save score once overAnimation is finished playing
 					// Don't save score if in a multiplayer game
