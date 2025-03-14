@@ -14,5 +14,7 @@ unsigned short calcHeight(piece* Piece);
 piece* generateGamePiece(unsigned short size);
 char* convertPieceToString(piece* Piece);
 piece* createPieceFromString(char* string);
+piece* makePieceMoreRandom(piece* Piece);
+bool areBlocksConnected(piece* Piece, int blockIndex1, int blockIndex2, int* traversedBlockIndices, int* numOfTraversedBlockIndices);
 
 #endif
