@@ -79,5 +79,6 @@ void updateHostingValuesText(SDL_Texture* texture, char* port, char* name);
 UI_list* create_Pause_list();
 SDL_Texture* create_PausedValues_Text();
 void updatePausedValuesText(SDL_Texture* texture);
+SDL_Texture* create_Credits_Text();
 
 #endif

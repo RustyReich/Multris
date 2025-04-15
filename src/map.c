@@ -316,6 +316,14 @@ unsigned short drawTitle(piece** firstPiece)
 				options->ui->currentlyInteracting = true;
 
 			}
+			else if (SDL_strcmp(selected_mode, "CREDITS") == 0)
+			{
+
+				// Go to CREDITS screen
+				freeVars();
+				return CREDITS_SCREEN;
+
+			}
 			else if (SDL_strcmp(selected_mode, "EXIT") == 0)
 				//Exit the game
 				globalInstance->running = false;

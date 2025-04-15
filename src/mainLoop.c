@@ -180,6 +180,8 @@ void mainLoop()
 	}
 	else if (game_state == CONTROLS_SCREEN)
 		game_state = controlsScreen(&firstPiece);
+	else if (game_state == CREDITS_SCREEN)
+		game_state = creditsScreen(&firstPiece);
 	else if (game_state == MULTIPLAYERLOBBY_SCREEN)
 	{
 

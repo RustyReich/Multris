@@ -1391,6 +1391,26 @@ SDL_Texture* create_Controls_Text()
 
 }
 
+//Create the texture that displays for the credits screen
+SDL_Texture* create_Credits_Text()
+{
+
+	SDL_Texture* texture;
+
+	int width = getStringLength("MUSIC CREATED BY", 1.0);
+	int height = getStringLength("00000", 1.0);
+
+	texture = createTexture(width, height);
+
+	printToTexture("GAME CREATED BY", texture, 0, 0, 1.0, WHITE);
+	printToTexture("RUSSELL REICH", texture, 0, 14, 1.0, WHITE);
+	printToTexture("MUSIC CREATED BY", texture, 0, 42, 1.0, WHITE);
+	printToTexture("CLAY MONHOFF", texture, 0, 56, 1.0, WHITE);
+
+	return texture;
+
+}
+
 //Create a UI list given an arbitrary number of strings
 UI_list* _create_list(unsigned short color, const char* strings, ...)
 {
@@ -1552,7 +1572,7 @@ UI_list* create_Modes_List()
 
 	//Initialize list
 	UI_list* list;
-	list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "MULTIPLAYER", "OPTIONS", "EXIT");
+	list = create_list(WHITE, "MULTRIS", "NUMERICAL", "CUSTOM", "MULTIPLAYER", "OPTIONS", "CREDITS", "EXIT");
 
 	//First entry is selected by default
 	list->selected_entry = 0;
@@ -1629,7 +1649,7 @@ UI_list* create_Options_List()
 
 	list->ui->x = 42;
 
-	list->ui->y = 98;
+	list->ui->y = 112;
 
 	list->ui->currentlyInteracting = false;
 

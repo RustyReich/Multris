@@ -283,6 +283,8 @@ void declare_HUD_Text(SDL_Texture** ptr, int type)
             *ptr = create_HostingValues_Text();
         else if (type == PAUSEDVALUES_TEXT)
             *ptr = create_PausedValues_Text();
+        else if (type == CREDITS_TEXT)
+            *ptr = create_Credits_Text();
 
         if(!inVector((void**)ptr))
             pushAddress((void**)ptr, TEXTURE);

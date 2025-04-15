@@ -33,6 +33,7 @@
 #include "multiplayerLobby.h"
 #include "network.h"
 #include "server.h"
+#include "credits.h"
 
 // OS-specific includes/macros
 #ifdef _WIN32
